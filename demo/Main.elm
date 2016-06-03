@@ -8,7 +8,7 @@ import Mouse exposing (Position)
 import TimeTravel
 
 main =
-  Html.program <| TimeTravel.watch
+  TimeTravel.program
     { init = init
     , view = view
     , update = update

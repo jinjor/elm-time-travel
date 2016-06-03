@@ -4,12 +4,16 @@ Experimental time travel debugger for Elm 0.17. See [DEMO](http://jinjor.github.
 
 ## How to use
 
+Just use `TimeTravel.program` instead of `Html.program`.
+
 ```elm
 main =
-  Html.program <| TimeTravel.watch
+  TimeTravel.program
     { init = init
     , view = view
     , update = update
     , subscriptions = subscriptions
     }
 ```
+
+That's it!
