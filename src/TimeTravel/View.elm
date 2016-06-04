@@ -3,6 +3,7 @@ module TimeTravel.View exposing (view) -- where
 import TimeTravel.Model exposing (..)
 import TimeTravel.Util exposing (..)
 import TimeTravel.Styles as S
+import TimeTravel.Icons as I
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -28,11 +29,16 @@ headerView : Bool -> Bool -> FilterOptions -> Html Msg
 headerView sync expand filterOptions =
   div []
   [ div [ style S.headerView ]
-    [ {--div [ onClick ToggleSync ] [ button [] [ text ("Sync: " ++ toString sync) ] ]
-    , --}div [ onClick ToggleExpand ] [ button [] [ text ("Expand: " ++ toString expand) ] ]
+    [ buttonView ToggleSync [ I.sync sync ]
+    , buttonView ToggleExpand [ I.filterExpand expand ]
     ]
   , filterView expand filterOptions
   ]
+
+
+buttonView : msg -> List (Html msg) -> Html msg
+buttonView onClickMsg inner =
+  div [ style S.button, onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg

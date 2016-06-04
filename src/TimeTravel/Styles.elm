@@ -1,5 +1,12 @@
 module TimeTravel.Styles exposing (..) -- where
 
+button : List (String, String)
+button =
+  [ ("padding", "10px")
+  , ("border", "solid 1px #666")
+  , ("border-radius", "3px")
+  ]
+
 
 panel : Bool -> List (String, String)
 panel visible =
