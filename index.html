@@ -7859,81 +7859,345 @@ var _user$project$TimeTravel_Util$Nel = F2(
 	function (a, b) {
 		return {ctor: 'Nel', _0: a, _1: b};
 	});
-var _user$project$TimeTravel_View$msgView = function (msg) {
+var _user$project$TimeTravel_Model$init = function (model) {
+	return {
+		history: A2(
+			_user$project$TimeTravel_Util$Nel,
+			{ctor: '_Tuple2', _0: _elm_lang$core$Maybe$Nothing, _1: model},
+			_elm_lang$core$Native_List.fromArray(
+				[])),
+		filter: _elm_lang$core$Native_List.fromArray(
+			[]),
+		sync: true,
+		expand: false
+	};
+};
+var _user$project$TimeTravel_Model$Model = F4(
+	function (a, b, c, d) {
+		return {history: a, filter: b, sync: c, expand: d};
+	});
+var _user$project$TimeTravel_Model$ToggleFilter = function (a) {
+	return {ctor: 'ToggleFilter', _0: a};
+};
+var _user$project$TimeTravel_Model$ToggleExpand = {ctor: 'ToggleExpand'};
+var _user$project$TimeTravel_Model$ToggleSync = {ctor: 'ToggleSync'};
+var _user$project$TimeTravel_Update$update = F2(
+	function (message, model) {
+		var _p0 = message;
+		switch (_p0.ctor) {
+			case 'ToggleSync':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						sync: _elm_lang$core$Basics$not(model.sync)
+					});
+			case 'ToggleExpand':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						expand: _elm_lang$core$Basics$not(model.expand)
+					});
+			default:
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						filter: A2(
+							_elm_lang$core$List$map,
+							function (_p1) {
+								var _p2 = _p1;
+								var _p4 = _p2._1;
+								var _p3 = _p2._0;
+								return _elm_lang$core$Native_Utils.eq(_p0._0, _p3) ? {
+									ctor: '_Tuple2',
+									_0: _p3,
+									_1: _elm_lang$core$Basics$not(_p4)
+								} : {ctor: '_Tuple2', _0: _p3, _1: _p4};
+							},
+							model.filter)
+					});
+		}
+	});
+var _user$project$TimeTravel_Styles$debugView = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
+		{ctor: '_Tuple2', _0: 'width', _1: '250px'},
+		{ctor: '_Tuple2', _0: 'top', _1: '0'},
+		{ctor: '_Tuple2', _0: 'right', _1: '0'},
+		{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#444'},
+		{ctor: '_Tuple2', _0: 'color', _1: '#eee'}
+	]);
+var _user$project$TimeTravel_Styles$panelBorder = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'border-bottom', _1: 'solid 1px #666'}
+	]);
+var _user$project$TimeTravel_Styles$panel = function (visible) {
+	return _elm_lang$core$Native_List.fromArray(
+		[
+			{
+			ctor: '_Tuple2',
+			_0: 'padding',
+			_1: visible ? '20px' : '0 20px'
+		},
+			{ctor: '_Tuple2', _0: 'overflow', _1: 'hidden'}
+		]);
+};
+var _user$project$TimeTravel_Styles$filterView = function (visible) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'background-color', _1: '#333'},
+				{ctor: '_Tuple2', _0: 'transition', _1: 'height ease 0.3s, padding ease 0.3s'},
+				{
+				ctor: '_Tuple2',
+				_0: 'height',
+				_1: visible ? '' : '0'
+			}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_user$project$TimeTravel_Styles$panelBorder,
+			_user$project$TimeTravel_Styles$panel(visible)));
+};
+var _user$project$TimeTravel_Styles$headerView = _user$project$TimeTravel_Styles$panel(true);
+var _user$project$TimeTravel_Styles$modelView = A2(
+	_elm_lang$core$Basics_ops['++'],
+	_elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'height', _1: '100px'}
+		]),
+	A2(
+		_elm_lang$core$Basics_ops['++'],
+		_user$project$TimeTravel_Styles$panelBorder,
+		_user$project$TimeTravel_Styles$panel(true)));
+var _user$project$TimeTravel_Styles$msgListView = _user$project$TimeTravel_Styles$panel(true);
+var _user$project$TimeTravel_View$msgView = F2(
+	function (filterOptions, msg) {
+		var str = _elm_lang$core$Basics$toString(msg);
+		var visible = function () {
+			var _p0 = _elm_lang$core$String$words(str);
+			if (_p0.ctor === '::') {
+				return A2(
+					_elm_lang$core$List$any,
+					function (_p1) {
+						var _p2 = _p1;
+						return _elm_lang$core$Native_Utils.eq(_p0._0, _p2._0) && _p2._1;
+					},
+					filterOptions);
+			} else {
+				return false;
+			}
+		}();
+		return visible ? _elm_lang$core$Maybe$Just(
+			A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(msg))
+					]))) : _elm_lang$core$Maybe$Nothing;
+	});
+var _user$project$TimeTravel_View$msgListView = F2(
+	function (filterOptions, msgList) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Styles$msgListView)
+				]),
+			A2(
+				_elm_lang$core$List$filterMap,
+				_user$project$TimeTravel_View$msgView(filterOptions),
+				msgList));
+	});
+var _user$project$TimeTravel_View$modelView = function (_p3) {
+	var _p4 = _p3;
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Styles$modelView)
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(
+				_elm_lang$core$Basics$toString(_p4._1))
+			]));
+};
+var _user$project$TimeTravel_View$filterItemView = function (_p5) {
+	var _p6 = _p5;
+	var _p7 = _p6._0;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
 			[]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_elm_lang$html$Html$text(
-				_elm_lang$core$Basics$toString(msg))
-			]));
-};
-var _user$project$TimeTravel_View$panel = _elm_lang$core$Native_List.fromArray(
-	[
-		{ctor: '_Tuple2', _0: 'padding', _1: '20px'}
-	]);
-var _user$project$TimeTravel_View$modelViewStyle = A2(
-	_elm_lang$core$Basics_ops['++'],
-	_elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 'height', _1: '100px'},
-			{ctor: '_Tuple2', _0: 'border-bottom', _1: 'solid 1px #666'}
-		]),
-	_user$project$TimeTravel_View$panel);
-var _user$project$TimeTravel_View$modelView = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_View$modelViewStyle)
-			]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html$text(
-				_elm_lang$core$Basics$toString(model))
-			]));
-};
-var _user$project$TimeTravel_View$msgListView = function (msgList) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_View$panel)
-			]),
-		A2(_elm_lang$core$List$map, _user$project$TimeTravel_View$msgView, msgList));
-};
-var _user$project$TimeTravel_View$debugView = function (_p0) {
-	var _p1 = _p0;
-	var _p2 = _p1._0;
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[
-				_elm_lang$html$Html_Attributes$style(
+				A2(
+				_elm_lang$html$Html$label,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
-						{ctor: '_Tuple2', _0: 'width', _1: '250px'},
-						{ctor: '_Tuple2', _0: 'top', _1: '0'},
-						{ctor: '_Tuple2', _0: 'right', _1: '0'},
-						{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
-						{ctor: '_Tuple2', _0: 'background-color', _1: '#444'},
-						{ctor: '_Tuple2', _0: 'color', _1: '#eee'}
+						A2(
+						_elm_lang$html$Html$input,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Attributes$type$('checkbox'),
+								_elm_lang$html$Html_Attributes$checked(_p6._1),
+								_elm_lang$html$Html_Events$onClick(
+								_user$project$TimeTravel_Model$ToggleFilter(_p7))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[])),
+						_elm_lang$html$Html$text(_p7)
 					]))
+			]));
+};
+var _user$project$TimeTravel_View$filterView = F2(
+	function (visible, filterOptions) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					_user$project$TimeTravel_Styles$filterView(visible))
+				]),
+			A2(_elm_lang$core$List$map, _user$project$TimeTravel_View$filterItemView, filterOptions));
+	});
+var _user$project$TimeTravel_View$headerView = F3(
+	function (sync, expand, filterOptions) {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Styles$headerView)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Events$onClick(_user$project$TimeTravel_Model$ToggleExpand)
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									A2(
+									_elm_lang$html$Html$button,
+									_elm_lang$core$Native_List.fromArray(
+										[]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html$text(
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												'Expand: ',
+												_elm_lang$core$Basics$toString(expand)))
+										]))
+								]))
+						])),
+					A2(_user$project$TimeTravel_View$filterView, expand, filterOptions)
+				]));
+	});
+var _user$project$TimeTravel_View$view = function (model) {
+	var _p8 = model.history;
+	var current = _p8._0;
+	var past = _p8._1;
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Styles$debugView)
 			]),
 		_elm_lang$core$Native_List.fromArray(
 			[
-				_user$project$TimeTravel_View$modelView(_p2),
-				_user$project$TimeTravel_View$msgListView(
+				A3(_user$project$TimeTravel_View$headerView, model.sync, model.expand, model.filter),
+				_user$project$TimeTravel_View$modelView(current),
+				A2(
+				_user$project$TimeTravel_View$msgListView,
+				model.filter,
 				A2(
 					_elm_lang$core$List$filterMap,
 					_elm_lang$core$Basics$fst,
-					A2(_elm_lang$core$List_ops['::'], _p2, _p1._1)))
+					A2(_elm_lang$core$List_ops['::'], current, past)))
 			]));
 };
-var _user$project$TimeTravel_View$view = F2(
+var _user$project$TimeTravel$updateFilter = F2(
+	function (msg, filterOptions) {
+		var str = _elm_lang$core$Basics$toString(msg);
+		var _p0 = _elm_lang$core$String$words(str);
+		if (_p0.ctor === '::') {
+			var _p3 = _p0._0;
+			var exists = A2(
+				_elm_lang$core$List$any,
+				function (_p1) {
+					var _p2 = _p1;
+					return _elm_lang$core$Native_Utils.eq(_p2._0, _p3);
+				},
+				filterOptions);
+			return exists ? filterOptions : A2(
+				_elm_lang$core$List_ops['::'],
+				{ctor: '_Tuple2', _0: _p3, _1: true},
+				filterOptions);
+		} else {
+			return filterOptions;
+		}
+	});
+var _user$project$TimeTravel$BeginnerOptions = F3(
+	function (a, b, c) {
+		return {model: a, view: b, update: c};
+	});
+var _user$project$TimeTravel$Options = F4(
+	function (a, b, c, d) {
+		return {init: a, view: b, update: c, subscriptions: d};
+	});
+var _user$project$TimeTravel$UserMsg = function (a) {
+	return {ctor: 'UserMsg', _0: a};
+};
+var _user$project$TimeTravel$updateOnIncomingUserMsg = F3(
+	function (update, msg, model) {
+		var _p4 = model.history;
+		var current = _p4._0;
+		var past = _p4._1;
+		var _p5 = current;
+		var m = _p5._1;
+		var _p6 = A2(update, msg, m);
+		var newUserModel = _p6._0;
+		var userCmd = _p6._1;
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			_elm_lang$core$Native_Utils.update(
+				model,
+				{
+					filter: A2(_user$project$TimeTravel$updateFilter, msg, model.filter),
+					history: A2(
+						_user$project$TimeTravel_Util$Nel,
+						{
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Maybe$Just(msg),
+							_1: newUserModel
+						},
+						A2(_elm_lang$core$List_ops['::'], current, past))
+				}),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A2(_elm_lang$core$Platform_Cmd$map, _user$project$TimeTravel$UserMsg, userCmd)
+				]));
+	});
+var _user$project$TimeTravel$DebuggerMsg = function (a) {
+	return {ctor: 'DebuggerMsg', _0: a};
+};
+var _user$project$TimeTravel$view_ = F2(
 	function (model, original) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -7941,69 +8205,80 @@ var _user$project$TimeTravel_View$view = F2(
 				[]),
 			_elm_lang$core$Native_List.fromArray(
 				[
-					original,
-					_user$project$TimeTravel_View$debugView(model)
+					A2(_elm_lang$html$Html_App$map, _user$project$TimeTravel$UserMsg, original),
+					A2(
+					_elm_lang$html$Html_App$map,
+					_user$project$TimeTravel$DebuggerMsg,
+					_user$project$TimeTravel_View$view(model))
 				]));
 	});
-var _user$project$TimeTravel$wrap = function (_p0) {
-	var _p1 = _p0;
-	var _p11 = _p1.init;
-	var subscriptions$ = function (_p2) {
-		var _p3 = _p2;
-		return _p1.subscriptions(_p3._0._1);
-	};
-	var view$ = function (_p4) {
-		var _p5 = _p4;
+var _user$project$TimeTravel$wrap = function (_p7) {
+	var _p8 = _p7;
+	var _p12 = _p8.init;
+	var subscriptions$ = function (model) {
+		var _p9 = model.history;
+		var m = _p9._0._1;
 		return A2(
-			_user$project$TimeTravel_View$view,
-			_p5,
-			_p1.view(_p5._0._1));
+			_elm_lang$core$Platform_Sub$map,
+			_user$project$TimeTravel$UserMsg,
+			_p8.subscriptions(m));
+	};
+	var view$ = function (model) {
+		var _p10 = model.history;
+		var m = _p10._0._1;
+		return A2(
+			_user$project$TimeTravel$view_,
+			model,
+			_p8.view(m));
 	};
 	var update$ = F2(
-		function (msg, _p6) {
-			var _p7 = _p6;
-			var _p10 = _p7._0;
-			var _p8 = _p10;
-			var m = _p8._1;
-			var _p9 = A2(_p1.update, msg, m);
-			var newModel = _p9._0;
-			var cmd = _p9._1;
-			return A2(
-				_elm_lang$core$Platform_Cmd_ops['!'],
-				A2(
-					_user$project$TimeTravel_Util$Nel,
-					{
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Maybe$Just(msg),
-						_1: newModel
-					},
-					A2(_elm_lang$core$List_ops['::'], _p10, _p7._1)),
-				_elm_lang$core$Native_List.fromArray(
-					[cmd]));
+		function (msg, model) {
+			var _p11 = msg;
+			if (_p11.ctor === 'UserMsg') {
+				return A3(_user$project$TimeTravel$updateOnIncomingUserMsg, _p8.update, _p11._0, model);
+			} else {
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					A2(_user$project$TimeTravel_Update$update, _p11._0, model),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			}
 		});
-	var init$ = {
-		ctor: '_Tuple2',
-		_0: A2(
-			_user$project$TimeTravel_Util$Nel,
-			{
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Maybe$Nothing,
-				_1: _elm_lang$core$Basics$fst(_p11)
-			},
-			_elm_lang$core$Native_List.fromArray(
-				[])),
-		_1: _elm_lang$core$Basics$snd(_p11)
-	};
+	var init$ = A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		_user$project$TimeTravel_Model$init(
+			_elm_lang$core$Basics$fst(_p12)),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$core$Platform_Cmd$map,
+				_user$project$TimeTravel$UserMsg,
+				_elm_lang$core$Basics$snd(_p12))
+			]));
 	return {init: init$, update: update$, view: view$, subscriptions: subscriptions$};
 };
-var _user$project$TimeTravel$program = function (_p12) {
+var _user$project$TimeTravel$beginnerProgram = function (_p13) {
+	var _p14 = _p13;
 	return _elm_lang$html$Html_App$program(
-		_user$project$TimeTravel$wrap(_p12));
+		_user$project$TimeTravel$wrap(
+			{
+				init: {ctor: '_Tuple2', _0: _p14.model, _1: _elm_lang$core$Platform_Cmd$none},
+				view: _p14.view,
+				update: F2(
+					function (msg, model) {
+						return {
+							ctor: '_Tuple2',
+							_0: A2(_p14.update, msg, model),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					}),
+				subscriptions: _elm_lang$core$Basics$always(_elm_lang$core$Platform_Sub$none)
+			}));
 };
-var _user$project$TimeTravel$Options = F4(
-	function (a, b, c, d) {
-		return {init: a, view: b, update: c, subscriptions: d};
-	});
+var _user$project$TimeTravel$program = function (_p15) {
+	return _elm_lang$html$Html_App$program(
+		_user$project$TimeTravel$wrap(_p15));
+};
 var _user$project$Main$getPosition = function (_p0) {
 	var _p1 = _p0;
 	var _p5 = _p1.position;
