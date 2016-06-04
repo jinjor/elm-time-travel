@@ -17,8 +17,8 @@ update message model =
           List.map
             (\(name', visible) ->
               if name == name' then
-                (name, not visible)
-              else (name, visible)
+                (name', not visible)
+              else (name', visible)
             )
           model.filter
       }
