@@ -1,4 +1,4 @@
-module TimeTravel.Model exposing (Model, FilterOptions, Msg(..)) -- where
+module TimeTravel.Model exposing (Model, FilterOptions, Msg(..), init) -- where
 
 import TimeTravel.Util exposing (..)
 
@@ -9,10 +9,21 @@ type alias Model model msg =
   , expand : Bool
   }
 
+
 type alias FilterOptions =
   List (String, Bool)
+
 
 type Msg
   = ToggleSync
   | ToggleExpand
   | ToggleFilter String
+
+
+init : model -> Model model msg
+init model =
+  { history = Nel (Nothing, model) []
+  , filter = []
+  , sync = True
+  , expand = True
+  }
