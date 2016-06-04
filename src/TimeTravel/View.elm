@@ -39,10 +39,9 @@ modelViewStyle =
   , ("border-bottom", "solid 1px #666")
   ] ++ panel
 
-modelView : model -> Html msg
-modelView model =
-  div
-    [ style modelViewStyle ] [ text (toString model) ]
+modelView : (a, model) -> Html msg
+modelView (_, model) =
+  div [ style modelViewStyle ] [ text (toString model) ]
 
 
 msgListView : List m -> Html msg
