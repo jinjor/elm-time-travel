@@ -9,12 +9,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App as App
 
+import String
+
 view : Model model msg -> Html Msg
 view model =
-  debugView model
-
-debugView : Model model msg -> Html Msg
-debugView model =
   let
     (Nel current past) = model.history
   in
@@ -22,7 +20,7 @@ debugView model =
       [ style S.debugView ]
       [ headerView model.sync model.expand model.filter
       , modelView current
-      , msgListView (List.filterMap fst (current :: past))
+      , msgListView model.filter (List.filterMap fst (current :: past))
       ]
 
 
@@ -63,11 +61,23 @@ modelView (_, model) =
   div [ style S.modelView ] [ text (toString model) ]
 
 
-msgListView : List m -> Html msg
-msgListView msgList =
-  div [ style S.panel ] (List.map msgView msgList)
+msgListView : FilterOptions -> List m -> Html msg
+msgListView filterOptions msgList =
+  div [ style S.panel ] (List.filterMap (msgView filterOptions) msgList)
 
 
-msgView : m -> Html msg
-msgView msg =
-  div [] [ text (toString msg) ]
+msgView : FilterOptions -> m -> Maybe (Html msg)
+msgView filterOptions msg =
+  let
+    str = toString msg
+    visible =
+      case String.words str of
+        tag :: _ ->
+          List.any (\(name, visible) -> tag == name && visible) filterOptions
+        _ ->
+          False
+  in
+    if visible then
+      Just (div [] [ text (toString msg) ])
+    else
+      Nothing

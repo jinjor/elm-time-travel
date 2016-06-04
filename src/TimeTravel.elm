@@ -8,6 +8,8 @@ import TimeTravel.Util exposing (..)
 import Html exposing (Html, div)
 import Html.App as App
 
+import String
+
 
 type Msg msg
   = DebuggerMsg Model.Msg
@@ -53,14 +55,7 @@ wrap { init, view, update, subscriptions } =
     update' msg model =
       case msg of
         UserMsg msg ->
-          let
-            (Nel current past) = model.history
-            (_, m) = current
-            (newUserModel, userCmd) = update msg m
-          in
-            { model |
-              history = Nel (Just msg, newUserModel) (current :: past)
-            } ! [ Cmd.map UserMsg userCmd ]
+          updateOnIncomingUserMsg update msg model
         DebuggerMsg msg ->
           (Update.update msg model) ! []
     view' model =
@@ -79,6 +74,42 @@ wrap { init, view, update, subscriptions } =
     , view = view'
     , subscriptions = subscriptions'
     }
+
+
+updateOnIncomingUserMsg :
+     (msg -> model -> (model, Cmd msg))
+  -> msg
+  -> Model model msg
+  -> (Model model msg, Cmd (Msg msg))
+updateOnIncomingUserMsg update msg model =
+  let
+    (Nel current past) = model.history
+    (_, m) = current
+    (newUserModel, userCmd) = update msg m
+  in
+    { model |
+      filter = updateFilter msg model.filter
+    , history = Nel (Just msg, newUserModel) (current :: past)
+    } ! [ Cmd.map UserMsg userCmd ]
+
+
+updateFilter : msg -> FilterOptions -> FilterOptions
+updateFilter msg filterOptions =
+  let
+    str = toString msg
+  in
+    case String.words str of
+      head :: _ ->
+        let
+          exists =
+            List.any (\(name, _) -> name == head) filterOptions
+        in
+          if exists then
+            filterOptions
+          else
+            (head, True) :: filterOptions
+      _ ->
+        filterOptions
 
 
 view_ : Model model msg -> Html msg -> Html (Msg msg)
