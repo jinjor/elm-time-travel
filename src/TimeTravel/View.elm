@@ -2,54 +2,84 @@ module TimeTravel.View exposing (view) -- where
 
 import TimeTravel.Model exposing (..)
 import TimeTravel.Util exposing (..)
+import TimeTravel.Styles as S
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Html.App as App
 
-view : Model model msg -> Html msg -> Html msg
-view model original =
-  div [] [ original, debugView model ]
+import String
+
+view : Model model msg -> Html Msg
+view model =
+  let
+    (Nel current past) = model.history
+  in
+    div
+      [ style S.debugView ]
+      [ headerView model.sync model.expand model.filter
+      , modelView current
+      , msgListView model.filter (List.filterMap fst (current :: past))
+      ]
 
 
-debugView : Model model msg -> Html msg
-debugView (Nel current past) =
-  div
-    [ style
-        [ ("position", "fixed")
-        , ("width", "250px")
-        , ("top", "0")
-        , ("right", "0")
-        , ("bottom", "0")
-        , ("background-color", "#444")
-        , ("color", "#eee")
-        ]
+headerView : Bool -> Bool -> FilterOptions -> Html Msg
+headerView sync expand filterOptions =
+  div []
+  [ div [ style S.headerView ]
+    [ {--div [ onClick ToggleSync ] [ button [] [ text ("Sync: " ++ toString sync) ] ]
+    , --}div [ onClick ToggleExpand ] [ button [] [ text ("Expand: " ++ toString expand) ] ]
     ]
-    [ modelView current
-    , msgListView (List.filterMap fst (current :: past))
-    ]
-
-panel : List (String, String)
-panel =
-  [ ("padding", "20px")
+  , filterView expand filterOptions
   ]
 
-modelViewStyle : List (String, String)
-modelViewStyle =
-  [ ("height", "100px")
-  , ("border-bottom", "solid 1px #666")
-  ] ++ panel
 
-modelView : model -> Html msg
-modelView model =
+filterView : Bool -> FilterOptions -> Html Msg
+filterView visible filterOptions =
   div
-    [ style modelViewStyle ] [ text (toString model) ]
+    [ style (S.filterView visible) ]
+    (List.map filterItemView filterOptions)
 
 
-msgListView : List m -> Html msg
-msgListView msgList =
-  div [ style panel ] (List.map msgView msgList)
+filterItemView : (String, Bool) -> Html Msg
+filterItemView (name, visible) =
+  div []
+    [ label
+        []
+        [ input
+            [ type' "checkbox"
+            , checked visible
+            , onClick (ToggleFilter name)
+            ]
+            []
+        , text name
+        ]
+    ]
 
 
-msgView : m -> Html msg
-msgView msg =
-  div [] [ text (toString msg) ]
+modelView : (a, model) -> Html msg
+modelView (_, model) =
+  div [ style S.modelView ] [ text (toString model) ]
+
+
+msgListView : FilterOptions -> List m -> Html msg
+msgListView filterOptions msgList =
+  div [ style S.msgListView ] (List.filterMap (msgView filterOptions) msgList)
+
+
+msgView : FilterOptions -> m -> Maybe (Html msg)
+msgView filterOptions msg =
+  let
+    str = toString msg
+    visible =
+      case String.words str of
+        tag :: _ ->
+          List.any (\(name, visible) -> tag == name && visible) filterOptions
+        _ ->
+          False
+  in
+    if visible then
+      Just (div [] [ text (toString msg) ])
+    else
+      Nothing
