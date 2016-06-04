@@ -28,8 +28,8 @@ headerView : Bool -> Bool -> FilterOptions -> Html Msg
 headerView sync expand filterOptions =
   div []
   [ div [ style S.headerView ]
-    [ div [ onClick ToggleSync ] [ text ("Sync: " ++ toString sync) ]
-    , div [ onClick ToggleExpand ] [ text ("Expand: " ++ toString expand) ]
+    [ {--div [ onClick ToggleSync ] [ button [] [ text ("Sync: " ++ toString sync) ] ]
+    , --}div [ onClick ToggleExpand ] [ button [] [ text ("Expand: " ++ toString expand) ] ]
     ]
   , filterView expand filterOptions
   ]

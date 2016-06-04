@@ -25,5 +25,5 @@ init model =
   { history = Nel (Nothing, model) []
   , filter = []
   , sync = True
-  , expand = True
+  , expand = False
   }
