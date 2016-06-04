@@ -31,13 +31,15 @@ headerView sync expand filterOptions =
     [ div [ onClick ToggleSync ] [ text ("Sync: " ++ toString sync) ]
     , div [ onClick ToggleExpand ] [ text ("Expand: " ++ toString expand) ]
     ]
-  , filterView filterOptions
+  , filterView expand filterOptions
   ]
 
 
-filterView : FilterOptions -> Html Msg
-filterView filterOptions =
-  div [ style S.filterView ] (List.map filterItemView filterOptions)
+filterView : Bool -> FilterOptions -> Html Msg
+filterView visible filterOptions =
+  div
+    [ style (S.filterView visible) ]
+    (List.map filterItemView filterOptions)
 
 
 filterItemView : (String, Bool) -> Html Msg
@@ -63,7 +65,7 @@ modelView (_, model) =
 
 msgListView : FilterOptions -> List m -> Html msg
 msgListView filterOptions msgList =
-  div [ style S.panel ] (List.filterMap (msgView filterOptions) msgList)
+  div [ style S.msgListView ] (List.filterMap (msgView filterOptions) msgList)
 
 
 msgView : FilterOptions -> m -> Maybe (Html msg)

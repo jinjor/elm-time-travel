@@ -1,9 +1,10 @@
 module TimeTravel.Styles exposing (..) -- where
 
 
-panel : List (String, String)
-panel =
-  [ ("padding", "20px")
+panel : Bool -> List (String, String)
+panel visible =
+  [ ("padding", if visible then "20px" else "0 20px")
+  , ("overflow", "hidden")
   ]
 
 
@@ -25,18 +26,26 @@ debugView =
   ]
 
 
-filterView : List (String, String)
-filterView =
-  [ ("background-color", "#333") ]
-  ++ panelBorder ++ panel
+filterView : Bool -> List (String, String)
+filterView visible =
+  [ ("background-color", "#333")
+  , ("transition", "height ease 0.3s, padding ease 0.3s")
+  , ("height", if visible then "" else "0")
+  ]
+  ++ panelBorder ++ panel visible
 
 
 headerView : List (String, String)
 headerView =
-  panel
+  panel True
 
 
 modelView : List (String, String)
 modelView =
   [ ("height", "100px") ]
-  ++ panelBorder ++ panel
+  ++ panelBorder ++ panel True
+
+
+msgListView : List (String, String)
+msgListView =
+  panel True
