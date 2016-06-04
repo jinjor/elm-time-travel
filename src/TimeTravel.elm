@@ -1,4 +1,4 @@
-module TimeTravel exposing (program) -- where
+module TimeTravel exposing (beginnerProgram, program) -- where
 
 import TimeTravel.Model exposing (..)
 import TimeTravel.View as View
@@ -7,12 +7,27 @@ import TimeTravel.Util exposing (..)
 import Html exposing (Html, div)
 import Html.App
 
+type alias BeginnerOptions model msg =
+  { model : model
+  , view : model -> Html msg
+  , update : msg -> model -> model
+  }
+
 type alias Options model msg =
   { init : (model, Cmd msg)
   , view : model -> Html msg
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
+
+beginnerProgram : BeginnerOptions model msg -> Program Never
+beginnerProgram { model, view, update } =
+  Html.App.program <| wrap
+    { init = (model, Cmd.none)
+    , view = view
+    , update = \msg model -> (update msg model, Cmd.none)
+    , subscriptions = always Sub.none
+    }
 
 program : Options model msg -> Program Never
 program =

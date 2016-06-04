@@ -1,1 +1,1 @@
-elm-make Main.elm --output=../index.html
+elm-make Counter.elm --output=../index.html
