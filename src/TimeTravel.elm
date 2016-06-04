@@ -1,11 +1,16 @@
 module TimeTravel exposing (beginnerProgram, program) -- where
 
-import TimeTravel.Model exposing (..)
+import TimeTravel.Model as Model exposing (..)
+import TimeTravel.Update as Update
 import TimeTravel.View as View
 import TimeTravel.Util exposing (..)
 
 import Html exposing (Html, div)
-import Html.App
+import Html.App as App
+
+type Msg msg
+  = DebuggerMsg Model.Msg
+  | UserMsg msg
 
 type alias BeginnerOptions model msg =
   { model : model
@@ -22,7 +27,7 @@ type alias Options model msg =
 
 beginnerProgram : BeginnerOptions model msg -> Program Never
 beginnerProgram { model, view, update } =
-  Html.App.program <| wrap
+  App.program <| wrap
     { init = (model, Cmd.none)
     , view = view
     , update = \msg model -> (update msg model, Cmd.none)
@@ -31,20 +36,30 @@ beginnerProgram { model, view, update } =
 
 program : Options model msg -> Program Never
 program =
-  Html.App.program << wrap
+  App.program << wrap
 
-wrap : Options model msg -> Options (Model model msg) msg
+wrap : Options model msg -> Options (Model model msg) Msg
 wrap { init, view, update, subscriptions } =
   let
     init' = (Nel (Nothing, fst init) [], snd init)
-    update' msg (Nel current past) =
+    update' msg model =
       let
+        (Nel current past) = model.history
         (_, m) = current
-        (newModel, cmd) = update msg m
       in
-        (Nel (Just msg, newModel) (current :: past)) ! [ cmd ]
+          case msg of
+            UserMsg msg ->
+              let
+                (newUserModel, userCmd) =
+                  update msg m
+              in
+                { model |
+                  history = Nel (Just msg, newUserModel) (current :: past)
+                } ! [ Cmd.map UserMsg userCmd ]
+            DebuggerMsg msg ->
+              Update.update msg ! []
     view' ((Nel (_, m) _) as model) =
-      View.view model (view m)
+      view_ model (view m)
     subscriptions' (Nel (_, m) _) =
       subscriptions m
   in
@@ -53,3 +68,12 @@ wrap { init, view, update, subscriptions } =
     , view = view'
     , subscriptions = subscriptions'
     }
+
+
+view_ : Model model Model.Msg -> Html msg -> Html Msg
+view_ model original =
+  div
+    []
+    [ App.map UserMsg original
+    , App.map DebuggerMsg (View.view model)
+    ]

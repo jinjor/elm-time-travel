@@ -5,40 +5,55 @@ import TimeTravel.Util exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Html.App as App
+
+view : Model model msg -> Html Msg
+view model =
+  debugView model
+
+debugView : Model model msg -> Html Msg
+debugView model =
+  let
+    (Nel current past) = model.history
+  in
+    div
+      [ style debugViewStyle ]
+      [ headerView model.sync model.expand model.filter
+      , modelView current
+      , msgListView (List.filterMap fst (current :: past))
+      ]
 
 
-view : Model model msg -> Html msg -> Html msg
-view model original =
-  div [] [ original, debugView model ]
-
-
-debugView : Model model msg -> Html msg
-debugView (Nel current past) =
-  div
-    [ style debugViewStyle ]
-    [ headerView True True [("Tick", True)]
-    , modelView current
-    , msgListView (List.filterMap fst (current :: past))
-    ]
-
-
-headerView : Bool -> Bool -> FilterOptions -> Html msg
+headerView : Bool -> Bool -> FilterOptions -> Html Msg
 headerView sync expand filterOptions =
   div []
-  [ div [ style headerViewStyle ] [ text (toString sync), text (toString expand) ]
+  [ div [ style headerViewStyle ]
+    [ div [ onClick ToggleSync ] [ text ("Sync: " ++ toString sync) ]
+    , div [ onClick ToggleExpand ] [ text ("Expand: " ++ toString expand) ]
+    ]
   , filterView filterOptions
   ]
 
 
-filterView : FilterOptions -> Html msg
+filterView : FilterOptions -> Html Msg
 filterView filterOptions =
   div [ style filterViewStyle ] (List.map filterItemView filterOptions)
 
 
-filterItemView : (String, Bool) -> Html msg
+filterItemView : (String, Bool) -> Html Msg
 filterItemView (name, visible) =
   div []
-    [ label [] [ input [ type' "checkbox", checked visible ] [], text name ]
+    [ label
+        []
+        [ input
+            [ type' "checkbox"
+            , checked visible
+            , onClick (ToggleFilter name)
+            ]
+            []
+        , text name
+        ]
     ]
 
 
