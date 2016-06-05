@@ -18,11 +18,26 @@ view model =
     (Nel current past) = model.history
   in
     div
-      [ style S.debugView ]
-      [ headerView model.sync model.expand model.filter
-      , modelView current
-      , msgListView model.filter (List.filterMap fst (current :: past))
+      []
+      [ resyncView model.sync
+      , div
+          [ style S.debugView ]
+          [ headerView model.sync model.expand model.filter
+          , modelView model
+          , msgListView
+              model.filter
+              model.selectedMsg
+              (List.filterMap fst (current :: past))
+          ]
       ]
+
+
+resyncView : Bool -> Html Msg
+resyncView sync =
+  if sync then
+    text ""
+  else
+    div [ style (S.resyncView sync), onMouseDown Resync ] []
 
 
 headerView : Bool -> Bool -> FilterOptions -> Html Msg
@@ -64,20 +79,29 @@ filterItemView (name, visible) =
     ]
 
 
-modelView : (a, model) -> Html msg
-modelView (_, model) =
-  div [ style S.modelView ] [ text (toString model) ]
+modelView : Model model m -> Html msg
+modelView model =
+  case selectedModel model of
+    Just model ->
+      div [ style S.modelView ] [ text (toString model) ]
+    Nothing ->
+      text ""
 
 
-msgListView : FilterOptions -> List m -> Html msg
-msgListView filterOptions msgList =
-  div [ style S.msgListView ] (List.filterMap (msgView filterOptions) msgList)
+msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg
+msgListView filterOptions selectedMsg msgList =
+  div [ style S.msgListView ] (List.filterMap (msgView filterOptions selectedMsg) msgList)
 
 
-msgView : FilterOptions -> m -> Maybe (Html msg)
-msgView filterOptions msg =
+msgView : FilterOptions -> Maybe Id -> (Id, m) -> Maybe (Html Msg)
+msgView filterOptions selectedMsg (id, msg) =
   let
-    str = toString msg
+    selected =
+      case selectedMsg of
+        Just msgId -> msgId == id
+        Nothing -> False
+    str =
+      toString msg
     visible =
       case String.words str of
         tag :: _ ->
@@ -86,6 +110,12 @@ msgView filterOptions msg =
           False
   in
     if visible then
-      Just (div [] [ text (toString msg) ])
+      Just (
+        div
+          [ style (S.msgView selected)
+          , onClick (SelectMsg id)
+          ]
+          [ text (toString msg) ]
+      )
     else
       Nothing

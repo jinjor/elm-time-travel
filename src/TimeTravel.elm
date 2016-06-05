@@ -5,7 +5,7 @@ import TimeTravel.Update as Update
 import TimeTravel.View as View
 import TimeTravel.Util exposing (..)
 
-import Html exposing (Html, div)
+import Html exposing (Html, div, text)
 import Html.App as App
 
 import String
@@ -59,10 +59,7 @@ wrap { init, view, update, subscriptions } =
         DebuggerMsg msg ->
           (Update.update msg model) ! []
     view' model =
-      let
-        (Nel (_, m) _) = model.history
-      in
-        view_ model (view m)
+      view_ view model
     subscriptions' model =
       let
         (Nel (_, m) _) = model.history
@@ -89,7 +86,8 @@ updateOnIncomingUserMsg update msg model =
   in
     { model |
       filter = updateFilter msg model.filter
-    , history = Nel (Just msg, newUserModel) (current :: past)
+    , msgId = model.msgId + 1
+    , history = Nel (Just (model.msgId, msg), newUserModel) (current :: past)
     } ! [ Cmd.map UserMsg userCmd ]
 
 
@@ -112,10 +110,19 @@ updateFilter msg filterOptions =
         filterOptions
 
 
-view_ : Model model msg -> Html msg -> Html (Msg msg)
-view_ model original =
+view_ : (model -> Html msg) -> Model model msg -> Html (Msg msg)
+view_ userView model =
   div
     []
-    [ App.map UserMsg original
+    [ App.map UserMsg (userView_ userView model)
     , App.map DebuggerMsg (View.view model)
     ]
+
+
+userView_ : (model -> Html msg) -> Model model msg -> Html msg
+userView_ userView model =
+  case selectedModel model of
+    Just userModel ->
+      userView userModel
+    Nothing ->
+      text "Error: Unable to render"

@@ -6,7 +6,14 @@ update : Msg -> Model model msg -> Model model msg
 update message model =
   case message of
     ToggleSync ->
-      { model | sync = not model.sync }
+      { model |
+        selectedMsg =
+          if not model.sync then
+            Nothing
+          else
+            model.selectedMsg
+      , sync = not model.sync
+      }
 
     ToggleExpand ->
       { model | expand = not model.expand }
@@ -21,4 +28,16 @@ update message model =
               else (name', visible)
             )
           model.filter
+      }
+
+    SelectMsg id ->
+      { model |
+        selectedMsg = Just id
+      , sync = False
+      }
+
+    Resync ->
+      { model |
+        sync = True
+      , selectedMsg = Nothing
       }
