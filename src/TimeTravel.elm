@@ -88,7 +88,7 @@ updateOnIncomingUserMsg update msg model =
       filter = updateFilter msg model.filter
     , msgId = model.msgId + 1
     , future =
-        if model.sync then
+        if not model.sync then
           ((model.msgId, msg), newUserModel) :: model.future
         else
           model.future
