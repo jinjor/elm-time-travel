@@ -87,7 +87,16 @@ updateOnIncomingUserMsg update msg model =
     { model |
       filter = updateFilter msg model.filter
     , msgId = model.msgId + 1
-    , history = Nel (Just (model.msgId, msg), newUserModel) (current :: past)
+    , future =
+        if model.sync then
+          ((model.msgId, msg), newUserModel) :: model.future
+        else
+          model.future
+    , history =
+        if model.sync then
+          Nel (Just (model.msgId, msg), newUserModel) (current :: past)
+        else
+          model.history
     } ! [ Cmd.map UserMsg userCmd ]
 
 

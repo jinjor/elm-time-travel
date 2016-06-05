@@ -3,7 +3,8 @@ module TimeTravel.Model exposing (..) -- where
 import TimeTravel.Util exposing (..)
 
 type alias Model model msg =
-  { history : Nel (Maybe (Id, msg), model)
+  { future : List ((Id, msg), model)
+  , history : Nel (Maybe (Id, msg), model)
   , filter : FilterOptions
   , sync : Bool
   , expand : Bool
@@ -27,7 +28,8 @@ type Msg
 
 init : model -> Model model msg
 init model =
-  { history = Nel (Nothing, model) []
+  { future = []
+  , history = Nel (Nothing, model) []
   , filter = []
   , sync = True
   , expand = False

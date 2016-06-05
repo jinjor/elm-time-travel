@@ -1,19 +1,23 @@
 module TimeTravel.Update exposing (update) -- where
 
 import TimeTravel.Model exposing (..)
+import TimeTravel.Util exposing (..)
 
 update : Msg -> Model model msg -> Model model msg
 update message model =
   case message of
     ToggleSync ->
-      { model |
-        selectedMsg =
-          if not model.sync then
-            Nothing
-          else
-            model.selectedMsg
-      , sync = not model.sync
-      }
+      let
+        nextSync = not model.sync
+      in
+        { model |
+          selectedMsg =
+            if nextSync then
+              Nothing
+            else
+              model.selectedMsg
+        , sync = nextSync
+        } |> if nextSync then futureToHistory else identity
 
     ToggleExpand ->
       { model | expand = not model.expand }
@@ -40,4 +44,19 @@ update message model =
       { model |
         sync = True
       , selectedMsg = Nothing
-      }
+      } |> futureToHistory
+
+futureToHistory : Model model msg -> Model model msg
+futureToHistory model =
+  { model |
+    future = []
+  , history =
+      let
+        (Nel current past) = model.history
+      in
+        case List.map (\(msg, model) -> (Just msg, model)) model.future of
+          head :: tail ->
+            Nel head (tail ++ (current :: past))
+          _ ->
+            Nel current past
+  }
