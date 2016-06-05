@@ -5,7 +5,22 @@ button =
   [ ("padding", "10px")
   , ("border", "solid 1px #666")
   , ("border-radius", "3px")
+  , ("cursor", "pointer")
   ]
+
+iconButton : List (String, String)
+iconButton =
+  [ ("padding", "10px 10px 6px 10px") -- workaround
+  , ("border", "solid 1px #666")
+  , ("border-radius", "3px")
+  , ("cursor", "pointer")
+  ]
+
+
+buttonView : List (String, String)
+buttonView =
+  [ ("margin-left", "10px")
+  ] ++ iconButton
 
 
 panel : Bool -> List (String, String)
@@ -44,7 +59,9 @@ filterView visible =
 
 headerView : List (String, String)
 headerView =
-  panel True
+  [ ("display", "flex")
+  , ("justify-content", "flex-end")
+  ] ++ panel True
 
 
 modelView : List (String, String)

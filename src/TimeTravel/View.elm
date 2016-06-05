@@ -38,7 +38,7 @@ headerView sync expand filterOptions =
 
 buttonView : msg -> List (Html msg) -> Html msg
 buttonView onClickMsg inner =
-  div [ style S.button, onClick onClickMsg ] inner
+  div [ style S.buttonView, onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg
