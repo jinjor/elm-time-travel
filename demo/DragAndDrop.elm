@@ -6,7 +6,7 @@ import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 
 import TimeTravel.Html.App as TimeTravel
--- import TimeTravel.Navigation
+import TimeTravel.Navigation
 
 main =
   TimeTravel.program

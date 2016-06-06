@@ -44,8 +44,10 @@ wrap : Options data model msg -> Options data (Model model msg) (Msg msg)
 wrap { init, view, update, subscriptions, urlUpdate } =
   let
     init' data =
-      Model.init (fst init)
-      ! [ Cmd.map UserMsg (snd init) ]
+      let
+        (model, cmd) = init data
+      in
+        Model.init model ! [ Cmd.map UserMsg cmd ]
     update' msg model =
       case msg of
         UserMsg msg ->
