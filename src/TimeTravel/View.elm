@@ -12,8 +12,27 @@ import Html.App as App
 
 import String
 
-view : Model model msg -> Html Msg
-view model =
+
+view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg -> Html a
+view transformUserMsg transformDebuggerMsg userViewFunc model =
+  div
+    []
+    [ App.map transformUserMsg (userView userViewFunc model)
+    , App.map transformDebuggerMsg (debugView model)
+    ]
+
+
+userView : (model -> Html msg) -> Model model msg -> Html msg
+userView userView model =
+  case selectedModel model of
+    Just userModel ->
+      userView userModel
+    Nothing ->
+      text "Error: Unable to render"
+
+
+debugView : Model model msg -> Html Msg
+debugView model =
   let
     (Nel current past) = model.history
   in

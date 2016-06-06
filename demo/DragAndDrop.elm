@@ -5,7 +5,8 @@ import Html.Events exposing (on)
 import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 
-import TimeTravel
+import TimeTravel.Html.App as TimeTravel
+-- import TimeTravel.Navigation
 
 main =
   TimeTravel.program

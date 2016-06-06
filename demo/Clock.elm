@@ -4,7 +4,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time exposing (Time, second)
 
-import TimeTravel
+import TimeTravel.Html.App as TimeTravel
 
 
 main =
