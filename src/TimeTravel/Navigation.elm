@@ -1,4 +1,4 @@
-module TimeTravel.Navigation exposing (program) -- where
+module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 
 import TimeTravel.Model as Model exposing (..)
 import TimeTravel.Update as Update
@@ -30,22 +30,39 @@ type alias Options data model msg =
   }
 
 
+type alias OptionsWithFlags flags data model msg =
+  { init : flags -> data -> (model, Cmd msg)
+  , update : msg -> model -> (model, Cmd msg)
+  , urlUpdate : data -> model -> (model, Cmd msg)
+  , view : model -> Html msg
+  , subscriptions : model -> Sub msg
+  }
+
+
 program : Parser data -> Options data model msg -> Program Never
-program parser options =
-  Navigation.program parser (wrap options)
+program parser { init, view, update, subscriptions, urlUpdate } =
+  programWithFlags parser
+    { init = \flags data -> init data
+    , view = view
+    , update = update
+    , subscriptions = subscriptions
+    , urlUpdate = urlUpdate
+    }
 
--- programWithFlags
---     :  Parser data
---     -> Options flags data model msg
---     -> Program flags
+programWithFlags :
+  Parser data
+  -> OptionsWithFlags flags data model msg
+  -> Program flags
+programWithFlags parser options =
+  Navigation.programWithFlags parser (wrap options)
 
 
-wrap : Options data model msg -> Options data (Model model msg) (Msg msg)
+wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg) (Msg msg)
 wrap { init, view, update, subscriptions, urlUpdate } =
   let
-    init' data =
+    init' flags data =
       let
-        (model, cmd) = init data
+        (model, cmd) = init flags data
       in
         Model.init model ! [ Cmd.map UserMsg cmd ]
     update' msg model =
