@@ -1,9 +1,9 @@
 module TimeTravel.Html.App exposing (beginnerProgram, program, programWithFlags) -- where
 
-import TimeTravel.Model as Model exposing (..)
-import TimeTravel.Update as Update
-import TimeTravel.View as View
-import TimeTravel.Util exposing (..)
+import TimeTravel.Internal.Model as Model exposing (..)
+import TimeTravel.Internal.Update as Update
+import TimeTravel.Internal.View as View
+import TimeTravel.Internal.Util exposing (..)
 
 import Html exposing (Html, div, text)
 import Html.App as App
@@ -12,6 +12,8 @@ import String
 
 
 {-|
+
+Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)
 
 # Start your Program
 @docs program, programWithFlags
@@ -31,7 +33,7 @@ type alias OptionsWithFlags flags model msg =
   , subscriptions : model -> Sub msg
   }
 
-{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram
+{-| See [Html.App.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram)
 -}
 beginnerProgram :
   { model : model
@@ -48,7 +50,7 @@ beginnerProgram { model, view, update } =
     }
 
 
-{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#program
+{-| See [Html.App.program](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#program)
 -}
 program :
   { init : (model, Cmd msg)
@@ -66,7 +68,7 @@ program { init, view, update, subscriptions } =
     }
 
 
-{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#programWithFlags
+{-| See [Html.App.programWithFlags](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#programWithFlags)
 -}
 programWithFlags :
   { init : flags -> (model, Cmd msg)

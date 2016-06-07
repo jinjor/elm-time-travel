@@ -1,8 +1,8 @@
-module TimeTravel.Model exposing (..) -- where
+module TimeTravel.Internal.Model exposing (..) -- where
 
 import String
 
-import TimeTravel.Util exposing (..)
+import TimeTravel.Internal.Util exposing (..)
 
 type alias Model model msg =
   { future : List ((Id, msg), model)

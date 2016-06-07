@@ -1,9 +1,9 @@
-module TimeTravel.View exposing (view) -- where
+module TimeTravel.Internal.View exposing (view) -- where
 
-import TimeTravel.Model exposing (..)
-import TimeTravel.Util exposing (..)
-import TimeTravel.Styles as S
-import TimeTravel.Icons as I
+import TimeTravel.Internal.Model exposing (..)
+import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Styles as S
+import TimeTravel.Internal.Icons as I
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

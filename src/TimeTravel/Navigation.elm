@@ -2,15 +2,17 @@ module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 
 {-|
 
+Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
+
 # Create a Program
 @docs program, programWithFlags
 
 -}
 
-import TimeTravel.Model as Model exposing (..)
-import TimeTravel.Update as Update
-import TimeTravel.View as View
-import TimeTravel.Util exposing (..)
+import TimeTravel.Internal.Model as Model exposing (..)
+import TimeTravel.Internal.Update as Update
+import TimeTravel.Internal.View as View
+import TimeTravel.Internal.Util exposing (..)
 
 import Html exposing (Html, div, text)
 import Navigation exposing (Parser)
@@ -31,7 +33,7 @@ type alias OptionsWithFlags flags data model msg =
   }
 
 
-{-| See http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#program
+{-| See [Navigation.program](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#program)
 -}
 program :
   Parser data
@@ -52,7 +54,7 @@ program parser { init, view, update, subscriptions, urlUpdate } =
     }
 
 
-{-| See http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#programWithFlags
+{-| See [Navigation.programWithFlags](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#programWithFlags)
 -}
 programWithFlags :
   Parser data

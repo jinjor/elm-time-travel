@@ -1,7 +1,7 @@
-module TimeTravel.Update exposing (update) -- where
+module TimeTravel.Internal.Update exposing (update) -- where
 
-import TimeTravel.Model exposing (..)
-import TimeTravel.Util exposing (..)
+import TimeTravel.Internal.Model exposing (..)
+import TimeTravel.Internal.Util exposing (..)
 
 update : Msg -> Model model msg -> Model model msg
 update message model =
