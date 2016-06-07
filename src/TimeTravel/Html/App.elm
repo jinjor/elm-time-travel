@@ -11,26 +11,19 @@ import Html.App as App
 import String
 
 
+{-|
+
+# Start your Program
+@docs program, programWithFlags
+
+-}
+
+
 type Msg msg
   = DebuggerMsg Model.Msg
   | UserMsg msg
 
-
-type alias BeginnerOptions model msg =
-  { model : model
-  , view : model -> Html msg
-  , update : msg -> model -> model
-  }
-
-
-type alias Options model msg =
-  { init : (model, Cmd msg)
-  , view : model -> Html msg
-  , update : msg -> model -> (model, Cmd msg)
-  , subscriptions : model -> Sub msg
-  }
-
-
+{- Alias for internal use -}
 type alias OptionsWithFlags flags model msg =
   { init : flags -> (model, Cmd msg)
   , view : model -> Html msg
@@ -38,8 +31,14 @@ type alias OptionsWithFlags flags model msg =
   , subscriptions : model -> Sub msg
   }
 
-
-beginnerProgram : BeginnerOptions model msg -> Program Never
+{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram
+-}
+beginnerProgram :
+  { model : model
+  , view : model -> Html msg
+  , update : msg -> model -> model
+  }
+  -> Program Never
 beginnerProgram { model, view, update } =
   programWithFlags
     { init = always (model, Cmd.none)
@@ -49,7 +48,15 @@ beginnerProgram { model, view, update } =
     }
 
 
-program : Options model msg -> Program Never
+{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#program
+-}
+program :
+  { init : (model, Cmd msg)
+  , view : model -> Html msg
+  , update : msg -> model -> (model, Cmd msg)
+  , subscriptions : model -> Sub msg
+  }
+  -> Program Never
 program { init, view, update, subscriptions } =
   programWithFlags
     { init = always init
@@ -59,7 +66,15 @@ program { init, view, update, subscriptions } =
     }
 
 
-programWithFlags : OptionsWithFlags flags model msg -> Program flags
+{-| See http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#programWithFlags
+-}
+programWithFlags :
+  { init : flags -> (model, Cmd msg)
+  , view : model -> Html msg
+  , update : msg -> model -> (model, Cmd msg)
+  , subscriptions : model -> Sub msg
+  }
+  -> Program flags
 programWithFlags =
   App.programWithFlags << wrap
 

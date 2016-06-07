@@ -1,5 +1,12 @@
 module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 
+{-|
+
+# Create a Program
+@docs program, programWithFlags
+
+-}
+
 import TimeTravel.Model as Model exposing (..)
 import TimeTravel.Update as Update
 import TimeTravel.View as View
@@ -14,22 +21,7 @@ type Msg msg
   | UserMsg msg
 
 
-type alias BeginnerOptions model msg =
-  { model : model
-  , view : model -> Html msg
-  , update : msg -> model -> model
-  }
-
-
-type alias Options data model msg =
-  { init : data -> (model, Cmd msg)
-  , update : msg -> model -> (model, Cmd msg)
-  , urlUpdate : data -> model -> (model, Cmd msg)
-  , view : model -> Html msg
-  , subscriptions : model -> Sub msg
-  }
-
-
+{- Alias for internal use -}
 type alias OptionsWithFlags flags data model msg =
   { init : flags -> data -> (model, Cmd msg)
   , update : msg -> model -> (model, Cmd msg)
@@ -39,7 +31,17 @@ type alias OptionsWithFlags flags data model msg =
   }
 
 
-program : Parser data -> Options data model msg -> Program Never
+{-| See http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#program
+-}
+program :
+  Parser data
+  -> { init : data -> (model, Cmd msg)
+     , update : msg -> model -> (model, Cmd msg)
+     , urlUpdate : data -> model -> (model, Cmd msg)
+     , view : model -> Html msg
+     , subscriptions : model -> Sub msg
+     }
+  -> Program Never
 program parser { init, view, update, subscriptions, urlUpdate } =
   programWithFlags parser
     { init = \flags data -> init data
@@ -49,9 +51,17 @@ program parser { init, view, update, subscriptions, urlUpdate } =
     , urlUpdate = urlUpdate
     }
 
+
+{-| See http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#programWithFlags
+-}
 programWithFlags :
   Parser data
-  -> OptionsWithFlags flags data model msg
+  -> { init : flags -> data -> (model, Cmd msg)
+     , update : msg -> model -> (model, Cmd msg)
+     , urlUpdate : data -> model -> (model, Cmd msg)
+     , view : model -> Html msg
+     , subscriptions : model -> Sub msg
+     }
   -> Program flags
 programWithFlags parser options =
   Navigation.programWithFlags parser (wrap options)
