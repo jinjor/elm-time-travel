@@ -1,8 +1,6 @@
 module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 
-{-|
-
-Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
+{-| Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
 
 # Create a Program
 @docs program, programWithFlags

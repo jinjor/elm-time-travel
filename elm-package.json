@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "An experimental time travel debugger for Elm 0.17 (or above)",
+    "summary": "A time travel debugger for Elm 0.17 (or above)",
     "repository": "https://github.com/jinjor/elm-time-travel.git",
     "license": "BSD3",
     "source-directories": [

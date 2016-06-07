@@ -1,5 +1,13 @@
 module TimeTravel.Html.App exposing (beginnerProgram, program, programWithFlags) -- where
 
+{-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)
+
+# Start your Program
+@docs beginnerProgram, program, programWithFlags
+
+-}
+
+
 import TimeTravel.Internal.Model as Model exposing (..)
 import TimeTravel.Internal.Update as Update
 import TimeTravel.Internal.View as View
@@ -11,19 +19,10 @@ import Html.App as App
 import String
 
 
-{-|
-
-Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)
-
-# Start your Program
-@docs program, programWithFlags
-
--}
-
-
 type Msg msg
   = DebuggerMsg Model.Msg
   | UserMsg msg
+
 
 {- Alias for internal use -}
 type alias OptionsWithFlags flags model msg =
@@ -32,6 +31,7 @@ type alias OptionsWithFlags flags model msg =
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
+  
 
 {-| See [Html.App.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram)
 -}
