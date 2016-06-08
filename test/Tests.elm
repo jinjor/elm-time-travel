@@ -1,15 +1,17 @@
 module Tests exposing (..) -- where
 
 import String
-import TimeTravel.Internal.Parser as Parser
+import TimeTravel.Internal.Parser as Parser exposing(..)
 import ElmTest exposing (..)
+
+
+testParse : String -> AST -> Assertion
+testParse s ast = assertEqual (Ok ast) (Parser.parse s)
 
 tests : Test
 tests =
   suite "A Test Suite"
-    [ test "Addition" (assertEqual (3 + 7) 10)
-    , test "String.left" (assertEqual "a" (String.left 1 "abcdefg"))
-    , test "Parser succeeds" (assertEqual (Parser.parse "") (Ok 0))
+    [ test "bracket" (testParse "1" (Value "1"))
     ]
 
 main : Program Never
