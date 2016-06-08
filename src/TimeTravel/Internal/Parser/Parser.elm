@@ -3,7 +3,7 @@ module TimeTravel.Internal.Parser.Parser exposing (..) -- where
 import String
 import Parser exposing (..)
 import Char
-import Parser.Char exposing (braced, upper)
+import Parser.Char exposing (braced, upper, parenthesized, bracketed)
 import Parser.Number exposing (integer, float)
 
 import TimeTravel.Internal.Parser.AST exposing (..)
@@ -28,6 +28,8 @@ expressionWithoutUnion : Parser AST
 expressionWithoutUnion =
   recursively (\_ ->
     record `or`
+    listLiteral `or`
+    tupleLiteral `or`
     function `or`
     floatLiteral `or`
     intLiteral `or`
@@ -60,8 +62,26 @@ function =
   `and` someChars (satisfy (\c -> c /= '>'))
   `and` symbol '>'
 
--- TODO
--- listLiteral
+
+tupleLiteral : Parser AST
+tupleLiteral =
+  recursively (\_ ->
+  map TupleLiteral <| parenthesized items
+  )
+
+
+listLiteral : Parser AST
+listLiteral =
+  recursively (\_ ->
+  map ListLiteral <| bracketed items
+  )
+
+
+items : Parser (List AST)
+items =
+  recursively (\_ ->
+  spaced (separatedBy (spaced expression) comma)
+  )
 
 
 union : Parser AST

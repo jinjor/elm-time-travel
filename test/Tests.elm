@@ -28,6 +28,12 @@ testParseUnion s ast = assertEqual (Ok ast) (RawParser.parse Parser.union s)
 testParseRecord : String -> AST -> Assertion
 testParseRecord s ast = assertEqual (Ok ast) (RawParser.parse Parser.record s)
 
+testParseList : String -> AST -> Assertion
+testParseList s ast = assertEqual (Ok ast) (RawParser.parse Parser.listLiteral s)
+
+testParseTuple : String -> AST -> Assertion
+testParseTuple s ast = assertEqual (Ok ast) (RawParser.parse Parser.tupleLiteral s)
+
 testParseProperty : String -> AST -> Assertion
 testParseProperty s ast = assertEqual (Ok ast) (RawParser.parse Parser.property s)
 
@@ -35,7 +41,12 @@ testParseProperties : String -> List AST -> Assertion
 testParseProperties s ast = assertEqual (Ok ast) (RawParser.parse Parser.properties s)
 
 testParseComplex : String -> Assertion
-testParseComplex s = assert (isOk <| Debug.log "result" <| (Parser.parse s))
+testParseComplex s =
+  assert (
+    isOk <|
+    -- Debug.log "result" <|
+    (Parser.parse s)
+  )
 
 
 tests : Test
@@ -59,6 +70,21 @@ tests =
     , test "record1" (testParseRecord "{}" (Record []))
     , test "record2" (testParseRecord "{ }" (Record []))
     , test "record3" (testParseRecord "{a=1}" (Record [Property "a" (Value "1")]))
+    , test "list1" (testParseList "[]" (ListLiteral []))
+    , test "list2" (testParseList "[ ]" (ListLiteral []))
+    , test "list3" (testParseList "[1,2]" (ListLiteral [Value "1", Value "2"]))
+    , test "list4" (testParseList "[ \"1\" , \"2\" ]" (ListLiteral [StringLiteral "1", StringLiteral "2"]))
+    , test "list5" (testParseList "[ [[ []] ] ]" (ListLiteral [ListLiteral [ListLiteral [ListLiteral []]]]))
+    , test "list6" (testParseList "[\",\"]" (ListLiteral [StringLiteral ","]))
+    , test "list7" (testParseList "[\"][\"]" (ListLiteral [StringLiteral "]["]))
+    , test "tuple1" (testParseTuple "()" (TupleLiteral []))
+    , test "tuple2" (testParseTuple "( )" (TupleLiteral []))
+    , test "tuple3" (testParseTuple "(1,\"2\")" (TupleLiteral [Value "1", StringLiteral "2"]))
+    , test "tuple4" (testParseTuple "( [] , [] )" (TupleLiteral [ListLiteral [], ListLiteral []]))
+    , test "tuple5" (testParseTuple "( (( (1,2)) ) )" (TupleLiteral [TupleLiteral [TupleLiteral [TupleLiteral [Value "1", Value "2"]]]]))
+    , test "tuple6" (testParseTuple "(\",\")" (TupleLiteral [StringLiteral ","]))
+    , test "tuple7" (testParseTuple "(\")(\")" (TupleLiteral [StringLiteral ")("]))
+    , test "tuple8" (testParseTuple "( Tag 1 \"a\", { a = 1 } )" (TupleLiteral [Union "Tag" [Value "1", StringLiteral "a"], Record [Property "a" (Value "1")]]))
     , test "expression1" (testParse "1" (Value "1"))
     , test "expression2" (testParse " 1 " (Value "1"))
     , test "expression3" (testParse "{}" (Record []))
@@ -71,8 +97,8 @@ tests =
     , test "expression10" (testParse "\" = {} \"" (StringLiteral " = {} "))
     , test "expression11" (testParse "{ a = { b = 1 } }" (Record [Property "a" (Record [Property "b" (Value "1")])]))
     , test "expression12" (testParse "{ a = \"}={\" }" (Record [Property "a" (StringLiteral "}={")]))
-    -- , test "complex" (testParseComplex complexString)
-    -- , test "expression13" (testParse "{ seed = Seed (Seed (Seed {})) }" (Record [Property "seed" (Value "Seed (Seed (Seed {}))")]))
+    , test "complex1" (testParseComplex "{ seed = Seed (Seed (Seed {})) }")
+    -- , test "complex2" (testParseComplex complexString)
     ]
 
 complexString = """
