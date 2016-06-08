@@ -58,8 +58,8 @@ floatLiteral =
 function : Parser AST
 function =
   (\_ name _ -> Value name)
-  `map` token "<function:"
-  `and` someChars (satisfy (\c -> c /= '>'))
+  `map` token "<function"
+  `and` manyChars (satisfy (\c -> c /= '>'))
   `and` symbol '>'
 
 
@@ -106,7 +106,7 @@ tag : Parser String
 tag =
   (\h t -> String.fromList (h :: t))
   `map` upper
-  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c))
+  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '.')) -- assume Dict.fromList
 
 
 record : Parser AST

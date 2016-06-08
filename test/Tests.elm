@@ -56,7 +56,7 @@ tests =
     , test "number2" (testParseExpression "1.2" (Value "1.2"))
     , test "number3" (testParseExpression "-1" (Value "-1"))
     , test "number4" (testParseExpression "-1.2" (Value "-1.2"))
-    , test "function" (testParseExpression "<function:foo>" (Value "foo"))
+    , test "function" (testParseExpression "<function:foo>" (Value ":foo"))
     , test "stringLiteral" (testParseStringLiteral "\" str = { } \"" (StringLiteral " str = { } "))
     , test "union1" (testParseUnion "Tag" (Union "Tag" []))
     , test "union2" (testParseUnion "Tag 1" (Union "Tag" [Value "1"]))
@@ -98,7 +98,7 @@ tests =
     , test "expression11" (testParse "{ a = { b = 1 } }" (Record [Property "a" (Record [Property "b" (Value "1")])]))
     , test "expression12" (testParse "{ a = \"}={\" }" (Record [Property "a" (StringLiteral "}={")]))
     , test "complex1" (testParseComplex "{ seed = Seed (Seed (Seed {})) }")
-    -- , test "complex2" (testParseComplex complexString)
+    , test "complex2" (testParseComplex complexString)
     ]
 
 complexString = """
