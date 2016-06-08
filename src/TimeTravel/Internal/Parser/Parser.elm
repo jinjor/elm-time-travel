@@ -4,14 +4,14 @@ import String
 import Parser exposing (..)
 import Char
 import Parser.Char exposing (braced, upper)
--- import Parser.Number as PN
+import Parser.Number exposing (integer, float)
 
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Util exposing (..)
 
 
 parse : String -> Result String AST
-parse s = Parser.parse expression s
+parse s = Parser.parse (spaced expression) s
 
 
 ----
@@ -19,11 +19,21 @@ parse s = Parser.parse expression s
 expression : Parser AST
 expression =
   recursively (\_ ->
-  spaced record
-  -- `or` spaced union
-  `or` spaced stringLiteral
-  `or` spaced value
+  record
+  `or` union
+  `or` expressionWithoutUnion
   )
+
+expressionWithoutUnion : Parser AST
+expressionWithoutUnion =
+  recursively (\_ ->
+    record `or`
+    function `or`
+    intLiteral `or`
+    floatLiteral `or`
+    stringLiteral
+  )
+
 
 stringLiteral : Parser AST
 stringLiteral =
@@ -34,12 +44,41 @@ stringLiteral =
   `and` symbol '"'
 
 
+intLiteral : Parser AST
+intLiteral =
+  map (Value << toString) integer
+
+floatLiteral : Parser AST
+floatLiteral =
+  map (Value << toString) float
+
+
+function : Parser AST
+function =
+  (\_ name _ -> Value name)
+  `map` token "<function:"
+  `and` someChars (satisfy (\c -> c /= '>'))
+  `and` symbol '>'
+
+-- TODO
+-- listLiteral
+
+
 union : Parser AST
 union =
   recursively (\_ ->
   (\tag tail -> Union tag tail)
   `map` tag
-  `and` many expression -- TODO this cause inifinite loop
+  `and` many unionParam
+  )
+
+
+unionParam : Parser AST
+unionParam =
+  recursively (\_ ->
+  (\_ exp  -> exp)
+  `map` spaces
+  `and` expressionWithoutUnion
   )
 
 
@@ -47,17 +86,7 @@ tag : Parser String
 tag =
   (\h t -> String.fromList (h :: t))
   `map` upper
-  `and` many (satisfy Char.isHexDigit)
-
-
-value : Parser AST
-value =
-  map (Value << String.trim) <|
-    string (satisfy (\c -> c /= '=' && c /= '}' && c /= ','))
-
-stringChars : Parser String
-stringChars =
-  string (satisfy (\c -> c /= '"'))
+  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c))
 
 
 record : Parser AST
@@ -75,7 +104,7 @@ properties =
 propertyKey : Parser String
 propertyKey =
   recursively (\_ ->
-  string (satisfy (\c -> not (isSpace c) && c /= '='))
+  someChars (satisfy (\c -> not (isSpace c) && c /= '='))
   )
 
 property : Parser AST

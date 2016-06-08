@@ -19,8 +19,8 @@ testParse s ast = assertEqual (Ok ast) (Parser.parse s)
 testParseStringLiteral : String -> AST -> Assertion
 testParseStringLiteral s ast = assertEqual (Ok ast) (RawParser.parse Parser.stringLiteral s)
 
-testParseValue : String -> AST -> Assertion
-testParseValue s ast = assertEqual (Ok ast) (RawParser.parse Parser.value s)
+testParseExpression : String -> AST -> Assertion
+testParseExpression s ast = assertEqual (Ok ast) (RawParser.parse Parser.expression s)
 
 testParseUnion : String -> AST -> Assertion
 testParseUnion s ast = assertEqual (Ok ast) (RawParser.parse Parser.union s)
@@ -41,13 +41,16 @@ testParseComplex s = assert (isOk <| Debug.log "result" <| (Parser.parse s))
 tests : Test
 tests =
   suite "A Test Suite"
-    [ test "value" (testParseValue "1" (Value "1"))
-    , test "value" (testParseValue "a" (Value "a"))
-    , test "value" (testParseValue "A" (Value "A"))
-    , test "value" (testParseValue "<function>" (Value "<function>"))
-    , test "value" (testParseValue "Tag (Tag a [])" (Value "Tag (Tag a [])"))
+    [ test "number1" (testParseExpression "1" (Value "1"))
+    , test "number2" (testParseExpression "1.2" (Value "1.2"))
+    , test "number3" (testParseExpression "-1" (Value "-1"))
+    , test "number4" (testParseExpression "-1.2" (Value "-1.2"))
+    -- MEMO: toString 1.0 == "1"
+    , test "function" (testParseExpression "<function:foo>" (Value "foo"))
     , test "stringLiteral" (testParseStringLiteral "\" str = { } \"" (StringLiteral " str = { } "))
-    -- , test "union1" (testParseUnion "Tag" (Union "Tag" []))
+    , test "union1" (testParseUnion "Tag" (Union "Tag" []))
+    , test "union2" (testParseUnion "Tag 1" (Union "Tag" [Value "1"]))
+    , test "union3" (testParseUnion "Tag 1 2" (Union "Tag" [Value "1", Value "2"]))
     , test "property" (testParseProperty "a=1" (Property "a" (Value "1")))
     , test "property" (testParseProperty "a = 1" (Property "a" (Value "1")))
     , test "properties" (testParseProperties "a=1" [Property "a" (Value "1")])

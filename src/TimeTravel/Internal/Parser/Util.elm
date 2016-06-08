@@ -17,7 +17,7 @@ spaced p =
   `and` spaces
 
 spaces : Parser String
-spaces = string space
+spaces = manyChars space
 
 space : Parser Char
 space = satisfy isSpace
@@ -32,12 +32,20 @@ isSpace c =
   c == '\n' ||
   c == ' '
 
-string : Parser Char -> Parser String
-string char =
+someChars : Parser Char -> Parser String
+someChars char =
+  Parser.map String.fromList (some char)
+
+manyChars : Parser Char -> Parser String
+manyChars char =
   Parser.map String.fromList (many char)
 
 notEqual : Parser Char
 notEqual = satisfy ((/=) '=')
+
+stringChars : Parser String
+stringChars =
+  manyChars (satisfy (\c -> c /= '"'))
 
 comma : Parser Char
 comma = symbol ','
