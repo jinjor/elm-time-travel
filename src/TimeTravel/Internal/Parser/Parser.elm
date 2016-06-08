@@ -2,7 +2,8 @@ module TimeTravel.Internal.Parser.Parser exposing (..) -- where
 
 import String
 import Parser exposing (..)
-import Parser.Char exposing (braced)
+import Char
+import Parser.Char exposing (braced, upper)
 -- import Parser.Number as PN
 
 import TimeTravel.Internal.Parser.AST exposing (..)
@@ -19,6 +20,7 @@ expression : Parser AST
 expression =
   recursively (\_ ->
   spaced record
+  -- `or` spaced union
   `or` spaced stringLiteral
   `or` spaced value
   )
@@ -30,6 +32,22 @@ stringLiteral =
   `map` symbol '"'
   `and` stringChars
   `and` symbol '"'
+
+
+union : Parser AST
+union =
+  recursively (\_ ->
+  (\tag tail -> Union tag tail)
+  `map` tag
+  `and` many expression -- TODO this cause inifinite loop
+  )
+
+
+tag : Parser String
+tag =
+  (\h t -> String.fromList (h :: t))
+  `map` upper
+  `and` many (satisfy Char.isHexDigit)
 
 
 value : Parser AST
