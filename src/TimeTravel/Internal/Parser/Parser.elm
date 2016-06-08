@@ -29,8 +29,8 @@ expressionWithoutUnion =
   recursively (\_ ->
     record `or`
     function `or`
-    intLiteral `or`
     floatLiteral `or`
+    intLiteral `or`
     stringLiteral
   )
 
