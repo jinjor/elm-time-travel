@@ -19,9 +19,8 @@ parse s = Parser.parse (spaced expression) s
 expression : Parser AST
 expression =
   recursively (\_ ->
-  record
-  `or` union
-  `or` expressionWithoutUnion
+    union `or`
+    expressionWithoutUnion
   )
 
 expressionWithoutUnion : Parser AST
