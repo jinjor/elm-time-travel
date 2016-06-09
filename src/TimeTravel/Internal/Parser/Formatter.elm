@@ -41,8 +41,10 @@ format c ast =
       let
         tailStr =
           List.map (format { c | nest = c.nest + 1, parens = True }) tail
+        joinedTailStr =
+          String.join "" tailStr
         multiLine =
-          List.any (String.contains "\n") tailStr
+          String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > 80 -- TODO not correct
         s =
           if multiLine then
             String.join "\n" (tag :: List.map (indent { c | nest = c.nest + 1 }) tailStr)
@@ -50,7 +52,7 @@ format c ast =
             String.join " " (tag :: tailStr)
       in
         if (not (List.isEmpty tail)) && c.parens then
-          "(" ++ s ++ (if Debug.log "multiLine" multiLine then "\n" ++ indent c ")" else ")")
+          "(" ++ s ++ (if multiLine then "\n" ++ indent c ")" else ")")
         else
           s
     ListLiteral list ->

@@ -184,7 +184,8 @@ complexString = """
     , editMode = False
     }
 , searchBox = { query = "", results = Nothing }
-, tab = SearchTab
+, unionTest1 = BigUnion 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000
+, unionTest2 = BigUnion (100000,100000,100000) { a = 100000, b = 100000, c = 100000 } [100000,100000,100000,100000,100000]
 , listTest1 = [100000,100000,100000,100000,100000]
 , tupleTest1 = (100000,100000,100000,100000,100000)
 , listTest2 = [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000]
@@ -195,11 +196,11 @@ complexString = """
 
 main : Program Never
 main =
-  -- let
-  --   _ = Debug.log (
-  --     case Parser.parse complexString of
-  --       Ok ast -> Formatter.formatAsString ast
-  --       Err s -> s
-  --   ) ""
-  -- in
+  let
+    _ = Debug.log (
+      case Parser.parse complexString of
+        Ok ast -> Formatter.formatAsString ast
+        Err s -> s
+    ) ""
+  in
     runSuite tests
