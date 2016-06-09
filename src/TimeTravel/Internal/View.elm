@@ -4,6 +4,7 @@ import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
+import TimeTravel.Internal.DiffView as DiffView
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -102,7 +103,11 @@ modelView : Model model m -> Html msg
 modelView model =
   case selectedModel model of
     Just model ->
-      div [ style S.modelView ] [ text (toString model) ]
+      div []
+      [ {-DiffView.view "a\nb\nc\n" "a\nd\n"
+      , -}div [ style S.modelView ] [ text (toString model) ]
+      ]
+
     Nothing ->
       text ""
 

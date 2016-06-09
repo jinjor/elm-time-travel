@@ -45,6 +45,12 @@ panelBorder =
   ]
 
 
+debugViewTheme : List (String, String)
+debugViewTheme =
+  [ ("background-color", "#444")
+  , ("color", "#eee")
+  ]
+
 debugView : List (String, String)
 debugView =
   [ ("position", "fixed")
@@ -52,10 +58,8 @@ debugView =
   , ("top", "0")
   , ("right", "0")
   , ("bottom", "0")
-  , ("background-color", "#444")
-  , ("color", "#eee")
   , ("z-index", zIndex.debugView)
-  ]
+  ] ++ debugViewTheme
 
 
 filterView : Bool -> List (String, String)
@@ -104,3 +108,36 @@ resyncView sync =
   , ("pointer-events", if sync then "none" else "")
   , ("transition", "opacity ease 0.5s")
   ]
+
+
+diffView : Bool -> List (String, String)
+diffView opened =
+  [ ("position", "absolute")
+  , ("width", "320px")
+  , ("left", "-320px")
+  , ("box-sizing", "border-box")
+  , ("box-shadow", "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
+  ] ++ debugViewTheme ++ panel True
+
+
+lineBase : List (String, String)
+lineBase =
+  [ ("padding-left", "10px")
+  ]
+
+normalLine : List (String, String)
+normalLine =
+  [ --("background-color", "rgba(100, 100, 100, 0.15)")
+  ] ++ lineBase
+
+
+deletedLine : List (String, String)
+deletedLine =
+  [ ("background-color", "rgba(255, 100, 100, 0.15)")
+  ] ++ lineBase
+
+
+addedLine : List (String, String)
+addedLine =
+  [ ("background-color", "rgba(100, 255, 100, 0.15)")
+  ] ++ lineBase
