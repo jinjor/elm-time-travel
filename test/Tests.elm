@@ -103,104 +103,50 @@ tests =
     ]
 
 complexString = """
-{ seed =
-    Seed
-      (Seed
-        (Seed
-          { state = State 20418 1
-          , next = <function:_elm_lang$core$Random$next>
-          , split = <function:_elm_lang$core$Random$split>
-          , range = <function:_elm_lang$core$Random$range>
-          }
-        )
-        (Seed
-          { state = State 52770 1
-          , next = <function:_elm_lang$core$Random$next>
-          , split = <function:_elm_lang$core$Random$split>
-          , range = <function:_elm_lang$core$Random$range>
-          }
-        )
+{ int = 1
+, float = 1.2
+, string1 = "string"
+, string2 = "a"
+, function1 = <function>
+, function2 = <function:_elm_lang$core$Random$range>
+, $public = ""
+, record1 = { query = "", results = Nothing }
+, record2 =
+    { multi = "line"
+    , nest =
+        { more = 1
+        }
+    }
+, union1 = Single
+, union2 = Union 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000
+, union3 = Union (100000,100000,100000) { a = 100000, b = 100000, c = 100000 } [100000,100000,100000,100000,100000]
+, union4 =
+    Union
+      "multi"
+      "line"
+      (Nest 1)
+, list1 = [100000,100000,100000,100000,100000]
+, list2 = [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000]
+, list3 =
+    [ "multi"
+    , "line"
+    , [ "nest"
+      , "more"
+      ]
+    ]
+, tuple1 = (100000,100000,100000,100000,100000)
+, tuple2 = (100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000)
+, tuple3 =
+    ( "multi"
+    , "line"
+    , ( "nest"
+      , "more"
       )
-, visitDate = {}
-, user = Guest
-, pos = (8,79)
-, draggingContext = None
-, selectedEquipments = []
-, copiedEquipments = []
-, equipmentNameInput = { editingEquipment = Nothing }
-, gridSize = 8
-, selectorRect = Nothing
-, keys = { ctrl = False, shift = False }
-, editMode = Viewing
-, colorPalette = []
-, contextMenu = NoContextMenu
-, floorsInfo = []
-, floor =
-    { cursor = 0
-    , original =
-        { id = Nothing
-        , name = "1F"
-        , equipments = []
-        , width = 800
-        , height = 600
-        , realSize = Nothing
-        , imageSource = None
-        , $public = False
-        , update = Nothing
-        }
-    , commits = []
-    , update = <function>
-    , cursorDataCache =
-        { id = Nothing
-        , name = "1F"
-        , equipments = []
-        , width = 800
-        , height = 600
-        , realSize = Nothing
-        , imageSource = None
-        , $public = False
-        , update = Nothing
-        }
-    }
-, windowSize = (1105,859)
-, scale = { scaleDown = 0 }
-, offset = (35,35)
-, scaling = False
-, prototypes = { data = [], selected = 0 }
-, error = NoError
-, floorProperty =
-    { nameInput = "1F"
-    , realWidthInput = "0"
-    , realHeightInput = "0"
-    }
-, selectedResult = Nothing
-, personInfo = Dict.fromList []
-, diff = Nothing
-, candidates = []
-, url =
-    { floorId = ""
-    , query = Nothing
-    , personId = Nothing
-    , editMode = False
-    }
-, searchBox = { query = "", results = Nothing }
-, unionTest1 = BigUnion 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000
-, unionTest2 = BigUnion (100000,100000,100000) { a = 100000, b = 100000, c = 100000 } [100000,100000,100000,100000,100000]
-, listTest1 = [100000,100000,100000,100000,100000]
-, tupleTest1 = (100000,100000,100000,100000,100000)
-, listTest2 = [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000]
-, tupleTest2 = (100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000)
+    )
 }
 """
 
 
 main : Program Never
 main =
-  let
-    _ = Debug.log (
-      case Parser.parse complexString of
-        Ok ast -> Formatter.formatAsString ast
-        Err s -> s
-    ) ""
-  in
-    runSuite tests
+  runSuite tests

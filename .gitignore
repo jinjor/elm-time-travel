@@ -5,3 +5,4 @@ repl-temp-*
 
 index.html
 test/tests.js
+test/perf.js
