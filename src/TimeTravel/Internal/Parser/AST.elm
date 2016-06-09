@@ -8,4 +8,3 @@ type AST
   | Value String
   | Union String (List AST)
   | Property String AST
-  | UnparsedExpression String

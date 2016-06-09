@@ -4,6 +4,7 @@ import String
 import Parser as RawParser exposing (..)
 import TimeTravel.Internal.Parser.AST exposing(..)
 import TimeTravel.Internal.Parser.Parser as Parser exposing(..)
+import TimeTravel.Internal.Parser.Formatter as Formatter exposing(..)
 import ElmTest exposing (..)
 
 isOk : Result a b -> Bool
@@ -184,11 +185,21 @@ complexString = """
     }
 , searchBox = { query = "", results = Nothing }
 , tab = SearchTab
-, showPrintView = False
+, listTest1 = [100000,100000,100000,100000,100000]
+, tupleTest1 = (100000,100000,100000,100000,100000)
+, listTest2 = [100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000]
+, tupleTest2 = (100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000,100000)
 }
 """
 
 
 main : Program Never
 main =
-  runSuite tests
+  -- let
+  --   _ = Debug.log (
+  --     case Parser.parse complexString of
+  --       Ok ast -> Formatter.formatAsString ast
+  --       Err s -> s
+  --   ) ""
+  -- in
+    runSuite tests
