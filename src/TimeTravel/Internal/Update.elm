@@ -5,7 +5,7 @@ import TimeTravel.Internal.Util exposing (..)
 
 update : Msg -> Model model msg -> Model model msg
 update message model =
-  case Debug.log "message" message of
+  case message of
     ToggleSync ->
       let
         nextSync = not model.sync
@@ -17,7 +17,9 @@ update message model =
             else
               model.selectedMsg
         , sync = nextSync
-        } |> if nextSync then futureToHistory else identity
+        }
+        |> selectFirstIfSync
+        |> if nextSync then futureToHistory else identity
 
     ToggleExpand ->
       { model | expand = not model.expand }
@@ -43,10 +45,9 @@ update message model =
     Resync ->
       { model |
         sync = True
-      , selectedMsg = Nothing
-      } |> futureToHistory
+      } |> selectFirstIfSync |> futureToHistory
 
-    ToggleDiff ->
-      { model |
-        showDiff = not (model.showDiff)
-      } |> updateLazyAst
+    -- ToggleDiff ->
+    --   { model |
+    --     showDiff = not (model.showDiff)
+    --   } |> updateLazyAst

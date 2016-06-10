@@ -15,3 +15,7 @@ nelMap f (Nel head tail) =
 nelFilter : (a -> Bool) -> Nel a -> List a
 nelFilter match nel =
   List.filter match (nelToList nel)
+
+nelHead : Nel a -> a
+nelHead (Nel head tail) =
+  head

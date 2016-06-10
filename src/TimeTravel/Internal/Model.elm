@@ -40,7 +40,7 @@ type Msg
   | ToggleFilter String
   | SelectMsg Id
   | Resync
-  | ToggleDiff
+  -- | ToggleDiff
 
 
 init : model -> Model model msg
@@ -102,20 +102,22 @@ updateOnIncomingUserMsg transformMsg update msg model =
     (newRawUserModel, userCmd) = update msg oldModel
     newUserModel = (newRawUserModel, Nothing)
   in
-    { model |
-      filter = updateFilter msg model.filter
-    , msgId = model.msgId + 1
-    , future =
-        if not model.sync then
-          ((model.msgId, msg), newUserModel) :: model.future
-        else
-          model.future
-    , history =
-        if model.sync then
-          Nel (Just (model.msgId, msg), newUserModel) (current :: past)
-        else
-          model.history
-    } ! [ Cmd.map transformMsg userCmd ]
+    ( { model |
+        filter = updateFilter msg model.filter
+      , msgId = model.msgId + 1
+      , future =
+          if not model.sync then
+            ((model.msgId, msg), newUserModel) :: model.future
+          else
+            model.future
+      , history =
+          if model.sync then
+            Nel (Just (model.msgId, msg), newUserModel) (current :: past)
+          else
+            model.history
+      } |> selectFirstIfSync
+    )
+    ! [ Cmd.map transformMsg userCmd ]
 
 
 urlUpdateOnIncomingData :
@@ -131,23 +133,24 @@ urlUpdateOnIncomingData transformMsg urlUpdate data model =
     (newRawUserModel, userCmd) = urlUpdate data oldModel
     newUserModel = (newRawUserModel, Nothing)
   in
-    { model |
-    -- FIXME treat data as msg?
-    -- filter = updateFilter msg model.filter
-    -- FIXME treat data as msg?
-    -- , msgId = model.msgId + 1
-    -- FIXME treat data as msg?
-    -- , future =
-    --     if not model.sync then
-    --       ((model.msgId, msg), newUserModel) :: model.future
-    --     else
-    --       model.future
-      history =
-        if model.sync then
-          Nel (Nothing {- FIXME -}, newUserModel) (current :: past)
-        else
-          model.history
-    } ! [ Cmd.map transformMsg userCmd ]
+    ( { model |
+      -- FIXME treat data as msg?
+      -- filter = updateFilter msg model.filter
+      -- FIXME treat data as msg?
+      -- , msgId = model.msgId + 1
+      -- FIXME treat data as msg?
+      -- , future =
+      --     if not model.sync then
+      --       ((model.msgId, msg), newUserModel) :: model.future
+      --     else
+      --       model.future
+        history =
+          if model.sync then
+            Nel (Nothing {- FIXME -}, newUserModel) (current :: past)
+          else
+            model.history
+      } |> selectFirstIfSync
+    ) ! [ Cmd.map transformMsg userCmd ]
 
 
 
@@ -241,7 +244,19 @@ selectedAndOldAst model =
       Nothing
 
 
-
+selectFirstIfSync : Model model msg -> Model model msg
+selectFirstIfSync model =
+  if model.sync then
+    { model |
+      selectedMsg =
+        case nelHead model.history of
+          (Just (id, _), _) ->
+            Just id
+          _ ->
+            Nothing
+    }
+  else
+    model
 
 
 

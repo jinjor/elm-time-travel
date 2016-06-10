@@ -38,11 +38,14 @@ debugView : Model model msg -> Html Msg
 debugView model =
   let
     diffView' =
-      case selectedAndOldAst model of
-        Just (oldAst, newAst) ->
-          diffView oldAst newAst
-        Nothing ->
-          text ""
+      if not model.sync then
+        case selectedAndOldAst model of
+          Just (oldAst, newAst) ->
+            diffView oldAst newAst
+          Nothing ->
+            text ""
+      else
+        text ""
   in
     div
       []
@@ -50,11 +53,12 @@ debugView model =
       , div
           [ style S.debugView ]
           [ headerView model.sync model.expand model.filter
-          , modelView model diffView'
+          , modelView model
           , msgListView
               model.filter
               model.selectedMsg
               (List.filterMap fst (nelToList model.history))
+              diffView'
           ]
       ]
 
@@ -106,14 +110,13 @@ filterItemView (name, visible) =
     ]
 
 
-modelView : Model model m -> Html Msg -> Html Msg
-modelView model diffView =
+modelView : Model model m -> Html Msg
+modelView model =
   case selectedModel model of
     Just (model, lazyAst) ->
       div
-        [ onClick ToggleDiff ]
-        [ diffView
-        , div [ style S.modelView ] [ text (toString model) ]
+        []
+        [ div [ style S.modelView ] [ text (toString model) ]
         ]
 
     Nothing ->
@@ -125,9 +128,15 @@ diffView oldAst newAst =
   DiffView.view (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
 
 
-msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg
-msgListView filterOptions selectedMsg msgList =
-  div [ style S.msgListView ] (List.filterMap (msgView filterOptions selectedMsg) msgList)
+msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg -> Html Msg
+msgListView filterOptions selectedMsg msgList diffView =
+  div []
+  [ diffView
+  , div
+      [ style S.msgListView ]
+      ( List.filterMap (msgView filterOptions selectedMsg) msgList )
+  ]
+
 
 
 msgView : FilterOptions -> Maybe Id -> (Id, m) -> Maybe (Html Msg)
