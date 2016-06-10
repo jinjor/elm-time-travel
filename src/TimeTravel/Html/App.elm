@@ -31,7 +31,7 @@ type alias OptionsWithFlags flags model msg =
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  
+
 
 {-| See [Html.App.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram)
 -}
@@ -99,9 +99,9 @@ wrap { init, view, update, subscriptions } =
       View.view UserMsg DebuggerMsg view model
     subscriptions' model =
       let
-        (Nel (_, m) _) = model.history
+        (Nel (_, (rawUserModel, _)) _) = model.history
       in
-        Sub.map UserMsg (subscriptions m)
+        Sub.map UserMsg (subscriptions rawUserModel)
   in
     { init = init'
     , update = update'

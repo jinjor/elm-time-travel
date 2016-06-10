@@ -5,6 +5,8 @@ import TimeTravel.Internal.Util exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
 import TimeTravel.Internal.DiffView as DiffView
+import TimeTravel.Internal.Parser.Formatter as Formatter
+import TimeTravel.Internal.Parser.AST exposing (AST)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -26,7 +28,7 @@ view transformUserMsg transformDebuggerMsg userViewFunc model =
 userView : (model -> Html msg) -> Model model msg -> Html msg
 userView userView model =
   case selectedModel model of
-    Just userModel ->
+    Just (userModel, _) ->
       userView userModel
     Nothing ->
       text "Error: Unable to render"
@@ -35,7 +37,12 @@ userView userView model =
 debugView : Model model msg -> Html Msg
 debugView model =
   let
-    (Nel current past) = model.history
+    diffView' =
+      case selectedAndOldAst model of
+        Just (oldAst, newAst) ->
+          diffView oldAst newAst
+        Nothing ->
+          text ""
   in
     div
       []
@@ -43,11 +50,11 @@ debugView model =
       , div
           [ style S.debugView ]
           [ headerView model.sync model.expand model.filter
-          , modelView model
+          , modelView model diffView'
           , msgListView
               model.filter
               model.selectedMsg
-              (List.filterMap fst (current :: past))
+              (List.filterMap fst (nelToList model.history))
           ]
       ]
 
@@ -99,17 +106,23 @@ filterItemView (name, visible) =
     ]
 
 
-modelView : Model model m -> Html msg
-modelView model =
+modelView : Model model m -> Html Msg -> Html Msg
+modelView model diffView =
   case selectedModel model of
-    Just model ->
-      div []
-      [ {-DiffView.view "a\nb\nc\n" "a\nd\n"
-      , -}div [ style S.modelView ] [ text (toString model) ]
-      ]
+    Just (model, lazyAst) ->
+      div
+        [ onClick ToggleDiff ]
+        [ diffView
+        , div [ style S.modelView ] [ text (toString model) ]
+        ]
 
     Nothing ->
       text ""
+
+
+diffView : AST -> AST -> Html msg
+diffView oldAst newAst =
+  DiffView.view (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
 
 
 msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg

@@ -6,12 +6,13 @@ import TimeTravel.Internal.Parser.AST exposing (..)
 type alias Context =
   { nest : Int
   , parens : Bool
+  , wordsLimit : Int
   }
 
 
 formatAsString : AST -> String
 formatAsString ast =
-  format { nest = 0, parens = False } ast
+  format { nest = 0, parens = False, wordsLimit = 40 } ast
 
 
 indent : Context -> String -> String
@@ -23,13 +24,13 @@ format : Context -> AST -> String
 format c ast =
   case ast of
     Record properties ->
-      formatListLike (indent c) "{" "}" (List.map (format { c | nest = c.nest + 1 }) properties)
+      formatListLike (indent c) c.wordsLimit "{" "}" (List.map (format { c | nest = c.nest + 1 }) properties)
     Property key value ->
       let
         s = format { c | parens = False, nest = c.nest + 1 } value
       in
         key ++ " = " ++
-          ( if String.contains "\n" s || String.length (key ++ " = " ++ s) > 80 then -- TODO not correct
+          ( if String.contains "\n" s || String.length (key ++ " = " ++ s) > c.wordsLimit then -- TODO not correct
               "\n" ++ indent { c | nest = c.nest + 1 } s
             else s
           )
@@ -44,7 +45,7 @@ format c ast =
         joinedTailStr =
           String.join "" tailStr
         multiLine =
-          String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > 80 -- TODO not correct
+          String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > c.wordsLimit -- TODO not correct
         s =
           if multiLine then
             String.join "\n" (tag :: List.map (indent { c | nest = c.nest + 1 }) tailStr)
@@ -56,13 +57,13 @@ format c ast =
         else
           s
     ListLiteral list ->
-      formatListLike (indent c) "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
+      formatListLike (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
     TupleLiteral list ->
-      formatListLike (indent c) "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
+      formatListLike (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
 
 
-formatListLike : (String -> String) -> String -> String -> List String -> String
-formatListLike indent start end list =
+formatListLike : (String -> String) -> Int -> String -> String -> List String -> String
+formatListLike indent wordsLimit start end list =
   case list of
     head :: tail ->
       let
@@ -71,7 +72,7 @@ formatListLike indent start end list =
         joinedStr =
           head ++ String.join "" tailStr
       in
-        if String.length joinedStr > 80 || String.contains "\n" joinedStr then
+        if String.length joinedStr > wordsLimit || String.contains "\n" joinedStr then
           String.join "\n" <|
             (start ++ " " ++ head) :: List.map indent tailStr
         else

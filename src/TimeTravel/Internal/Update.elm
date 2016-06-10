@@ -5,7 +5,7 @@ import TimeTravel.Internal.Util exposing (..)
 
 update : Msg -> Model model msg -> Model model msg
 update message model =
-  case message of
+  case Debug.log "message" message of
     ToggleSync ->
       let
         nextSync = not model.sync
@@ -38,7 +38,7 @@ update message model =
       { model |
         selectedMsg = Just id
       , sync = False
-      }
+      } |> updateLazyAst
 
     Resync ->
       { model |
@@ -46,17 +46,7 @@ update message model =
       , selectedMsg = Nothing
       } |> futureToHistory
 
-futureToHistory : Model model msg -> Model model msg
-futureToHistory model =
-  { model |
-    future = []
-  , history =
-      let
-        (Nel current past) = model.history
-      in
-        case List.map (\(msg, model) -> (Just msg, model)) model.future of
-          head :: tail ->
-            Nel head (tail ++ (current :: past))
-          _ ->
-            Nel current past
-  }
+    ToggleDiff ->
+      { model |
+        showDiff = not (model.showDiff)
+      } |> updateLazyAst

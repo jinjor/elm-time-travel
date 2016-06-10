@@ -123,6 +123,7 @@ diffView opened =
 lineBase : List (String, String)
 lineBase =
   [ ("padding-left", "10px")
+  , ("white-space", "pre")
   ]
 
 normalLine : List (String, String)

@@ -9,6 +9,7 @@
     ],
     "exposed-modules": [],
     "dependencies": {
+        "Dandandan/parser": "6.2.5 <= v < 7.0.0",
         "avh4/elm-diff": "1.0.7 <= v < 2.0.0",
         "elm-community/elm-material-icons": "2.0.0 <= v < 3.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
