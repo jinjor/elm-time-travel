@@ -27,8 +27,8 @@ That's it!
 
 Possible feature to be implemented in the future is:
 
-* format model (e.g. indent, syntax highlight)
-* show diff between before and after msg
+* <strike>format model (e.g. indent, syntax highlight)</strike> done :)
+* <strike>show diff between before and after msg</strike> done :)
 * watch certain property and stop when it is changed
 * form a Cmd tree where the root is user action and has chained Cmds
 * enable to show panel in other place (Currently it is fixed on the right)
