@@ -2,7 +2,7 @@ module TimeTravel.Internal.Model exposing (..) -- where
 
 import String
 
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Parser.AST exposing (AST)
 import TimeTravel.Internal.Parser.Parser as Parser
 
@@ -97,8 +97,7 @@ updateOnIncomingUserMsg :
   -> (Model model msg, Cmd parentMsg)
 updateOnIncomingUserMsg transformMsg update msg model =
   let
-    (Nel current past) = model.history
-    (_, (oldModel, _)) = current
+    (Nel (_, (oldModel, _)) past) = model.history
     (newRawUserModel, userCmd) = update msg oldModel
     newUserModel = (newRawUserModel, Nothing)
   in
@@ -112,7 +111,7 @@ updateOnIncomingUserMsg transformMsg update msg model =
             model.future
       , history =
           if model.sync then
-            Nel (Just (model.msgId, msg), newUserModel) (current :: past)
+            Nel.cons (Just (model.msgId, msg), newUserModel) model.history
           else
             model.history
       } |> selectFirstIfSync
@@ -128,8 +127,7 @@ urlUpdateOnIncomingData :
   -> (Model model msg, Cmd parentMsg)
 urlUpdateOnIncomingData transformMsg urlUpdate data model =
   let
-    (Nel current past) = model.history
-    (_, (oldModel, _)) = current
+    (Nel (_, (oldModel, _)) past) = model.history
     (newRawUserModel, userCmd) = urlUpdate data oldModel
     newUserModel = (newRawUserModel, Nothing)
   in
@@ -146,7 +144,7 @@ urlUpdateOnIncomingData transformMsg urlUpdate data model =
       --       model.future
         history =
           if model.sync then
-            Nel (Nothing {- FIXME -}, newUserModel) (current :: past)
+            Nel.cons (Nothing {- FIXME -}, newUserModel) model.history
           else
             model.history
       } |> selectFirstIfSync
@@ -178,14 +176,9 @@ futureToHistory model =
   { model |
     future = []
   , history =
-      let
-        (Nel current past) = model.history
-      in
-        case List.map (\(msg, model) -> (Just msg, model)) model.future of
-          head :: tail ->
-            Nel head (tail ++ (current :: past))
-          _ ->
-            Nel current past
+      Nel.concat
+        (List.map (\(msg, model) -> (Just msg, model)) model.future)
+        model.history
   }
 
 replaceHistory :
@@ -196,7 +189,7 @@ replaceHistory :
 replaceHistory match update model =
   { model |
     history =
-      nelMap (\item ->
+      Nel.map (\item ->
           let
             (m, userModel) = item
             f = if match item then update else identity
@@ -237,7 +230,7 @@ updateLazyAst model =
 
 selectedAndOldAst : Model model msg -> Maybe (AST, AST)
 selectedAndOldAst model =
-  case nelFilter (matchSelectedOrPrev model.selectedMsg) model.history of
+  case Nel.filter (matchSelectedOrPrev model.selectedMsg) model.history of
     (_, (_, Just (Ok newAst))) :: (_, (_, Just (Ok oldAst))) :: _ ->
       Just (oldAst, newAst)
     _ ->
@@ -249,7 +242,7 @@ selectFirstIfSync model =
   if model.sync then
     { model |
       selectedMsg =
-        case nelHead model.history of
+        case Nel.head model.history of
           (Just (id, _), _) ->
             Just id
           _ ->

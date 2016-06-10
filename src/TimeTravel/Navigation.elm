@@ -10,7 +10,7 @@ module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 import TimeTravel.Internal.Model as Model exposing (..)
 import TimeTravel.Internal.Update as Update
 import TimeTravel.Internal.View as View
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
 import Navigation exposing (Parser)
@@ -87,7 +87,7 @@ wrap { init, view, update, subscriptions, urlUpdate } =
       View.view UserMsg DebuggerMsg view model
     subscriptions' model =
       let
-        (Nel (_, m) _) = model.history
+        (_, (m, _)) = Nel.head model.history
       in
         Sub.map UserMsg (subscriptions m)
   in

@@ -1,22 +1,24 @@
 module TimeTravel.Internal.DiffView exposing (view) -- where
 
-import TimeTravel.Internal.Model exposing (..)
-import TimeTravel.Internal.Util exposing (..)
 import TimeTravel.Internal.Styles as S
-import TimeTravel.Internal.Icons as I
+import TimeTravel.Internal.Parser.AST exposing (AST)
+import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App as App
 
 import Diff exposing (..)
 
 import String
 
 
-view : String -> String -> Html msg
-view old new =
+view : AST -> AST -> Html msg
+view oldAst newAst =
+  viewDiff (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
+
+viewDiff : String -> String -> Html msg
+viewDiff old new =
   let
     changes = diffLines old new
     list =

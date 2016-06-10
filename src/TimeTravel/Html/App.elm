@@ -11,7 +11,7 @@ module TimeTravel.Html.App exposing (beginnerProgram, program, programWithFlags)
 import TimeTravel.Internal.Model as Model exposing (..)
 import TimeTravel.Internal.Update as Update
 import TimeTravel.Internal.View as View
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
 import Html.App as App
@@ -99,7 +99,7 @@ wrap { init, view, update, subscriptions } =
       View.view UserMsg DebuggerMsg view model
     subscriptions' model =
       let
-        (Nel (_, (rawUserModel, _)) _) = model.history
+        (_, (rawUserModel, _)) = Nel.head model.history
       in
         Sub.map UserMsg (subscriptions rawUserModel)
   in

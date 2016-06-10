@@ -1,12 +1,10 @@
 module TimeTravel.Internal.View exposing (view) -- where
 
 import TimeTravel.Internal.Model exposing (..)
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
 import TimeTravel.Internal.DiffView as DiffView
-import TimeTravel.Internal.Parser.Formatter as Formatter
-import TimeTravel.Internal.Parser.AST exposing (AST)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -37,11 +35,11 @@ userView userView model =
 debugView : Model model msg -> Html Msg
 debugView model =
   let
-    diffView' =
+    diffView =
       if not model.sync then
         case selectedAndOldAst model of
           Just (oldAst, newAst) ->
-            diffView oldAst newAst
+            DiffView.view oldAst newAst
           Nothing ->
             text ""
       else
@@ -57,8 +55,8 @@ debugView model =
           , msgListView
               model.filter
               model.selectedMsg
-              (List.filterMap fst (nelToList model.history))
-              diffView'
+              (List.filterMap fst (Nel.toList model.history))
+              diffView
           ]
       ]
 
@@ -123,11 +121,6 @@ modelView model =
       text ""
 
 
-diffView : AST -> AST -> Html msg
-diffView oldAst newAst =
-  DiffView.view (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
-
-
 msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg -> Html Msg
 msgListView filterOptions selectedMsg msgList diffView =
   div []
@@ -136,7 +129,6 @@ msgListView filterOptions selectedMsg msgList diffView =
       [ style S.msgListView ]
       ( List.filterMap (msgView filterOptions selectedMsg) msgList )
   ]
-
 
 
 msgView : FilterOptions -> Maybe Id -> (Id, m) -> Maybe (Html Msg)
