@@ -4,14 +4,14 @@ A time travel debugger for Elm 0.17 (or above). See [DEMO](http://jinjor.github.
 
 ## How to use
 
-Just use `TimeTravel.program` instead of `Html.program`.
+Just use `TimeTravel.program` instead of `App.program`.
 
 ```elm
--- import Html.App as Html
+-- import Html.App as App
 import TimeTravel.Html.App as TimeTravel
 
 main =
-  -- Html.program
+  -- App.program
   TimeTravel.program
     { init = init
     , view = view
