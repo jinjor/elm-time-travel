@@ -1,9 +1,10 @@
-module TimeTravel.View exposing (view) -- where
+module TimeTravel.Internal.View exposing (view) -- where
 
-import TimeTravel.Model exposing (..)
-import TimeTravel.Util exposing (..)
-import TimeTravel.Styles as S
-import TimeTravel.Icons as I
+import TimeTravel.Internal.Model exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel exposing (..)
+import TimeTravel.Internal.Styles as S
+import TimeTravel.Internal.Icons as I
+import TimeTravel.Internal.DiffView as DiffView
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,10 +13,37 @@ import Html.App as App
 
 import String
 
-view : Model model msg -> Html Msg
-view model =
+
+view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg -> Html a
+view transformUserMsg transformDebuggerMsg userViewFunc model =
+  div
+    []
+    [ App.map transformUserMsg (userView userViewFunc model)
+    , App.map transformDebuggerMsg (debugView model)
+    ]
+
+
+userView : (model -> Html msg) -> Model model msg -> Html msg
+userView userView model =
+  case selectedModel model of
+    Just (userModel, _) ->
+      userView userModel
+    Nothing ->
+      text "Error: Unable to render"
+
+
+debugView : Model model msg -> Html Msg
+debugView model =
   let
-    (Nel current past) = model.history
+    diffView =
+      if not model.sync then
+        case selectedAndOldAst model of
+          Just (oldAst, newAst) ->
+            DiffView.view oldAst newAst
+          Nothing ->
+            text ""
+      else
+        text ""
   in
     div
       []
@@ -27,7 +55,8 @@ view model =
           , msgListView
               model.filter
               model.selectedMsg
-              (List.filterMap fst (current :: past))
+              (List.filterMap fst (Nel.toList model.history))
+              diffView
           ]
       ]
 
@@ -79,18 +108,27 @@ filterItemView (name, visible) =
     ]
 
 
-modelView : Model model m -> Html msg
+modelView : Model model m -> Html Msg
 modelView model =
   case selectedModel model of
-    Just model ->
-      div [ style S.modelView ] [ text (toString model) ]
+    Just (model, lazyAst) ->
+      div
+        []
+        [ div [ style S.modelView ] [ text (toString model) ]
+        ]
+
     Nothing ->
       text ""
 
 
-msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg
-msgListView filterOptions selectedMsg msgList =
-  div [ style S.msgListView ] (List.filterMap (msgView filterOptions selectedMsg) msgList)
+msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg -> Html Msg
+msgListView filterOptions selectedMsg msgList diffView =
+  div []
+  [ diffView
+  , div
+      [ style S.msgListView ]
+      ( List.filterMap (msgView filterOptions selectedMsg) msgList )
+  ]
 
 
 msgView : FilterOptions -> Maybe Id -> (Id, m) -> Maybe (Html Msg)

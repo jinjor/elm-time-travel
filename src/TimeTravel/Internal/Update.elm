@@ -1,7 +1,7 @@
-module TimeTravel.Update exposing (update) -- where
+module TimeTravel.Internal.Update exposing (update) -- where
 
-import TimeTravel.Model exposing (..)
-import TimeTravel.Util exposing (..)
+import TimeTravel.Internal.Model exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 
 update : Msg -> Model model msg -> Model model msg
 update message model =
@@ -17,7 +17,9 @@ update message model =
             else
               model.selectedMsg
         , sync = nextSync
-        } |> if nextSync then futureToHistory else identity
+        }
+        |> selectFirstIfSync
+        |> if nextSync then futureToHistory else identity
 
     ToggleExpand ->
       { model | expand = not model.expand }
@@ -38,25 +40,14 @@ update message model =
       { model |
         selectedMsg = Just id
       , sync = False
-      }
+      } |> updateLazyAst
 
     Resync ->
       { model |
         sync = True
-      , selectedMsg = Nothing
-      } |> futureToHistory
+      } |> selectFirstIfSync |> futureToHistory
 
-futureToHistory : Model model msg -> Model model msg
-futureToHistory model =
-  { model |
-    future = []
-  , history =
-      let
-        (Nel current past) = model.history
-      in
-        case List.map (\(msg, model) -> (Just msg, model)) model.future of
-          head :: tail ->
-            Nel head (tail ++ (current :: past))
-          _ ->
-            Nel current past
-  }
+    -- ToggleDiff ->
+    --   { model |
+    --     showDiff = not (model.showDiff)
+    --   } |> updateLazyAst

@@ -1,11 +1,11 @@
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (on)
 import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 
-import TimeTravel
+import TimeTravel.Html.App as TimeTravel
+
 
 main =
   TimeTravel.program
