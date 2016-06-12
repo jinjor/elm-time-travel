@@ -7,19 +7,22 @@ import TimeTravel.Internal.Parser.AST exposing (AST)
 import TimeTravel.Internal.Parser.Parser as Parser
 
 
-type alias UserMsg msg =
-  (Id, msg, Maybe Id)
+type MsgLike msg data
+  = Message msg
+  | UrlData data
+  | Init
 
-type alias UserModel model =
-  (model, Maybe (Result String AST))
+type alias HistoryItem model msg data =
+  { id : Id
+  , msg : MsgLike msg data
+  , causedBy : Maybe Id
+  , model : model
+  , lazyAst : Maybe (Result String AST)
+  }
 
-type alias HistoryItem model msg =
-  (Maybe (UserMsg msg), UserModel model)
-
-
-type alias Model model msg =
-  { future : List (UserMsg msg, UserModel model)
-  , history : Nel (HistoryItem model msg)
+type alias Model model msg data =
+  { future : List (HistoryItem model msg data)
+  , history : Nel (HistoryItem model msg data)
   , filter : FilterOptions
   , sync : Bool
   , expand : Bool
@@ -45,77 +48,75 @@ type Msg
   | ToggleLayout
 
 
-init : model -> Model model msg
+init : model -> Model model msg data
 init model =
   { future = []
-  , history = Nel (Nothing, (model, Nothing)) []
+  , history = Nel (initItem model) []
   , filter = []
   , sync = True
   , expand = False
-  , msgId = 0
+  , msgId = 1
   , selectedMsg = Nothing
   , showDiff = False
   , fixedToLeft = False
   }
 
 
-selectedModel : Model model msg -> Maybe (UserModel model)
-selectedModel model =
-  Maybe.map snd (selectedItem model)
+initItem : model -> HistoryItem model msg data
+initItem model =
+  { id = 0
+  , msg = Init
+  , causedBy = Nothing
+  , model = model
+  , lazyAst = Nothing
+  }
 
 
-selectedItem : Model model msg -> Maybe (HistoryItem model msg)
+newItem : Id -> MsgLike msg data -> Maybe Id -> model -> HistoryItem model msg data
+newItem id msg causedBy model =
+  { id = id
+  , msg = msg
+  , causedBy = causedBy
+  , model = model
+  , lazyAst = Nothing
+  }
+
+
+selectedItem : Model model msg data -> Maybe (HistoryItem model msg data)
 selectedItem model =
-  let
-    (Nel current past) = model.history
-  in
-    case (model.sync, model.selectedMsg) of
-      (True, _) ->
-        Just current
-      (False, Nothing) ->
-        Just current
-      (False, Just msgId) ->
-        selectedModelHelp msgId (current :: past)
-
-
-
-selectedModelHelp : Id -> List (HistoryItem model msg) -> Maybe (HistoryItem model msg)
-selectedModelHelp selectedMsgId list =
-  let
-    f (idMsg, _) =
-      case idMsg of
-        Just (id, _, _) -> id == selectedMsgId
-        _ -> False
-  in
-    case List.filter f list of
-      a :: _ -> Just a
-      _ -> Nothing
+  case (model.sync, model.selectedMsg) of
+    (True, _) ->
+      Just <| Nel.head model.history
+    (False, Nothing) ->
+      Just <| Nel.head model.history
+    (False, Just msgId) ->
+      (Nel.find (\item -> item.id == msgId) model.history)
 
 
 updateOnIncomingUserMsg :
      ((Id, msg) -> parentMsg)
   -> (msg -> model -> (model, Cmd msg))
   -> (Maybe Id, msg)
-  -> Model model msg
-  -> (Model model msg, Cmd parentMsg)
+  -> Model model msg data
+  -> (Model model msg data, Cmd parentMsg)
 updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
   let
-    (Nel (_, (oldModel, _)) past) = model.history
-    (newRawUserModel, userCmd) = update msg oldModel
-    -- _ = Debug.log "(causedBy, msg)" (causedBy, msg)
-    newUserModel = (newRawUserModel, Nothing)
+    (Nel last past) = model.history
+    (newRawUserModel, userCmd) = update msg last.model
+    megLike = Message msg
+    nextItem = newItem model.msgId megLike causedBy newRawUserModel
   in
     ( { model |
-        filter = updateFilter msg model.filter
+        filter = updateFilter megLike model.filter
       , msgId = model.msgId + 1
       , future =
           if not model.sync then
-            ((model.msgId, msg, causedBy), newUserModel) :: model.future
+            nextItem :: model.future
           else
             model.future
       , history =
           if model.sync then
-            Nel.cons (Just (model.msgId, msg, causedBy), newUserModel) model.history
+            Nel.cons nextItem model.history
           else
             model.history
       } |> selectFirstIfSync
@@ -127,39 +128,41 @@ urlUpdateOnIncomingData :
      ((Id, msg) -> parentMsg)
   -> (data -> model -> (model, Cmd msg))
   -> data
-  -> Model model msg
-  -> (Model model msg, Cmd parentMsg)
+  -> Model model msg data
+  -> (Model model msg data, Cmd parentMsg)
 urlUpdateOnIncomingData transformMsg urlUpdate data model =
   let
-    (Nel (_, (oldModel, _)) past) = model.history
-    (newRawUserModel, userCmd) = urlUpdate data oldModel
-    newUserModel = (newRawUserModel, Nothing)
+    (Nel last past) = model.history
+    (newRawUserModel, userCmd) = urlUpdate data last.model
+    msgLike = UrlData data
+    nextItem = newItem model.msgId msgLike Nothing newRawUserModel
   in
     ( { model |
-      -- FIXME treat data as msg?
-      -- filter = updateFilter msg model.filter
-      -- FIXME treat data as msg?
-      -- , msgId = model.msgId + 1
-      -- FIXME treat data as msg?
-      -- , future =
-      --     if not model.sync then
-      --       ((model.msgId, msg), newUserModel) :: model.future
-      --     else
-      --       model.future
-        history =
-          if model.sync then
-            Nel.cons (Nothing {- FIXME -}, newUserModel) model.history
-          else
-            model.history
+          filter = updateFilter msgLike model.filter
+        , msgId = model.msgId + 1
+        , future =
+            if not model.sync then
+              nextItem :: model.future
+            else
+              model.future
+        , history =
+            if model.sync then
+              Nel.cons nextItem model.history
+            else
+              model.history
       } |> selectFirstIfSync
     ) ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
 
 
 
-updateFilter : msg -> FilterOptions -> FilterOptions
-updateFilter msg filterOptions =
+updateFilter : MsgLike msg data -> FilterOptions -> FilterOptions
+updateFilter msgLike filterOptions =
   let
-    str = toString msg
+    str =
+      case msgLike of
+        Message msg -> toString msg
+        UrlData data -> "[Nav] "-- ++ toString data
+        Init -> "" -- doesn't count as a filter
   in
     case String.words str of
       head :: _ ->
@@ -175,82 +178,75 @@ updateFilter msg filterOptions =
         filterOptions
 
 
-futureToHistory : Model model msg -> Model model msg
+futureToHistory : Model model msg data -> Model model msg data
 futureToHistory model =
   { model |
     future = []
-  , history =
-      Nel.concat
-        (List.map (\(msg, model) -> (Just msg, model)) model.future)
-        model.history
+  , history = Nel.concat model.future model.history
   }
 
-replaceHistory :
-     (HistoryItem model msg -> Bool)
-  -> (UserModel model -> UserModel model)
-  -> Model model msg
-  -> Model model msg
-replaceHistory match update model =
+mapHistory :
+     (HistoryItem model msg data -> HistoryItem model msg data)
+  -> Model model msg data
+  -> Model model msg data
+mapHistory f model =
   { model |
-    history =
-      Nel.map (\item ->
-          let
-            (m, userModel) = item
-            f = if match item then update else identity
-          in
-            (m, f userModel)
-        ) model.history
+    history = Nel.map f model.history
   }
 
 
-
-matchSelectedOrPrev : Maybe Id -> (HistoryItem model msg -> Bool)
-matchSelectedOrPrev selectedMsg =
-  case selectedMsg of
-    Just id -> (\item ->
-      case item of
-        (Just (id', _, _), _) ->
-          id == id' || id - 1 == id'
-        _ ->
-          False
-      )
-    _ ->
-      always False
-
-
-updateLazyAst : Model model msg -> Model model msg
+updateLazyAst : Model model msg data -> Model model msg data
 updateLazyAst model =
-  replaceHistory
-    (matchSelectedOrPrev model.selectedMsg)
-    (\e ->
-      case e of
-        (rawUserModel, Nothing) ->
-          (rawUserModel, Just (Parser.parse (toString rawUserModel)))
-        _ ->
-          e
-    )
-    model
+  case model.selectedMsg of
+    Just id ->
+      mapHistory
+        (\item ->
+          if item.id == id || item.id == id - 1 && item.lazyAst == Nothing then
+            { item |
+              lazyAst = Just (Parser.parse (toString item.model))
+            }
+          else
+            item
+        )
+        model
+    _ ->
+      model
 
 
-selectedAndOldAst : Model model msg -> Maybe (AST, AST)
+selectedAndOldAst : Model model msg data -> Maybe (AST, AST)
 selectedAndOldAst model =
-  case Nel.filter (matchSelectedOrPrev model.selectedMsg) model.history of
-    (_, (_, Just (Ok newAst))) :: (_, (_, Just (Ok oldAst))) :: _ ->
-      Just (oldAst, newAst)
+  case model.selectedMsg of
+    Just id ->
+      let
+        newAndOld =
+          Nel.filterMap
+            (\item ->
+              if item.id == id || item.id == id - 1 then
+                Just item.lazyAst
+              else
+                Nothing
+            )
+            model.history
+      in
+        case newAndOld of
+          Just (Ok newAst) :: Just (Ok oldAst) :: _ ->
+            Just (oldAst, newAst)
+
+          -- first
+          Just (Ok ast) :: [] ->
+            Just (ast, ast)
+
+          _ ->
+            Nothing
     _ ->
       Nothing
 
 
-selectFirstIfSync : Model model msg -> Model model msg
+selectFirstIfSync : Model model msg data -> Model model msg data
 selectFirstIfSync model =
   if model.sync then
     { model |
-      selectedMsg =
-        case Nel.head model.history of
-          (Just (id, _, _), _) ->
-            Just id
-          _ ->
-            Nothing
+      selectedMsg = Just (Nel.head model.history).id
     }
   else
     model

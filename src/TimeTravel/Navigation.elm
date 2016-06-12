@@ -67,14 +67,14 @@ programWithFlags parser options =
   Navigation.programWithFlags parser (wrap options)
 
 
-wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg) (Msg msg)
+wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg data) (Msg msg)
 wrap { init, view, update, subscriptions, urlUpdate } =
   let
     init' flags data =
       let
         (model, cmd) = init flags data
       in
-        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just -1, msg)) cmd ]
+        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
     update' msg model =
       case msg of
         UserMsg msgWithId ->
@@ -87,9 +87,9 @@ wrap { init, view, update, subscriptions, urlUpdate } =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
     subscriptions' model =
       let
-        (_, (rawUserModel, _)) = Nel.head model.history
+        item = Nel.head model.history
       in
-        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions rawUserModel)
+        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions item.model)
   in
     { init = init'
     , update = update'

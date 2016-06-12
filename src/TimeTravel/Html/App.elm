@@ -81,14 +81,14 @@ programWithFlags =
   App.programWithFlags << wrap
 
 
-wrap : OptionsWithFlags flags model msg -> OptionsWithFlags flags (Model model msg) (Msg msg)
+wrap : OptionsWithFlags flags model msg -> OptionsWithFlags flags (Model model msg data) (Msg msg)
 wrap { init, view, update, subscriptions } =
   let
     init' flags =
       let
         (model, cmd) = init flags
       in
-        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just -1, msg)) cmd ]
+        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
     update' msg model =
       case msg of
         UserMsg msgWithId ->
@@ -99,9 +99,9 @@ wrap { init, view, update, subscriptions } =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
     subscriptions' model =
       let
-        (_, (rawUserModel, _)) = Nel.head model.history
+        item = Nel.head model.history
       in
-        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions rawUserModel)
+        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions item.model)
   in
     { init = init'
     , update = update'

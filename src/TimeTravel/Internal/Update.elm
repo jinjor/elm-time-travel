@@ -3,7 +3,7 @@ module TimeTravel.Internal.Update exposing (update) -- where
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 
-update : Msg -> Model model msg -> Model model msg
+update : Msg -> Model model msg data -> Model model msg data
 update message model =
   case message of
     ToggleSync ->

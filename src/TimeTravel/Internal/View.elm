@@ -14,7 +14,7 @@ import Html.App as App
 import String
 
 
-view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg -> Html a
+view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
 view transformUserMsg transformDebuggerMsg userViewFunc model =
   div
     []
@@ -23,16 +23,16 @@ view transformUserMsg transformDebuggerMsg userViewFunc model =
     ]
 
 
-userView : (model -> Html msg) -> Model model msg -> Html msg
+userView : (model -> Html msg) -> Model model msg data -> Html msg
 userView userView model =
-  case selectedModel model of
-    Just (userModel, _) ->
-      userView userModel
+  case selectedItem model of
+    Just item ->
+      userView item.model
     Nothing ->
       text "Error: Unable to render"
 
 
-debugView : Model model msg -> Html Msg
+debugView : Model model msg data -> Html Msg
 debugView model =
   let
     diffView =
@@ -55,7 +55,7 @@ debugView model =
           , msgListView
               model.filter
               model.selectedMsg
-              (List.filterMap fst (Nel.toList model.history))
+              (Nel.toList model.history)
               diffView
           ]
       ]
@@ -109,10 +109,10 @@ filterItemView (name, visible) =
     ]
 
 
-modelView : Model model m -> Html Msg
+modelView : Model model msg data -> Html Msg
 modelView model =
-  case selectedModel model of
-    Just (model, lazyAst) ->
+  case selectedItem model of
+    Just { model, lazyAst } ->
       div
         []
         [ div [ style S.modelView ] [ text (toString model) ]
@@ -122,31 +122,37 @@ modelView model =
       text ""
 
 
-msgListView : FilterOptions -> Maybe Id -> List (Id, m, Maybe Id) -> Html Msg -> Html Msg
-msgListView filterOptions selectedMsg msgList diffView =
+msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
+msgListView filterOptions selectedMsg items diffView =
   div []
   [ diffView
   , div
       [ style S.msgListView ]
-      ( List.filterMap (msgView filterOptions selectedMsg) msgList )
+      ( List.filterMap (msgView filterOptions selectedMsg) items )
   ]
 
 
-msgView : FilterOptions -> Maybe Id -> (Id, m, Maybe Id) -> Maybe (Html Msg)
-msgView filterOptions selectedMsg (id, msg, causedBy) =
+msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (Html Msg)
+msgView filterOptions selectedMsg { id, msg, causedBy } =
   let
     selected =
       case selectedMsg of
         Just msgId -> msgId == id
         Nothing -> False
+
     str =
-      toString msg
+      case msg of
+        Message m -> toString m
+        UrlData d -> "[Nav] " ++ toString d
+        Init -> "[Init]"
+
     visible =
-      case String.words str of
-        tag :: _ ->
-          List.any (\(name, visible) -> tag == name && visible) filterOptions
-        _ ->
-          False
+      msg == Init ||
+        case String.words str of
+          tag :: _ ->
+            List.any (\(name, visible) -> tag == name && visible) filterOptions
+          _ ->
+            False
     causedBy' =
       case causedBy of
         Just id -> " (by " ++ toString id ++ ")"
@@ -158,7 +164,7 @@ msgView filterOptions selectedMsg (id, msg, causedBy) =
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]
-          [ text (toString id ++ ": " ++ toString msg ++ causedBy') ]
+          [ text (toString id ++ ": " ++ str ++ causedBy') ]
       )
     else
       Nothing
