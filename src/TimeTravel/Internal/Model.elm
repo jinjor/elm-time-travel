@@ -26,6 +26,7 @@ type alias Model model msg =
   , msgId : Id
   , selectedMsg : Maybe Id
   , showDiff : Bool
+  , fixedToLeft : Bool
   }
 
 type alias Id = Int
@@ -40,7 +41,8 @@ type Msg
   | ToggleFilter String
   | SelectMsg Id
   | Resync
-  -- | ToggleDiff
+  -- | ToggleDif
+  | ToggleLayout
 
 
 init : model -> Model model msg
@@ -53,6 +55,7 @@ init model =
   , msgId = 0
   , selectedMsg = Nothing
   , showDiff = False
+  , fixedToLeft = False
   }
 
 

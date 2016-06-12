@@ -51,3 +51,8 @@ update message model =
     --   { model |
     --     showDiff = not (model.showDiff)
     --   } |> updateLazyAst
+
+    ToggleLayout ->
+      { model |
+        fixedToLeft = not (model.fixedToLeft)
+      }
