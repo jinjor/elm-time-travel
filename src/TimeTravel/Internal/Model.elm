@@ -8,7 +8,7 @@ import TimeTravel.Internal.Parser.Parser as Parser
 
 
 type alias UserMsg msg =
-  (Id, msg)
+  (Id, msg, Maybe Id)
 
 type alias UserModel model =
   (model, Maybe (Result String AST))
@@ -64,7 +64,7 @@ selectedModel model =
   Maybe.map snd (selectedItem model)
 
 
-selectedItem : Model model msg -> Maybe (Maybe (Id, msg), UserModel model)
+selectedItem : Model model msg -> Maybe (HistoryItem model msg)
 selectedItem model =
   let
     (Nel current past) = model.history
@@ -79,12 +79,12 @@ selectedItem model =
 
 
 
-selectedModelHelp : Id -> List (Maybe (Id, msg), userModel) -> Maybe (Maybe (Id, msg), userModel)
+selectedModelHelp : Id -> List (HistoryItem model msg) -> Maybe (HistoryItem model msg)
 selectedModelHelp selectedMsgId list =
   let
     f (idMsg, _) =
       case idMsg of
-        Just (id, _) -> id == selectedMsgId
+        Just (id, _, _) -> id == selectedMsgId
         _ -> False
   in
     case List.filter f list of
@@ -93,15 +93,16 @@ selectedModelHelp selectedMsgId list =
 
 
 updateOnIncomingUserMsg :
-     (msg -> parentMsg)
+     ((Id, msg) -> parentMsg)
   -> (msg -> model -> (model, Cmd msg))
-  -> msg
+  -> (Maybe Id, msg)
   -> Model model msg
   -> (Model model msg, Cmd parentMsg)
-updateOnIncomingUserMsg transformMsg update msg model =
+updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
   let
     (Nel (_, (oldModel, _)) past) = model.history
     (newRawUserModel, userCmd) = update msg oldModel
+    -- _ = Debug.log "(causedBy, msg)" (causedBy, msg)
     newUserModel = (newRawUserModel, Nothing)
   in
     ( { model |
@@ -109,21 +110,21 @@ updateOnIncomingUserMsg transformMsg update msg model =
       , msgId = model.msgId + 1
       , future =
           if not model.sync then
-            ((model.msgId, msg), newUserModel) :: model.future
+            ((model.msgId, msg, causedBy), newUserModel) :: model.future
           else
             model.future
       , history =
           if model.sync then
-            Nel.cons (Just (model.msgId, msg), newUserModel) model.history
+            Nel.cons (Just (model.msgId, msg, causedBy), newUserModel) model.history
           else
             model.history
       } |> selectFirstIfSync
     )
-    ! [ Cmd.map transformMsg userCmd ]
+    ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
 
 
 urlUpdateOnIncomingData :
-     (msg -> parentMsg)
+     ((Id, msg) -> parentMsg)
   -> (data -> model -> (model, Cmd msg))
   -> data
   -> Model model msg
@@ -151,7 +152,7 @@ urlUpdateOnIncomingData transformMsg urlUpdate data model =
           else
             model.history
       } |> selectFirstIfSync
-    ) ! [ Cmd.map transformMsg userCmd ]
+    ) ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
 
 
 
@@ -208,7 +209,7 @@ matchSelectedOrPrev selectedMsg =
   case selectedMsg of
     Just id -> (\item ->
       case item of
-        (Just (id', _), _) ->
+        (Just (id', _, _), _) ->
           id == id' || id - 1 == id'
         _ ->
           False
@@ -246,7 +247,7 @@ selectFirstIfSync model =
     { model |
       selectedMsg =
         case Nel.head model.history of
-          (Just (id, _), _) ->
+          (Just (id, _, _), _) ->
             Just id
           _ ->
             Nothing

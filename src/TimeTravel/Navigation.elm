@@ -18,7 +18,7 @@ import Navigation exposing (Parser)
 
 type Msg msg
   = DebuggerMsg Model.Msg
-  | UserMsg msg
+  | UserMsg (Maybe Int, msg)
 
 
 {- Alias for internal use -}
@@ -74,22 +74,22 @@ wrap { init, view, update, subscriptions, urlUpdate } =
       let
         (model, cmd) = init flags data
       in
-        Model.init model ! [ Cmd.map UserMsg cmd ]
+        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just -1, msg)) cmd ]
     update' msg model =
       case msg of
-        UserMsg msg ->
-          updateOnIncomingUserMsg UserMsg update msg model
+        UserMsg msgWithId ->
+          updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
         DebuggerMsg msg ->
           (Update.update msg model) ! []
     urlUpdate' data model =
-      urlUpdateOnIncomingData UserMsg urlUpdate data model
+      urlUpdateOnIncomingData (\(id, msg) -> UserMsg (Just id, msg)) urlUpdate data model
     view' model =
-      View.view UserMsg DebuggerMsg view model
+      View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
     subscriptions' model =
       let
-        (_, (m, _)) = Nel.head model.history
+        (_, (rawUserModel, _)) = Nel.head model.history
       in
-        Sub.map UserMsg (subscriptions m)
+        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions rawUserModel)
   in
     { init = init'
     , update = update'

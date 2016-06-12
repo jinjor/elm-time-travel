@@ -122,7 +122,7 @@ modelView model =
       text ""
 
 
-msgListView : FilterOptions -> Maybe Id -> List (Id, m) -> Html Msg -> Html Msg
+msgListView : FilterOptions -> Maybe Id -> List (Id, m, Maybe Id) -> Html Msg -> Html Msg
 msgListView filterOptions selectedMsg msgList diffView =
   div []
   [ diffView
@@ -132,8 +132,8 @@ msgListView filterOptions selectedMsg msgList diffView =
   ]
 
 
-msgView : FilterOptions -> Maybe Id -> (Id, m) -> Maybe (Html Msg)
-msgView filterOptions selectedMsg (id, msg) =
+msgView : FilterOptions -> Maybe Id -> (Id, m, Maybe Id) -> Maybe (Html Msg)
+msgView filterOptions selectedMsg (id, msg, causedBy) =
   let
     selected =
       case selectedMsg of
@@ -147,6 +147,10 @@ msgView filterOptions selectedMsg (id, msg) =
           List.any (\(name, visible) -> tag == name && visible) filterOptions
         _ ->
           False
+    causedBy' =
+      case causedBy of
+        Just id -> " (by " ++ toString id ++ ")"
+        Nothing -> ""
   in
     if visible then
       Just (
@@ -154,7 +158,7 @@ msgView filterOptions selectedMsg (id, msg) =
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]
-          [ text (toString msg) ]
+          [ text (toString id ++ ": " ++ toString msg ++ causedBy') ]
       )
     else
       Nothing
