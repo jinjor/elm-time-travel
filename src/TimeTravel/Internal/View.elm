@@ -39,7 +39,7 @@ debugView model =
       if not model.sync then
         case selectedAndOldAst model of
           Just (oldAst, newAst) ->
-            DiffView.view oldAst newAst
+            DiffView.view model.fixedToLeft oldAst newAst
           Nothing ->
             text ""
       else
@@ -49,8 +49,8 @@ debugView model =
       []
       [ resyncView model.sync
       , div
-          [ style S.debugView ]
-          [ headerView model.sync model.expand model.filter
+          [ style (S.debugView model.fixedToLeft) ]
+          [ headerView model.fixedToLeft model.sync model.expand model.filter
           , modelView model
           , msgListView
               model.filter
@@ -69,20 +69,21 @@ resyncView sync =
     div [ style (S.resyncView sync), onMouseDown Resync ] []
 
 
-headerView : Bool -> Bool -> FilterOptions -> Html Msg
-headerView sync expand filterOptions =
+headerView : Bool -> Bool -> Bool -> FilterOptions -> Html Msg
+headerView fixedToLeft sync expand filterOptions =
   div []
   [ div [ style S.headerView ]
-    [ buttonView ToggleSync [ I.sync sync ]
-    , buttonView ToggleExpand [ I.filterExpand expand ]
+    [ buttonView ToggleLayout True [ I.layout ]
+    , buttonView ToggleSync False [ I.sync sync ]
+    , buttonView ToggleExpand False [ I.filterExpand expand ]
     ]
   , filterView expand filterOptions
   ]
 
 
-buttonView : msg -> List (Html msg) -> Html msg
-buttonView onClickMsg inner =
-  div [ style S.buttonView, onClick onClickMsg ] inner
+buttonView : msg -> Bool -> List (Html msg) -> Html msg
+buttonView onClickMsg left inner =
+  div [ style (S.buttonView left), onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg

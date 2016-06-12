@@ -26,10 +26,10 @@ iconButton =
   ] ++ pointer
 
 
-buttonView : List (String, String)
-buttonView =
-  [ ("margin-left", "7px")
-  ] ++ iconButton
+buttonView : Bool -> List (String, String)
+buttonView left =
+  (if left then [("margin-right", "auto")] else [ ("margin-left", "7px")])
+  ++ iconButton
 
 
 panel : Bool -> List (String, String)
@@ -51,12 +51,12 @@ debugViewTheme =
   , ("color", "#eee")
   ]
 
-debugView : List (String, String)
-debugView =
+debugView : Bool -> List (String, String)
+debugView fixedToLeft =
   [ ("position", "fixed")
   , ("width", "250px")
   , ("top", "0")
-  , ("right", "0")
+  , (if fixedToLeft then "left" else "right", "0")
   , ("bottom", "0")
   , ("z-index", zIndex.debugView)
   ] ++ debugViewTheme
@@ -110,13 +110,17 @@ resyncView sync =
   ]
 
 
-diffView : Bool -> List (String, String)
-diffView opened =
+diffView : Bool -> Bool -> List (String, String)
+diffView fixedToLeft opened =
   [ ("position", "absolute")
   , ("width", "320px")
-  , ("left", "-320px")
+  , (if fixedToLeft then "right" else "left", "-320px")
   , ("box-sizing", "border-box")
-  , ("box-shadow", "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
+  , ( "box-shadow"
+    , if fixedToLeft then
+        "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
+      else
+        "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
   ] ++ debugViewTheme ++ panel True
 
 
