@@ -1,6 +1,7 @@
 module TimeTravel.Internal.View exposing (view) -- where
 
 import TimeTravel.Internal.Model exposing (..)
+import TimeTravel.Internal.MsgLike as MsgLike exposing (MsgLike(..))
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
@@ -126,10 +127,10 @@ detailView model =
   if not model.sync then
     let
       msgTreeView =
-        case selectedMsgTree model of
-          Just tree ->
-            MsgTreeView.view tree
-          Nothing ->
+        case (model.selectedMsg, selectedMsgTree model) of
+          (Just id, Just tree) ->
+            MsgTreeView.view SelectMsg id tree
+          _ ->
             text ""
 
       diffView =
@@ -155,10 +156,7 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
         Nothing -> False
 
     str =
-      case msg of
-        Message m -> toString m
-        UrlData d -> "[Nav] " ++ toString d
-        Init -> "[Init]"
+      MsgLike.format msg
 
     visible =
       msg == Init ||

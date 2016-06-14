@@ -6,12 +6,8 @@ import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Parser.AST exposing (AST)
 import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
+import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
 
-
-type MsgLike msg data
-  = Message msg
-  | UrlData data
-  | Init
 
 type alias HistoryItem model msg data =
   { id : Id
@@ -265,7 +261,7 @@ selectedMsgTree model =
           in
             Just <|
               RTree.sortEachBranchBy (\item -> item.id) <|
-                List.foldl f (RTree.singleton root) (Nel.toList model.history)
+                List.foldr f (RTree.singleton root) (Nel.toList model.history)
 
         Nothing ->
           Nothing

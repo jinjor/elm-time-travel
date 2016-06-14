@@ -89,10 +89,18 @@ msgListView =
   panel True
 
 
+itemBackground : Bool -> List (String, String)
+itemBackground selected =
+  [ ("background-color", if selected then "rgba(0, 0, 0, 0.5)" else "")
+  ]
+
 msgView : Bool -> List (String, String)
 msgView selected =
-  [ ("background-color", if selected then "rgba(0, 0, 0, 0.5)" else "")
-  ] ++ pointer
+  [ ("white-space", "nowrap")
+  , ("text-overflow", "ellipsis")
+  , ("overflow", "hidden")
+  ]
+  ++ itemBackground selected ++ pointer
 
 
 resyncView : Bool -> List (String, String)
@@ -126,8 +134,17 @@ detailView fixedToLeft opened =
 
 msgTreeView : List (String, String)
 msgTreeView =
-  panel True
-  
+  panel True ++ panelBorder
+
+
+msgTreeViewItemRow : Bool -> List (String, String)
+msgTreeViewItemRow selected =
+  [ ("white-space", "pre")
+  , ("text-overflow", "ellipsis")
+  , ("overflow", "hidden")
+  ]
+  ++ itemBackground selected ++ pointer
+
 
 diffView : List (String, String)
 diffView =
