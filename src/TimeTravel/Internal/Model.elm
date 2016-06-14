@@ -5,6 +5,7 @@ import String
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Parser.AST exposing (AST)
 import TimeTravel.Internal.Parser.Parser as Parser
+import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 
 
 type MsgLike msg data
@@ -250,6 +251,39 @@ selectFirstIfSync model =
     }
   else
     model
+
+
+selectedMsgTree : Model model msg data -> Maybe (RTree (HistoryItem model msg data))
+selectedMsgTree model =
+  case model.selectedMsg of
+    Just id ->
+      case msgRootOf id model.history of
+        Just root ->
+          let
+            f item tree =
+              RTree.addChildAt (\i -> item.causedBy == Just i.id) item tree
+          in
+            Just <|
+              RTree.sortEachBranchBy (\item -> item.id) <|
+                List.foldl f (RTree.singleton root) (Nel.toList model.history)
+
+        Nothing ->
+          Nothing
+
+    _ ->
+      Nothing
+
+msgRootOf : Id -> Nel (HistoryItem model msg data) -> Maybe (HistoryItem model msg data)
+msgRootOf id history =
+  case Nel.find (\item -> item.id == id) history of
+    Just item ->
+      case item.causedBy of
+        Just id -> msgRootOf id history
+        Nothing -> Just item
+    Nothing ->
+      Nothing
+
+
 
 
 

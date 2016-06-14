@@ -110,8 +110,8 @@ resyncView sync =
   ]
 
 
-diffView : Bool -> Bool -> List (String, String)
-diffView fixedToLeft opened =
+detailView : Bool -> Bool -> List (String, String)
+detailView fixedToLeft opened =
   [ ("position", "absolute")
   , ("width", "320px")
   , (if fixedToLeft then "right" else "left", "-320px")
@@ -121,7 +121,17 @@ diffView fixedToLeft opened =
         "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
       else
         "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
-  ] ++ debugViewTheme ++ panel True
+  ] ++ debugViewTheme
+
+
+msgTreeView : List (String, String)
+msgTreeView =
+  panel True
+  
+
+diffView : List (String, String)
+diffView =
+  panel True
 
 
 lineBase : List (String, String)

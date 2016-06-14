@@ -13,12 +13,12 @@ import Diff exposing (..)
 import String
 
 
-view : Bool -> AST -> AST -> Html msg
-view fixedToLeft oldAst newAst =
-  viewDiff fixedToLeft (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
+view : AST -> AST -> Html msg
+view oldAst newAst =
+  viewDiff (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
 
-viewDiff : Bool -> String -> String -> Html msg
-viewDiff fixedToLeft old new =
+viewDiff : String -> String -> Html msg
+viewDiff old new =
   let
     changes = diffLines old new
     list =
@@ -36,7 +36,7 @@ viewDiff fixedToLeft old new =
         ) changes
   in
     div
-      [ style (S.diffView fixedToLeft True) ]
+      [ style S.diffView ]
       list
 
 

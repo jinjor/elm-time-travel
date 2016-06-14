@@ -4,6 +4,7 @@ import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
+import TimeTravel.Internal.MsgTreeView as MsgTreeView
 import TimeTravel.Internal.DiffView as DiffView
 
 import Html exposing (..)
@@ -34,31 +35,20 @@ userView userView model =
 
 debugView : Model model msg data -> Html Msg
 debugView model =
-  let
-    diffView =
-      if not model.sync then
-        case selectedAndOldAst model of
-          Just (oldAst, newAst) ->
-            DiffView.view model.fixedToLeft oldAst newAst
-          Nothing ->
-            text ""
-      else
-        text ""
-  in
-    div
-      []
-      [ resyncView model.sync
-      , div
-          [ style (S.debugView model.fixedToLeft) ]
-          [ headerView model.fixedToLeft model.sync model.expand model.filter
-          , modelView model
-          , msgListView
-              model.filter
-              model.selectedMsg
-              (Nel.toList model.history)
-              diffView
-          ]
-      ]
+  div
+    []
+    [ resyncView model.sync
+    , div
+        [ style (S.debugView model.fixedToLeft) ]
+        [ headerView model.fixedToLeft model.sync model.expand model.filter
+        , modelView model
+        , msgListView
+            model.filter
+            model.selectedMsg
+            (Nel.toList model.history)
+            (detailView model)
+        ]
+    ]
 
 
 resyncView : Bool -> Html Msg
@@ -123,13 +113,37 @@ modelView model =
 
 
 msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
-msgListView filterOptions selectedMsg items diffView =
+msgListView filterOptions selectedMsg items detailView =
   div []
-  [ diffView
+  [ detailView
   , div
       [ style S.msgListView ]
       ( List.filterMap (msgView filterOptions selectedMsg) items )
   ]
+
+detailView : Model model msg data -> Html Msg
+detailView model =
+  if not model.sync then
+    let
+      msgTreeView =
+        case selectedMsgTree model of
+          Just tree ->
+            MsgTreeView.view tree
+          Nothing ->
+            text ""
+
+      diffView =
+        case selectedAndOldAst model of
+          Just (oldAst, newAst) ->
+            DiffView.view oldAst newAst
+          Nothing ->
+            text ""
+    in
+      div
+        [ style (S.detailView model.fixedToLeft True) ]
+        [ msgTreeView, diffView ]
+  else
+    text ""
 
 
 msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (Html Msg)

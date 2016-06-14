@@ -127,9 +127,11 @@ view model =
   div []
     [ greeting model
     , button [ onClick Load ] [ text "Load" ]
-    , br [] []
+    , hr [] []
     , teamDetailView model
+    , hr [] []
     , div [] (List.map memberItemView model.members)
+    , hr [] []
     , memberDetailView model
     ]
 
