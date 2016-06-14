@@ -14,7 +14,8 @@ type alias HistoryItem model msg data =
   , msg : MsgLike msg data
   , causedBy : Maybe Id
   , model : model
-  , lazyAst : Maybe (Result String AST)
+  , lazyMsgAst : Maybe (Result String AST)
+  , lazyModelAst : Maybe (Result String AST)
   }
 
 type alias Model model msg data =
@@ -65,7 +66,8 @@ initItem model =
   , msg = Init
   , causedBy = Nothing
   , model = model
-  , lazyAst = Nothing
+  , lazyMsgAst = Nothing
+  , lazyModelAst = Nothing
   }
 
 
@@ -75,7 +77,8 @@ newItem id msg causedBy model =
   , msg = msg
   , causedBy = causedBy
   , model = model
-  , lazyAst = Nothing
+  , lazyMsgAst = Nothing
+  , lazyModelAst = Nothing
   }
 
 
@@ -198,16 +201,49 @@ updateLazyAst model =
     Just id ->
       mapHistory
         (\item ->
-          if item.id == id || item.id == id - 1 && item.lazyAst == Nothing then
-            { item |
-              lazyAst = Just (Parser.parse (toString item.model))
-            }
+          if item.id == id || item.id == id - 1 then
+            updateLazyAstHelp item
           else
             item
         )
         model
     _ ->
       model
+
+
+updateLazyAstHelp : HistoryItem model msg data -> HistoryItem model msg data
+updateLazyAstHelp item =
+  { item |
+    lazyMsgAst =
+      if item.lazyMsgAst == Nothing then
+        case item.msg of
+          Message msg ->
+            Debug.log "msgAST" <| Just (Parser.parse (toString msg))
+          UrlData data ->
+            Just (Parser.parse (toString data))
+          _ ->
+            Just (Err "")
+      else
+        item.lazyMsgAst
+  , lazyModelAst =
+      if item.lazyModelAst == Nothing then
+        Just (Parser.parse (toString item.model))
+      else
+        item.lazyModelAst
+  }
+
+
+selectedMsgAst : Model model msg data -> Maybe AST
+selectedMsgAst model =
+  case model.selectedMsg of
+    Just id ->
+      case Nel.filterMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
+        Just (Ok ast) :: _ ->
+          Just ast
+        _ ->
+          Nothing
+    _ ->
+      Nothing
 
 
 selectedAndOldAst : Model model msg data -> Maybe (AST, AST)
@@ -219,7 +255,7 @@ selectedAndOldAst model =
           Nel.filterMap
             (\item ->
               if item.id == id || item.id == id - 1 then
-                Just item.lazyAst
+                Just item.lazyModelAst
               else
                 Nothing
             )

@@ -137,6 +137,10 @@ msgTreeView =
   panel True ++ panelBorder
 
 
+detailedMsgView : List (String, String)
+detailedMsgView =
+  [ ("white-space", "pre") ] ++ panel True ++ panelBorder
+
 msgTreeViewItemRow : Bool -> List (String, String)
 msgTreeViewItemRow selected =
   [ ("white-space", "pre")
