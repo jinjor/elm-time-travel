@@ -20,6 +20,25 @@ filter match nel =
   List.filter match (toList nel)
 
 
+filterMap : (a -> Maybe b) -> Nel a -> List b
+filterMap match nel =
+  List.filterMap match (toList nel)
+
+
+find : (a -> Bool) -> Nel a -> Maybe a
+find f nel =
+  findHelp f (toList nel)
+  
+
+findHelp : (a -> Bool) -> List a -> Maybe a
+findHelp f list =
+  case list of
+    [] ->
+      Nothing
+    head :: tail ->
+      if f head then Just head else findHelp f tail
+
+
 head : Nel a -> a
 head (Nel head tail) =
   head
