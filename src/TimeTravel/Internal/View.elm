@@ -165,10 +165,6 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
             List.any (\(name, visible) -> tag == name && visible) filterOptions
           _ ->
             False
-    causedBy' =
-      case causedBy of
-        Just id -> " (by " ++ toString id ++ ")"
-        Nothing -> ""
   in
     if visible then
       Just (
@@ -176,7 +172,7 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]
-          [ text (toString id ++ ": " ++ str ++ causedBy') ]
+          [ text (toString id ++ ": " ++ str) ]
       )
     else
       Nothing
