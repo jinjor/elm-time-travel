@@ -184,7 +184,6 @@ updateFilter msgLike filterOptions =
         Message msg -> toString msg
         UrlData data -> "[Nav] "-- ++ toString data
         Init -> "" -- doesn't count as a filter
-    _ = Debug.log "filterOptions" filterOptions
   in
     case String.words str of
       head :: _ ->
