@@ -49,7 +49,9 @@ debugViewTheme : List (String, String)
 debugViewTheme =
   [ ("background-color", "#444")
   , ("color", "#eee")
+  , ("font-family", "calibri, helvetica, arial, sans-serif")
   ]
+  
 
 debugView : Bool -> List (String, String)
 debugView fixedToLeft =
