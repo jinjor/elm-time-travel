@@ -70,6 +70,9 @@ programWithFlags parser options =
 wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg data) (Msg msg)
 wrap { init, view, update, subscriptions, urlUpdate } =
   let
+    -- TODO save settings and refactor
+    outgoingMsg = always Cmd.none
+
     init' flags data =
       let
         (model, cmd) = init flags data
@@ -80,7 +83,11 @@ wrap { init, view, update, subscriptions, urlUpdate } =
         UserMsg msgWithId ->
           updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
         DebuggerMsg msg ->
-          (Update.update msg model) ! []
+          let
+            (m, c) =
+              Update.update outgoingMsg msg model
+          in
+            m ! [ Cmd.map DebuggerMsg c ]
     urlUpdate' data model =
       urlUpdateOnIncomingData (\(id, msg) -> UserMsg (Just id, msg)) urlUpdate data model
     view' model =
