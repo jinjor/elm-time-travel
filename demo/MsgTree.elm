@@ -14,17 +14,17 @@ import Dict exposing (Dict)
 import Process
 
 
-port outgoing : TimeTravel.OutgoingMsg -> Cmd msg
-
-port incoming : (TimeTravel.IncomingMsg -> msg) -> Sub msg
+-- port outgoing : TimeTravel.OutgoingMsg -> Cmd msg
+--
+-- port incoming : (TimeTravel.IncomingMsg -> msg) -> Sub msg
 
 
 main =
-  -- TimeTravel.program
-  TimeTravel.programWithOptions
-    { outgoingMsg = outgoing
-    , incomingMsg = incoming
-    }
+  TimeTravel.program
+  -- TimeTravel.programWithOptions
+  --   { outgoingMsg = outgoing
+  --   , incomingMsg = incoming
+  --   }
     { init = init
     , view = view
     , update = update

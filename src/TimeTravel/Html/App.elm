@@ -1,11 +1,11 @@
 module TimeTravel.Html.App exposing
   ( beginnerProgram
   , program
-  , programWithOptions
+  -- , programWithOptions
   , programWithFlags
-  , programWithFlagsWithOptions
-  , OutgoingMsg
-  , IncomingMsg
+  -- , programWithFlagsWithOptions
+  -- , OutgoingMsg
+  -- , IncomingMsg
   ) -- where
 
 
