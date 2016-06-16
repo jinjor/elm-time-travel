@@ -8,6 +8,10 @@ import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
 
+import Basics.Extra exposing (never)
+
+import Json.Decode as Decode exposing ((:=), Decoder)
+import Json.Encode as Encode
 
 type alias HistoryItem model msg data =
   { id : Id
@@ -36,6 +40,21 @@ type alias FilterOptions =
   List (String, Bool)
 
 
+type alias Settings =
+  { fixedToLeft : Bool
+  , filter : FilterOptions
+  }
+
+type alias OutgoingMsg =
+  { type_ : String
+  , settings : String
+  }
+
+type alias IncomingMsg =
+  { type_ : String
+  , settings : String
+  }
+
 type Msg
   = ToggleSync
   | ToggleExpand
@@ -44,6 +63,7 @@ type Msg
   | Resync
   -- | ToggleDif
   | ToggleLayout
+  | Receive IncomingMsg
 
 
 init : model -> Model model msg data
@@ -121,7 +141,8 @@ updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
             model.history
       } |> selectFirstIfSync
     )
-    ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
+    ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd)
+      ]
 
 
 urlUpdateOnIncomingData :
@@ -163,6 +184,7 @@ updateFilter msgLike filterOptions =
         Message msg -> toString msg
         UrlData data -> "[Nav] "-- ++ toString data
         Init -> "" -- doesn't count as a filter
+    _ = Debug.log "filterOptions" filterOptions
   in
     case String.words str of
       head :: _ ->
@@ -218,7 +240,7 @@ updateLazyAstHelp item =
       if item.lazyMsgAst == Nothing then
         case item.msg of
           Message msg ->
-            Debug.log "msgAST" <| Just (Parser.parse (toString msg))
+            Just (Parser.parse (toString msg))
           UrlData data ->
             Just (Parser.parse (toString data))
           _ ->
@@ -305,6 +327,7 @@ selectedMsgTree model =
     _ ->
       Nothing
 
+
 msgRootOf : Id -> Nel (HistoryItem model msg data) -> Maybe (HistoryItem model msg data)
 msgRootOf id history =
   case Nel.find (\item -> item.id == id) history of
@@ -316,8 +339,34 @@ msgRootOf id history =
       Nothing
 
 
+settingsDecoder : Decoder Settings
+settingsDecoder =
+  Decode.object2
+    Settings
+    ("fixedToLeft" := Decode.bool)
+    ("filter" := Decode.list (Decode.tuple2 (,) Decode.string Decode.bool))
 
 
+encodeSetting : Settings -> String
+encodeSetting settings =
+  Encode.encode 0 <|
+    Encode.object
+      [ ("fixedToLeft", Encode.bool settings.fixedToLeft)
+      , ("filter"
+        , Encode.list <|
+            List.map
+              (\(key, value) -> Encode.list [ Encode.string key, Encode.bool value] )
+              settings.filter
+        )
+      ]
 
+
+saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
+saveSetting save model =
+  Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+
+decodeSettings : String -> Result String Settings
+decodeSettings =
+  Decode.decodeString settingsDecoder
 
 --
