@@ -1,3 +1,5 @@
+port module Main exposing (..)
+
 import Html exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (..)
@@ -11,14 +13,23 @@ import TimeTravel.Html.App as TimeTravel
 import Dict exposing (Dict)
 import Process
 
+
+-- port outgoing : TimeTravel.OutgoingMsg -> Cmd msg
+--
+-- port incoming : (TimeTravel.IncomingMsg -> msg) -> Sub msg
+
+
 main =
   TimeTravel.program
+  -- TimeTravel.programWithOptions
+  --   { outgoingMsg = outgoing
+  --   , incomingMsg = incoming
+  --   }
     { init = init
     , view = view
     , update = update
     , subscriptions = subscriptions
     }
-
 
 
 -- MODEL

@@ -49,7 +49,9 @@ debugViewTheme : List (String, String)
 debugViewTheme =
   [ ("background-color", "#444")
   , ("color", "#eee")
+  , ("font-family", "calibri, helvetica, arial, sans-serif")
   ]
+  
 
 debugView : Bool -> List (String, String)
 debugView fixedToLeft =
@@ -136,6 +138,10 @@ msgTreeView : List (String, String)
 msgTreeView =
   panel True ++ panelBorder
 
+
+detailedMsgView : List (String, String)
+detailedMsgView =
+  [ ("white-space", "pre") ] ++ panel True ++ panelBorder
 
 msgTreeViewItemRow : Bool -> List (String, String)
 msgTreeViewItemRow selected =

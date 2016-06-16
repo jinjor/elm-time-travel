@@ -8,13 +8,18 @@ import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
 
+import Basics.Extra exposing (never)
+
+import Json.Decode as Decode exposing ((:=), Decoder)
+import Json.Encode as Encode
 
 type alias HistoryItem model msg data =
   { id : Id
   , msg : MsgLike msg data
   , causedBy : Maybe Id
   , model : model
-  , lazyAst : Maybe (Result String AST)
+  , lazyMsgAst : Maybe (Result String AST)
+  , lazyModelAst : Maybe (Result String AST)
   }
 
 type alias Model model msg data =
@@ -35,6 +40,21 @@ type alias FilterOptions =
   List (String, Bool)
 
 
+type alias Settings =
+  { fixedToLeft : Bool
+  , filter : FilterOptions
+  }
+
+type alias OutgoingMsg =
+  { type_ : String
+  , settings : String
+  }
+
+type alias IncomingMsg =
+  { type_ : String
+  , settings : String
+  }
+
 type Msg
   = ToggleSync
   | ToggleExpand
@@ -43,6 +63,7 @@ type Msg
   | Resync
   -- | ToggleDif
   | ToggleLayout
+  | Receive IncomingMsg
 
 
 init : model -> Model model msg data
@@ -65,7 +86,8 @@ initItem model =
   , msg = Init
   , causedBy = Nothing
   , model = model
-  , lazyAst = Nothing
+  , lazyMsgAst = Nothing
+  , lazyModelAst = Nothing
   }
 
 
@@ -75,7 +97,8 @@ newItem id msg causedBy model =
   , msg = msg
   , causedBy = causedBy
   , model = model
-  , lazyAst = Nothing
+  , lazyMsgAst = Nothing
+  , lazyModelAst = Nothing
   }
 
 
@@ -118,7 +141,8 @@ updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
             model.history
       } |> selectFirstIfSync
     )
-    ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
+    ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd)
+      ]
 
 
 urlUpdateOnIncomingData :
@@ -198,16 +222,49 @@ updateLazyAst model =
     Just id ->
       mapHistory
         (\item ->
-          if item.id == id || item.id == id - 1 && item.lazyAst == Nothing then
-            { item |
-              lazyAst = Just (Parser.parse (toString item.model))
-            }
+          if item.id == id || item.id == id - 1 then
+            updateLazyAstHelp item
           else
             item
         )
         model
     _ ->
       model
+
+
+updateLazyAstHelp : HistoryItem model msg data -> HistoryItem model msg data
+updateLazyAstHelp item =
+  { item |
+    lazyMsgAst =
+      if item.lazyMsgAst == Nothing then
+        case item.msg of
+          Message msg ->
+            Just (Parser.parse (toString msg))
+          UrlData data ->
+            Just (Parser.parse (toString data))
+          _ ->
+            Just (Err "")
+      else
+        item.lazyMsgAst
+  , lazyModelAst =
+      if item.lazyModelAst == Nothing then
+        Just (Parser.parse (toString item.model))
+      else
+        item.lazyModelAst
+  }
+
+
+selectedMsgAst : Model model msg data -> Maybe AST
+selectedMsgAst model =
+  case model.selectedMsg of
+    Just id ->
+      case Nel.filterMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
+        Just (Ok ast) :: _ ->
+          Just ast
+        _ ->
+          Nothing
+    _ ->
+      Nothing
 
 
 selectedAndOldAst : Model model msg data -> Maybe (AST, AST)
@@ -219,7 +276,7 @@ selectedAndOldAst model =
           Nel.filterMap
             (\item ->
               if item.id == id || item.id == id - 1 then
-                Just item.lazyAst
+                Just item.lazyModelAst
               else
                 Nothing
             )
@@ -269,6 +326,7 @@ selectedMsgTree model =
     _ ->
       Nothing
 
+
 msgRootOf : Id -> Nel (HistoryItem model msg data) -> Maybe (HistoryItem model msg data)
 msgRootOf id history =
   case Nel.find (\item -> item.id == id) history of
@@ -280,8 +338,34 @@ msgRootOf id history =
       Nothing
 
 
+settingsDecoder : Decoder Settings
+settingsDecoder =
+  Decode.object2
+    Settings
+    ("fixedToLeft" := Decode.bool)
+    ("filter" := Decode.list (Decode.tuple2 (,) Decode.string Decode.bool))
 
 
+encodeSetting : Settings -> String
+encodeSetting settings =
+  Encode.encode 0 <|
+    Encode.object
+      [ ("fixedToLeft", Encode.bool settings.fixedToLeft)
+      , ("filter"
+        , Encode.list <|
+            List.map
+              (\(key, value) -> Encode.list [ Encode.string key, Encode.bool value] )
+              settings.filter
+        )
+      ]
 
+
+saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
+saveSetting save model =
+  Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+
+decodeSettings : String -> Result String Settings
+decodeSettings =
+  Decode.decodeString settingsDecoder
 
 --

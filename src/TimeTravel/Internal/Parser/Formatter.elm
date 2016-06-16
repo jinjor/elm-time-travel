@@ -68,14 +68,14 @@ formatListLike indent wordsLimit start end list =
     head :: tail ->
       let
         tailStr =
-          List.map (\s -> ", " ++ s) tail ++ [end]
+          List.map (\s -> ", " ++ s) tail
         joinedStr =
           head ++ String.join "" tailStr
       in
         if String.length joinedStr > wordsLimit || String.contains "\n" joinedStr then
           String.join "\n" <|
-            (start ++ " " ++ head) :: List.map indent tailStr
+            (start ++ " " ++ head) :: List.map indent (tailStr ++ [end])
         else
-          (start ++ head) ++ String.join "" tailStr
+          (start ++ " " ++ head) ++ String.join "" tailStr ++ " " ++ end
     _ ->
       start ++ end

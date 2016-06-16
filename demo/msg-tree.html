@@ -1,0 +1,24 @@
+
+<body>
+<script src="msg-tree.js"></script>
+<script>
+  var app = Elm.Main.fullscreen();
+  configure(app, 'outgoing', 'incoming');
+
+  function configure(app, outgoingPortName, incomingPortName) {
+    app.ports[outgoingPortName].subscribe(function(msg) {
+      if(msg.type_ == 'save') {
+        localStorage.setItem('TimeTravel.fixedToLeft', msg.settings);
+      }
+    });
+    setTimeout(function() {
+      app.ports[incomingPortName].send({
+        type_: 'load',
+        settings : localStorage.getItem('TimeTravel.fixedToLeft') || ''
+      });
+    });
+  }
+
+
+</script>
+</body>

@@ -7,6 +7,7 @@ import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Icons as I
 import TimeTravel.Internal.MsgTreeView as MsgTreeView
 import TimeTravel.Internal.DiffView as DiffView
+import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -103,7 +104,7 @@ filterItemView (name, visible) =
 modelView : Model model msg data -> Html Msg
 modelView model =
   case selectedItem model of
-    Just { model, lazyAst } ->
+    Just { model, lazyModelAst } ->
       div
         []
         [ div [ style S.modelView ] [ text (toString model) ]
@@ -139,10 +140,24 @@ detailView model =
             DiffView.view oldAst newAst
           Nothing ->
             text ""
+
+      detailedMsgView =
+        case selectedMsgAst model of
+          Just ast ->
+            div
+              [ style S.detailedMsgView ]
+              [ text (Formatter.formatAsString ast) ]
+
+          Nothing ->
+            text ""
+
     in
       div
         [ style (S.detailView model.fixedToLeft True) ]
-        [ msgTreeView, diffView ]
+        [ msgTreeView
+        , detailedMsgView
+        , diffView
+        ]
   else
     text ""
 
@@ -165,10 +180,6 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
             List.any (\(name, visible) -> tag == name && visible) filterOptions
           _ ->
             False
-    causedBy' =
-      case causedBy of
-        Just id -> " (by " ++ toString id ++ ")"
-        Nothing -> ""
   in
     if visible then
       Just (
@@ -176,7 +187,7 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]
-          [ text (toString id ++ ": " ++ str ++ causedBy') ]
+          [ text (toString id ++ ": " ++ str) ]
       )
     else
       Nothing
