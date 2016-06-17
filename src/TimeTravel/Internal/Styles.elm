@@ -51,7 +51,7 @@ debugViewTheme =
   , ("color", "#eee")
   , ("font-family", "calibri, helvetica, arial, sans-serif")
   ]
-  
+
 
 debugView : Bool -> List (String, String)
 debugView fixedToLeft =
@@ -163,10 +163,15 @@ lineBase =
   , ("white-space", "pre")
   ]
 
+
+omittedLine : List (String, String)
+omittedLine =
+  lineBase
+
+
 normalLine : List (String, String)
 normalLine =
-  [ --("background-color", "rgba(100, 100, 100, 0.15)")
-  ] ++ lineBase
+  lineBase
 
 
 deletedLine : List (String, String)
