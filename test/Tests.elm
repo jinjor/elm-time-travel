@@ -100,7 +100,6 @@ tests =
     , test "expression12" (testParse "{ a = \"}={\" }" (Record [Property "a" (StringLiteral "}={")]))
     , test "complex1" (testParseComplex "{ seed = Seed (Seed (Seed {})) }")
     , test "complex2" (testParseComplex complexString)
-    , test "travis-fail-test" (assertEqual 1 2)
     ]
 
 complexString = """
