@@ -33,10 +33,11 @@ format c ast =
     PropertyX id key value ->
       let
         s = format { c | parens = False, nest = c.nest + 1 } value
+        str = format2String s
       in
         Listed <|
         Plain (key ++ " = ") ::
-          ( if True then --String.contains "\n" s || String.length (key ++ " = " ++ s) > c.wordsLimit then -- TODO not correct
+          ( if String.contains "\n" str || String.length (key ++ " = " ++ str) > c.wordsLimit then -- TODO not correct
               [ Plain ("\n" ++ indent { c | nest = c.nest + 1 }), s ]
             else [s]
           )
@@ -44,29 +45,29 @@ format c ast =
       Plain <|"\"" ++ s ++ "\"" -- TODO replace quote
     ValueX id s ->
       Plain s
-    -- UnionX id tag tail ->
-    --   let
-    --     tailStr =
-    --       List.map (format { c | nest = c.nest + 1, parens = True }) tail
-    --     joinedTailStr =
-    --       String.join "" tailStr
-    --     multiLine =
-    --       String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > c.wordsLimit -- TODO not correct
-    --     s =
-    --       if multiLine then
-    --         String.join "\n" (tag :: List.map (indent { c | nest = c.nest + 1 }) tailStr)
-    --       else
-    --         String.join " " (tag :: tailStr)
-    --   in
-    --     if (not (List.isEmpty tail)) && c.parens then
-    --       "(" ++ s ++ (if multiLine then "\n" ++ indent c ")" else ")")
-    --     else
-    --       s
+    UnionX id tag tail ->
+      let
+        tailX =
+          List.map (format { c | nest = c.nest + 1, parens = True }) tail
+        joinedTailStr =
+          format2String (Listed tailX)
+        multiLine =
+          String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > c.wordsLimit -- TODO not correct
+        s =
+          Listed <|
+            if multiLine then
+              Plain (tag ++ "\n" ++ indent { c | nest = c.nest + 1 }) :: joinX ("\n" ++ indent { c | nest = c.nest + 1 }) tailX
+            else
+              joinX " " (Plain tag :: tailX)
+      in
+        if (not (List.isEmpty tail)) && c.parens then
+          Listed [ Plain "(", s, Plain (if multiLine then ("\n" ++ indent c ++ ")") else ")") ]
+        else
+          s
     ListLiteralX id list ->
       formatListLike id (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
     TupleLiteralX id list ->
       formatListLike id (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
-    _ -> Listed []
 
 ---
 
@@ -76,8 +77,10 @@ type FoldableString =
 joinX : String -> List FoldableString -> List FoldableString
 joinX s list =
   case list of
-    head :: tail -> head :: Plain s :: joinX s tail
     [] -> []
+    [head] -> [head]
+    head :: tail -> head :: Plain s :: joinX s tail
+
 
 formatListLike : AST.ASTId -> String -> Int -> String -> String -> List FoldableString -> FoldableString
 formatListLike id indent wordsLimit start end list =
@@ -87,19 +90,17 @@ formatListLike id indent wordsLimit start end list =
     _ ->
       let
         singleLine =
-          Listed <| Plain (start ++ " ") :: (joinX ", " list ++ [ Plain <| " " ++ end ])
+          Listed <| Plain (start ++ " ") :: ((joinX ", " list) ++ [ Plain <| " " ++ end ])
         singleLineStr =
           format2String singleLine
         long = String.length singleLineStr > wordsLimit || String.contains "\n" singleLineStr
       in
         if long then
           Long id (start ++ " ... " ++ end)
-            ( joinX ("\n" ++ indent ++ ", ") <|
-              Plain start :: (list ++ [ Plain end ])
+            ( Plain (start ++ " ") :: ((joinX ("\n" ++ indent ++ ", ") list) ++ [Plain <| "\n" ++ indent] ++ [ Plain end ])
             )
         else
           singleLine
-
 
 
 format2String : FoldableString -> String
