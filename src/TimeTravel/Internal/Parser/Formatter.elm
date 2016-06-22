@@ -1,7 +1,8 @@
 module TimeTravel.Internal.Parser.Formatter exposing (..) -- where
 
 import String
-import TimeTravel.Internal.Parser.AST exposing (..)
+import Set exposing (Set)
+import TimeTravel.Internal.Parser.AST as AST exposing (..)
 
 type alias Context =
   { nest : Int
@@ -12,7 +13,7 @@ type alias Context =
 
 formatAsString : AST -> String
 formatAsString ast =
-  format { nest = 0, parens = False, wordsLimit = 40 } ast
+  format { nest = 0, parens = False, wordsLimit = 40 } (fst <| AST.attachId 0 ast)
 
 
 indent : Context -> String -> String
@@ -20,12 +21,12 @@ indent context s =
   (String.repeat context.nest "  ") ++ s
 
 
-format : Context -> AST -> String
+format : Context -> ASTX -> String
 format c ast =
   case ast of
-    Record properties ->
-      formatListLike (indent c) c.wordsLimit "{" "}" (List.map (format { c | nest = c.nest + 1 }) properties)
-    Property key value ->
+    RecordX id properties ->
+      formatListLike id (indent c) c.wordsLimit "{" "}" (List.map (format { c | nest = c.nest + 1 }) properties)
+    PropertyX id key value ->
       let
         s = format { c | parens = False, nest = c.nest + 1 } value
       in
@@ -34,11 +35,11 @@ format c ast =
               "\n" ++ indent { c | nest = c.nest + 1 } s
             else s
           )
-    StringLiteral s ->
+    StringLiteralX id s ->
       "\"" ++ s ++ "\"" -- TODO replace quote
-    Value s ->
+    ValueX id s ->
       s
-    Union tag tail ->
+    UnionX id tag tail ->
       let
         tailStr =
           List.map (format { c | nest = c.nest + 1, parens = True }) tail
@@ -56,14 +57,14 @@ format c ast =
           "(" ++ s ++ (if multiLine then "\n" ++ indent c ")" else ")")
         else
           s
-    ListLiteral list ->
-      formatListLike (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
-    TupleLiteral list ->
-      formatListLike (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
+    ListLiteralX id list ->
+      formatListLike id (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
+    TupleLiteralX id list ->
+      formatListLike id (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
 
 
-formatListLike : (String -> String) -> Int -> String -> String -> List String -> String
-formatListLike indent wordsLimit start end list =
+formatListLike : AST.ASTId -> (String -> String) -> Int -> String -> String -> List String -> String
+formatListLike id indent wordsLimit start end list =
   case list of
     head :: tail ->
       let
@@ -71,8 +72,10 @@ formatListLike indent wordsLimit start end list =
           List.map (\s -> ", " ++ s) tail
         joinedStr =
           head ++ String.join "" tailStr
+        long =
+          String.length joinedStr > wordsLimit || String.contains "\n" joinedStr
       in
-        if String.length joinedStr > wordsLimit || String.contains "\n" joinedStr then
+        if long then
           String.join "\n" <|
             (start ++ " " ++ head) :: List.map indent (tailStr ++ [end])
         else
