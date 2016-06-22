@@ -28,6 +28,7 @@ update save message model =
               else
                 model.selectedMsg
           , sync = nextSync
+          , showModelDetail = False
           }
           |> selectFirstIfSync
           |> if nextSync then futureToHistory else identity
@@ -72,6 +73,7 @@ update save message model =
         newModel =
           { model |
             sync = True
+          , showModelDetail = False
           } |> selectFirstIfSync |> futureToHistory
       in
         newModel ! []
@@ -90,6 +92,23 @@ update save message model =
       in
         newModel ! [ saveSetting save newModel ]
 
+    ToggleModelDetail ->
+      if model.sync then
+        ( { model |
+            showModelDetail = not (model.showModelDetail)
+          , sync = False
+          }
+          |> selectFirstIfSync
+          |> futureToHistory
+        ) ! []
+      else
+        { model |
+          showModelDetail = not (model.showModelDetail)
+        } ! []
+
+    ToggleModelTree id ->
+      model ! []
+      -- { model | foldedTree = Set.remove id model.foldedTree } ! []
 
 updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg data -> (Model model msg data, Cmd Msg)
 updateAfterUserMsg save model =

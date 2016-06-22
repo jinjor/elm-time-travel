@@ -1,7 +1,7 @@
 module TimeTravel.Internal.Styles exposing (..) -- where
 
 
-zIndex = { debugView = "2147483647", resyncView = "2147483646" }
+zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
 
 
 button : List (String, String)
@@ -80,10 +80,44 @@ headerView =
   ] ++ panel True
 
 
+
+modelViewContainer : List (String, String)
+modelViewContainer =
+  []
+
+
 modelView : List (String, String)
 modelView =
-  [ ("height", "100px") ]
+  [ ("height", "150px")
+  , ("box-sizing", "border-box")
+  ]
   ++ panelBorder ++ panel True
+
+
+modelDetailView : Bool -> List (String, String)
+modelDetailView fixedToLeft =
+  [ ("width", "360px")
+  , ("position", "absolute")
+  , (if fixedToLeft then "margin-right" else "margin-left", "-360px")
+  -- , (if fixedToLeft then "left" else "right", "0")
+  , ("z-index", zIndex.modelDetailView)
+  , ("box-sizing", "border-box")
+  ] ++ subPain fixedToLeft ++ debugViewTheme ++ panel True
+
+
+modelDetailFlagment : List (String, String)
+modelDetailFlagment =
+  [ ("white-space", "pre")
+  , ("display", "inline")
+  ]
+
+
+modelDetailFlagmentToggle : List (String, String)
+modelDetailFlagmentToggle =
+  [ ("white-space", "pre")
+  , ("display", "inline")
+  , ("background-color", "#777")
+  ]
 
 
 msgListView : List (String, String)
@@ -95,6 +129,7 @@ itemBackground : Bool -> List (String, String)
 itemBackground selected =
   [ ("background-color", if selected then "rgba(0, 0, 0, 0.5)" else "")
   ]
+
 
 msgView : Bool -> List (String, String)
 msgView selected =
@@ -120,18 +155,22 @@ resyncView sync =
   ]
 
 
+subPain : Bool -> List (String, String)
+subPain fixedToLeft =
+  [ ( "box-shadow"
+    , if fixedToLeft then
+        "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
+      else
+        "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
+  ]
+
 detailView : Bool -> Bool -> List (String, String)
 detailView fixedToLeft opened =
   [ ("position", "absolute")
   , ("width", "320px")
   , (if fixedToLeft then "right" else "left", "-320px")
   , ("box-sizing", "border-box")
-  , ( "box-shadow"
-    , if fixedToLeft then
-        "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
-      else
-        "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
-  ] ++ debugViewTheme
+  ] ++ subPain fixedToLeft ++ debugViewTheme
 
 
 msgTreeView : List (String, String)

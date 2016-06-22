@@ -27,6 +27,7 @@ type alias Model model msg data =
   , history : Nel (HistoryItem model msg data)
   , filter : FilterOptions
   , sync : Bool
+  , showModelDetail : Bool
   , expand : Bool
   , msgId : Id
   , selectedMsg : Maybe Id
@@ -64,6 +65,8 @@ type Msg
   -- | ToggleDif
   | ToggleLayout
   | Receive IncomingMsg
+  | ToggleModelDetail
+  | ToggleModelTree Int
 
 
 init : model -> Model model msg data
@@ -72,6 +75,7 @@ init model =
   , history = Nel (initItem model) []
   , filter = []
   , sync = True
+  , showModelDetail = False
   , expand = False
   , msgId = 1
   , selectedMsg = Nothing

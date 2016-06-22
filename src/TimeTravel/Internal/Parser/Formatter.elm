@@ -3,8 +3,10 @@ module TimeTravel.Internal.Parser.Formatter exposing (..) -- where
 import String
 import Set exposing (Set)
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Parser.AST as AST exposing (..)
 
 
@@ -18,6 +20,10 @@ type alias Context =
 formatAsString : AST -> String
 formatAsString ast =
   format2String <| format { nest = 0, parens = False, wordsLimit = 40 } (fst <| AST.attachId 0 ast)
+
+formatAsHtml : (Int -> msg) -> Set Int -> AST -> List (Html msg)
+formatAsHtml transformMsg folded ast =
+  format2Html transformMsg folded <| format { nest = 0, parens = False, wordsLimit = 40 } (fst <| AST.attachId 0 ast)
 
 
 indent : Context -> String
@@ -114,11 +120,11 @@ format2String fstr =
 format2Html : (Int -> msg) -> Set Int -> FoldableString -> List (Html msg)
 format2Html transformMsg folded fstr =
   format2Help
-    (\s -> [pre [] [ text s ]])
+    (\s -> [span [ style S.modelDetailFlagment ] [ text s ]])
     (\list -> List.concatMap (format2Html transformMsg folded) list)
     (\id alt children ->
       if Set.member id folded then
-        [ pre [ onClick (transformMsg id) ] [ text alt ]]
+        [ span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text alt ]]
       else
         List.concatMap (format2Html transformMsg folded) children
     ) fstr

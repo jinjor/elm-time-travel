@@ -15,6 +15,7 @@ import Html.Events exposing (..)
 import Html.App as App
 
 import String
+import Set
 
 
 view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
@@ -102,12 +103,26 @@ filterItemView (name, visible) =
 
 
 modelView : Model model msg data -> Html Msg
-modelView model =
-  case selectedItem model of
+modelView model' =
+  case selectedItem model' of
     Just { model, lazyModelAst } ->
       div
-        []
-        [ div [ style S.modelView ] [ text (toString model) ]
+        [ style S.modelViewContainer
+        , onClick ToggleModelDetail
+        ]
+        [ if not model'.showModelDetail then
+            div [ style S.modelView ] [ text (toString model) ]
+          else
+            case lazyModelAst of
+              Just (Ok ast) ->
+                let
+                  html = Formatter.formatAsHtml ToggleModelTree {-model'.foldedTree -}Set.empty ast
+                in
+                  div [ style <| S.modelDetailView model'.fixedToLeft ] html
+
+              _ ->
+                div [ style S.modelView ] [ text (toString model) ]
+
         ]
 
     Nothing ->
