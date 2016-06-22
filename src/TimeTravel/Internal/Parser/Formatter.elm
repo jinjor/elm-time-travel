@@ -3,6 +3,7 @@ module TimeTravel.Internal.Parser.Formatter exposing (..) -- where
 import String
 import Set exposing (Set)
 import Html exposing (..)
+import Html.Events exposing (..)
 
 import TimeTravel.Internal.Parser.AST as AST exposing (..)
 
@@ -24,7 +25,7 @@ indent context =
   String.repeat context.nest "  "
 
 
-format : Context -> ASTX -> List FoldableString
+format : Context -> ASTX -> FoldableString
 format c ast =
   case ast of
     RecordX id properties ->
@@ -33,15 +34,16 @@ format c ast =
       let
         s = format { c | parens = False, nest = c.nest + 1 } value
       in
+        Listed <|
         Plain (key ++ " = ") ::
           ( if True then --String.contains "\n" s || String.length (key ++ " = " ++ s) > c.wordsLimit then -- TODO not correct
-              Plain ("\n" ++ indent { c | nest = c.nest + 1 }) :: s
-            else s
+              [ Plain ("\n" ++ indent { c | nest = c.nest + 1 }), s ]
+            else [s]
           )
     StringLiteralX id s ->
-      [Plain <|"\"" ++ s ++ "\""] -- TODO replace quote
+      Plain <|"\"" ++ s ++ "\"" -- TODO replace quote
     ValueX id s ->
-      [Plain s]
+      Plain s
     -- UnionX id tag tail ->
     --   let
     --     tailStr =
@@ -64,7 +66,7 @@ format c ast =
       formatListLike id (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
     TupleLiteralX id list ->
       formatListLike id (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
-    _ -> []
+    _ -> Listed []
 
 ---
 
@@ -77,53 +79,55 @@ joinX s list =
     head :: tail -> head :: Plain s :: joinX s tail
     [] -> []
 
-formatListLike : AST.ASTId -> String -> Int -> String -> String -> List (List FoldableString) -> List FoldableString
+formatListLike : AST.ASTId -> String -> Int -> String -> String -> List FoldableString -> FoldableString
 formatListLike id indent wordsLimit start end list =
   case list of
     [] ->
-       [ Plain <| start ++ end ]
+       Plain <| start ++ end
     _ ->
       let
         singleLine =
-          Plain (start ++ " ") :: (joinX ", " (List.map Listed list) ++ [ Plain <| " " ++ end ])
+          Listed <| Plain (start ++ " ") :: (joinX ", " list ++ [ Plain <| " " ++ end ])
         singleLineStr =
           format2String singleLine
         long = String.length singleLineStr > wordsLimit || String.contains "\n" singleLineStr
       in
         if long then
-          [ Long id (start ++ " ... " ++ end)
-              ( joinX ("\n" ++ indent ++ ", ") <|
-                Plain start :: ((List.map Listed list) ++ [ Plain end ])
-              )
-          ]
+          Long id (start ++ " ... " ++ end)
+            ( joinX ("\n" ++ indent ++ ", ") <|
+              Plain start :: (list ++ [ Plain end ])
+            )
         else
           singleLine
 
 
 
-format2String : List FoldableString -> String
-format2String list =
-  format2Help identity format2String (\_ _ children -> format2String children) (String.join "") list
+format2String : FoldableString -> String
+format2String fstr =
+  format2Help
+    identity
+    (String.join "" << List.map format2String)
+    (\_ _ children -> String.join "" <| List.map format2String children)
+    fstr
 
-format2Html : Set Int -> List FoldableString -> List (Html msg)
-format2Html folded list =
+format2Html : (Int -> msg) -> Set Int -> FoldableString -> List (Html msg)
+format2Html transformMsg folded fstr =
   format2Help
     (\s -> [pre [] [ text s ]])
-    (\list -> format2Html folded list)
+    (\list -> List.concatMap (format2Html transformMsg folded) list)
     (\id alt children ->
       if Set.member id folded then
-        [ pre [{-onClick (ToggleModel id)-}] [ text alt ]]
+        [ pre [ onClick (transformMsg id) ] [ text alt ]]
       else
-        format2Html folded children
-    ) (List.concatMap identity) list
+        List.concatMap (format2Html transformMsg folded) children
+    ) fstr
 
-format2Help : (String -> a) -> (List FoldableString -> a) -> (Int -> String -> List FoldableString -> a) -> (List a -> b) -> List FoldableString -> b
-format2Help formatPlain formatListed formatLong join list =
-  join <|
-  List.map (\str ->
-    case str of
-      Plain s -> formatPlain s
-      Listed list -> formatListed list
-      Long id alt s ->
-        formatLong id alt s
-    ) list
+format2Help : (String -> a) -> (List FoldableString -> a) -> (Int -> String -> List FoldableString -> a) -> FoldableString -> a
+format2Help formatPlain formatListed formatLong fstr =
+  case fstr of
+    Plain s ->
+      formatPlain s
+    Listed list ->
+      formatListed list
+    Long id alt s ->
+      formatLong id alt s
