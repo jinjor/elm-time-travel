@@ -1,6 +1,6 @@
 module TimeTravel.Internal.Icons exposing (..) -- where
 
-import Material.Icons.Content exposing (filter_list)
+import Material.Icons.Content exposing (filter_list, content_copy)
 import Material.Icons.Navigation exposing (arrow_drop_down, arrow_drop_up)
 import Material.Icons.Av exposing (play_arrow, pause)
 import Material.Icons.Action exposing (swap_horiz)
@@ -26,3 +26,8 @@ filterExpand expanded =
 layout : Svg msg
 layout =
   swap_horiz Color.white 24
+
+
+toggleModelDetail : Svg msg
+toggleModelDetail =
+  content_copy Color.white 24

@@ -78,11 +78,6 @@ update save message model =
       in
         newModel ! []
 
-    -- ToggleDiff ->
-    --   { model |
-    --     showDiff = not (model.showDiff)
-    --   } |> updateLazyAst
-
     ToggleLayout ->
       let
         newModel =

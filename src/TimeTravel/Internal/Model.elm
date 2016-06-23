@@ -64,7 +64,6 @@ type Msg
   | ToggleFilter String
   | SelectMsg Id
   | Resync
-  -- | ToggleDif
   | ToggleLayout
   | Receive IncomingMsg
   | ToggleModelDetail
@@ -370,6 +369,7 @@ encodeSetting settings =
 saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
 saveSetting save model =
   Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+
 
 decodeSettings : String -> Result String Settings
 decodeSettings =

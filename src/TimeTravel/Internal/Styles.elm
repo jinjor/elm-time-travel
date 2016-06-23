@@ -96,13 +96,10 @@ modelView =
 
 modelDetailView : Bool -> List (String, String)
 modelDetailView fixedToLeft =
-  [ ("width", "360px")
-  , ("position", "absolute")
-  , (if fixedToLeft then "margin-right" else "margin-left", "-360px")
-  -- , (if fixedToLeft then "left" else "right", "0")
+  [ ("width", "320px")
   , ("z-index", zIndex.modelDetailView)
   , ("box-sizing", "border-box")
-  ] ++ subPain fixedToLeft ++ debugViewTheme ++ panel True
+  ] ++ panel True
 
 
 modelDetailFlagment : List (String, String)
@@ -232,3 +229,19 @@ addedLine : List (String, String)
 addedLine =
   [ ("background-color", "rgba(100, 255, 100, 0.15)")
   ] ++ lineBase
+
+diffOrModelDetailViewContainer : List (String, String)
+diffOrModelDetailViewContainer =
+  [ ("position", "relative")
+  ]
+
+toggleModelDetailIcon : List (String, String)
+toggleModelDetailIcon =
+  [ ("right", "20px")
+  , ("top", "20px")
+  , ("position", "absolute")
+  ] ++ iconButton ++ debugViewTheme
+
+subHeaderView : List (String, String)
+subHeaderView =
+  headerView ++ panelBorder

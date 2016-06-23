@@ -45,7 +45,6 @@ debugView model =
     , div
         [ style (S.debugView model.fixedToLeft) ]
         [ headerView model.fixedToLeft model.sync model.expand model.filter
-        , modelView model
         , msgListView
             model.filter
             model.selectedMsg
@@ -102,23 +101,6 @@ filterItemView (name, visible) =
         ]
     ]
 
-
-modelView : Model model msg data -> Html Msg
-modelView model' =
-  case selectedItem model' of
-    Just { model, lazyModelAst } ->
-      div
-        [ style S.modelViewContainer
-        ]
-        [ if not model'.showModelDetail then
-            div [ onClick ToggleModelDetail, style S.modelView ] [ text (toString model) ]
-          else
-            modelDetailView model'.fixedToLeft model'.expandedTree lazyModelAst model
-        ]
-
-    Nothing ->
-      text ""
-
 modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
 modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
   case lazyModelAst of
@@ -154,7 +136,7 @@ detailView model =
           _ ->
             text ""
 
-      diffView =
+      diffOrModelDetailView =
         case selectedAndOldAst model of
           Just (oldAst, newAst) ->
             DiffView.view oldAst newAst
@@ -174,10 +156,28 @@ detailView model =
     in
       div
         [ style (S.detailView model.fixedToLeft True) ]
-        [ msgTreeView
-        , detailedMsgView
-        , diffView
-        ]
+        ( div
+            [ style S.subHeaderView ]
+            [ buttonView ToggleModelDetail False [ I.toggleModelDetail ]
+            ]
+        ::
+          if model.showModelDetail then
+            case selectedItem model of
+              Just item ->
+                modelDetailView
+                  model.fixedToLeft
+                  model.expandedTree
+                  item.lazyModelAst
+                  item.model
+                :: []
+              _ ->
+                []
+          else
+            [ msgTreeView
+            , detailedMsgView
+            , diffOrModelDetailView
+            ]
+        )
   else
     text ""
 
