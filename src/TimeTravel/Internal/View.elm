@@ -113,19 +113,19 @@ modelView model' =
         [ if not model'.showModelDetail then
             div [ onClick ToggleModelDetail, style S.modelView ] [ text (toString model) ]
           else
-            modelDetailView model'.fixedToLeft model'.foldedTree lazyModelAst model
+            modelDetailView model'.fixedToLeft model'.expandedTree lazyModelAst model
         ]
 
     Nothing ->
       text ""
 
 modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
-modelDetailView fixedToLeft foldedTree lazyModelAst userModel =
+modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
   case lazyModelAst of
     Just (Ok ast) ->
       let
         html =
-          Formatter.formatAsHtml ToggleModelTree foldedTree (Formatter.makeModel ast)
+          Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
       in
         div [ style <| S.modelDetailView fixedToLeft ] html
 

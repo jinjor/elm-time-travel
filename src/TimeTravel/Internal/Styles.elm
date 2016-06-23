@@ -121,6 +121,14 @@ modelDetailFlagmentToggle =
   ]
 
 
+modelDetailFlagmentToggleExpand : List (String, String)
+modelDetailFlagmentToggleExpand =
+  [ ("position", "relative")
+  , ("left", "-16px")
+  , ("margin-right", "-14px")
+  ] ++ modelDetailFlagmentToggle
+
+
 msgListView : List (String, String)
 msgListView =
   panel True

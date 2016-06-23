@@ -101,7 +101,6 @@ indent context =
   String.repeat context.nest "  "
 
 
-
 joinX : String -> List FormatModel -> List FormatModel
 joinX s list =
   case list of
@@ -118,17 +117,29 @@ formatAsString model =
     (\_ _ children -> String.join "" <| List.map formatAsString children)
     model
 
+
 formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> FormatModel -> List (Html msg)
-formatAsHtml transformMsg folded model =
+formatAsHtml transformMsg expandedTree model =
   formatHelp
     (\s -> [span [ style S.modelDetailFlagment ] [ text s ]])
-    (\list -> List.concatMap (formatAsHtml transformMsg folded) list)
+    (\list -> List.concatMap (formatAsHtml transformMsg expandedTree) list)
     (\id alt children ->
-      if Set.member id folded then
-        [ span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text alt ]]
+      if Set.member id expandedTree then
+        span
+          [ style S.modelDetailFlagmentToggleExpand
+          , onClick (transformMsg id)
+          ]
+          [ text " - " ]
+        :: List.concatMap (formatAsHtml transformMsg expandedTree) children
       else
-        span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text " - " ] :: List.concatMap (formatAsHtml transformMsg folded) children
+        [ span
+            [ style S.modelDetailFlagmentToggle
+            , onClick (transformMsg id)
+            ]
+            [ text alt ]
+        ]
     ) model
+
 
 formatHelp : (String -> a) -> (List FormatModel -> a) -> (AST.ASTId -> String -> List FormatModel -> a) -> FormatModel -> a
 formatHelp formatPlain formatListed formatLong model =

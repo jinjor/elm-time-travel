@@ -34,7 +34,7 @@ type alias Model model msg data =
   , selectedMsg : Maybe Id
   , showDiff : Bool
   , fixedToLeft : Bool
-  , foldedTree : Set AST.ASTId
+  , expandedTree : Set AST.ASTId
   }
 
 type alias Id = Int
@@ -83,7 +83,7 @@ init model =
   , selectedMsg = Nothing
   , showDiff = False
   , fixedToLeft = False
-  , foldedTree = Set.empty
+  , expandedTree = Set.empty
   }
 
 

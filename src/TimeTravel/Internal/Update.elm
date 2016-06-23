@@ -107,7 +107,7 @@ update save message model =
         } ! []
 
     ToggleModelTree id ->
-      { model | foldedTree = toggleSet id model.foldedTree } ! []
+      { model | expandedTree = toggleSet id model.expandedTree } ! []
 
 
 toggleSet : comparable -> Set comparable -> Set comparable
