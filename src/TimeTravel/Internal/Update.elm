@@ -2,7 +2,7 @@ module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg) -- where
 
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
-
+import Set exposing (Set)
 
 update : (OutgoingMsg -> Cmd Never) -> Msg -> Model model msg data -> (Model model msg data, Cmd Msg)
 update save message model =
@@ -107,8 +107,13 @@ update save message model =
         } ! []
 
     ToggleModelTree id ->
-      model ! []
-      -- { model | foldedTree = Set.remove id model.foldedTree } ! []
+      { model | foldedTree = toggleSet id model.foldedTree } ! []
+
+
+toggleSet : comparable -> Set comparable -> Set comparable
+toggleSet a set =
+  (if Set.member a set then Set.remove else Set.insert) a set
+
 
 updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg data -> (Model model msg data, Cmd Msg)
 updateAfterUserMsg save model =

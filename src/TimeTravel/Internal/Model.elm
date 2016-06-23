@@ -1,6 +1,7 @@
 module TimeTravel.Internal.Model exposing (..) -- where
 
 import String
+import Set exposing (Set)
 
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
@@ -33,6 +34,7 @@ type alias Model model msg data =
   , selectedMsg : Maybe Id
   , showDiff : Bool
   , fixedToLeft : Bool
+  , foldedTree : Set AST.ASTId
   }
 
 type alias Id = Int
@@ -81,6 +83,7 @@ init model =
   , selectedMsg = Nothing
   , showDiff = False
   , fixedToLeft = False
+  , foldedTree = Set.empty
   }
 
 

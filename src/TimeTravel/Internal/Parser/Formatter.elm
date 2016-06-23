@@ -30,7 +30,7 @@ makeModelWithContext : Context -> ASTX -> FormatModel
 makeModelWithContext c ast =
   case ast of
     RecordX id properties ->
-      makeModelFromListLike id (indent c) c.wordsLimit "{" "}" (List.map (makeModelWithContext { c | nest = c.nest + 1 }) properties)
+      makeModelFromListLike True id (indent c) c.wordsLimit "{" "}" (List.map (makeModelWithContext { c | nest = c.nest + 1 }) properties)
     PropertyX id key value ->
       let
         s = makeModelWithContext { c | parens = False, nest = c.nest + 1 } value
@@ -66,13 +66,13 @@ makeModelWithContext c ast =
         else
           s
     ListLiteralX id list ->
-      makeModelFromListLike id (indent c) c.wordsLimit "[" "]" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
+      makeModelFromListLike True id (indent c) c.wordsLimit "[" "]" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
     TupleLiteralX id list ->
-      makeModelFromListLike id (indent c) c.wordsLimit "(" ")" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
+      makeModelFromListLike False id (indent c) c.wordsLimit "(" ")" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
 
 
-makeModelFromListLike : AST.ASTId -> String -> Int -> String -> String -> List FormatModel -> FormatModel
-makeModelFromListLike id indent wordsLimit start end list =
+makeModelFromListLike : Bool -> AST.ASTId -> String -> Int -> String -> String -> List FormatModel -> FormatModel
+makeModelFromListLike canFold id indent wordsLimit start end list =
   case list of
     [] ->
        Plain <| start ++ end
@@ -85,10 +85,13 @@ makeModelFromListLike id indent wordsLimit start end list =
         long =
           String.length singleLineStr > wordsLimit || String.contains "\n" singleLineStr
       in
-        if long then
-          Long id (start ++ " ... " ++ end)
+        if (indent /= "" && canFold) && long then
+          Long id (start ++ " .. " ++ end)
             ( Plain (start ++ " ") :: ((joinX ("\n" ++ indent ++ ", ") list) ++ [Plain <| "\n" ++ indent] ++ [ Plain end ])
             )
+        else if long then
+          Listed ( Plain (start ++ " ") :: ((joinX ("\n" ++ indent ++ ", ") list) ++ [Plain <| "\n" ++ indent] ++ [ Plain end ])
+          )
         else
           singleLine
 
@@ -124,7 +127,7 @@ formatAsHtml transformMsg folded model =
       if Set.member id folded then
         [ span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text alt ]]
       else
-        List.concatMap (formatAsHtml transformMsg folded) children
+        span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text " - " ] :: List.concatMap (formatAsHtml transformMsg folded) children
     ) model
 
 formatHelp : (String -> a) -> (List FormatModel -> a) -> (AST.ASTId -> String -> List FormatModel -> a) -> FormatModel -> a

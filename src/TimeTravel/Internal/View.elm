@@ -8,6 +8,7 @@ import TimeTravel.Internal.Icons as I
 import TimeTravel.Internal.MsgTreeView as MsgTreeView
 import TimeTravel.Internal.DiffView as DiffView
 import TimeTravel.Internal.Parser.Formatter as Formatter
+import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,7 +16,7 @@ import Html.Events exposing (..)
 import Html.App as App
 
 import String
-import Set
+import Set exposing (Set)
 
 
 view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
@@ -108,26 +109,29 @@ modelView model' =
     Just { model, lazyModelAst } ->
       div
         [ style S.modelViewContainer
-        , onClick ToggleModelDetail
         ]
         [ if not model'.showModelDetail then
-            div [ style S.modelView ] [ text (toString model) ]
+            div [ onClick ToggleModelDetail, style S.modelView ] [ text (toString model) ]
           else
-            case lazyModelAst of
-              Just (Ok ast) ->
-                let
-                  html =
-                    Formatter.formatAsHtml ToggleModelTree {-model'.foldedTree -}Set.empty (Formatter.makeModel ast)
-                in
-                  div [ style <| S.modelDetailView model'.fixedToLeft ] html
-
-              _ ->
-                div [ style S.modelView ] [ text (toString model) ]
-
+            modelDetailView model'.fixedToLeft model'.foldedTree lazyModelAst model
         ]
 
     Nothing ->
       text ""
+
+modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
+modelDetailView fixedToLeft foldedTree lazyModelAst userModel =
+  case lazyModelAst of
+    Just (Ok ast) ->
+      let
+        html =
+          Formatter.formatAsHtml ToggleModelTree foldedTree (Formatter.makeModel ast)
+      in
+        div [ style <| S.modelDetailView fixedToLeft ] html
+
+    _ ->
+      div [ style S.modelView ] [ text (toString userModel) ]
+
 
 
 msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg

@@ -117,6 +117,7 @@ modelDetailFlagmentToggle =
   [ ("white-space", "pre")
   , ("display", "inline")
   , ("background-color", "#777")
+  , ("cursor", "pointer")
   ]
 
 
