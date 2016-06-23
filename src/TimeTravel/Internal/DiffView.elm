@@ -15,7 +15,9 @@ import String
 
 view : ASTX -> ASTX -> Html msg
 view oldAst newAst =
-  viewDiff (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
+  viewDiff
+    (Formatter.formatAsString (Formatter.makeModel oldAst))
+    (Formatter.formatAsString (Formatter.makeModel newAst))
 
 
 type Line = Normal String | Delete String | Add String | Omit

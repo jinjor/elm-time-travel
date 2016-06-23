@@ -17,29 +17,24 @@ type alias Context =
   }
 
 
-formatAsString : ASTX -> String
-formatAsString ast =
-  format2String <| format { nest = 0, parens = False, wordsLimit = 40 } ast
-
-formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> ASTX -> List (Html msg)
-formatAsHtml transformMsg folded ast =
-  format2Html transformMsg folded <| format { nest = 0, parens = False, wordsLimit = 40 } ast
+type FormatModel =
+  Plain String | Listed (List FormatModel) | Long AST.ASTId String (List FormatModel)
 
 
-indent : Context -> String
-indent context =
-  String.repeat context.nest "  "
+makeModel : ASTX -> FormatModel
+makeModel =
+  makeModelWithContext { nest = 0, parens = False, wordsLimit = 40 }
 
 
-format : Context -> ASTX -> FoldableString
-format c ast =
+makeModelWithContext : Context -> ASTX -> FormatModel
+makeModelWithContext c ast =
   case ast of
     RecordX id properties ->
-      formatListLike id (indent c) c.wordsLimit "{" "}" (List.map (format { c | nest = c.nest + 1 }) properties)
+      makeModelFromListLike id (indent c) c.wordsLimit "{" "}" (List.map (makeModelWithContext { c | nest = c.nest + 1 }) properties)
     PropertyX id key value ->
       let
-        s = format { c | parens = False, nest = c.nest + 1 } value
-        str = format2String s
+        s = makeModelWithContext { c | parens = False, nest = c.nest + 1 } value
+        str = formatAsString s
       in
         Listed <|
         Plain (key ++ " = ") ::
@@ -54,9 +49,9 @@ format c ast =
     UnionX id tag tail ->
       let
         tailX =
-          List.map (format { c | nest = c.nest + 1, parens = True }) tail
+          List.map (makeModelWithContext { c | nest = c.nest + 1, parens = True }) tail
         joinedTailStr =
-          format2String (Listed tailX)
+          formatAsString (Listed tailX)
         multiLine =
           String.contains "\n" joinedTailStr || String.length (tag ++ joinedTailStr) > c.wordsLimit -- TODO not correct
         s =
@@ -71,25 +66,13 @@ format c ast =
         else
           s
     ListLiteralX id list ->
-      formatListLike id (indent c) c.wordsLimit "[" "]" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
+      makeModelFromListLike id (indent c) c.wordsLimit "[" "]" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
     TupleLiteralX id list ->
-      formatListLike id (indent c) c.wordsLimit "(" ")" (List.map (format { c | parens = False, nest = c.nest + 1 }) list)
-
----
-
-type FoldableString =
-  Plain String | Listed (List FoldableString) | Long AST.ASTId String (List FoldableString)
-
-joinX : String -> List FoldableString -> List FoldableString
-joinX s list =
-  case list of
-    [] -> []
-    [head] -> [head]
-    head :: tail -> head :: Plain s :: joinX s tail
+      makeModelFromListLike id (indent c) c.wordsLimit "(" ")" (List.map (makeModelWithContext { c | parens = False, nest = c.nest + 1 }) list)
 
 
-formatListLike : AST.ASTId -> String -> Int -> String -> String -> List FoldableString -> FoldableString
-formatListLike id indent wordsLimit start end list =
+makeModelFromListLike : AST.ASTId -> String -> Int -> String -> String -> List FormatModel -> FormatModel
+makeModelFromListLike id indent wordsLimit start end list =
   case list of
     [] ->
        Plain <| start ++ end
@@ -98,8 +81,9 @@ formatListLike id indent wordsLimit start end list =
         singleLine =
           Listed <| Plain (start ++ " ") :: ((joinX ", " list) ++ [ Plain <| " " ++ end ])
         singleLineStr =
-          format2String singleLine
-        long = String.length singleLineStr > wordsLimit || String.contains "\n" singleLineStr
+          formatAsString singleLine
+        long =
+          String.length singleLineStr > wordsLimit || String.contains "\n" singleLineStr
       in
         if long then
           Long id (start ++ " ... " ++ end)
@@ -109,29 +93,43 @@ formatListLike id indent wordsLimit start end list =
           singleLine
 
 
-format2String : FoldableString -> String
-format2String fstr =
-  format2Help
-    identity
-    (String.join "" << List.map format2String)
-    (\_ _ children -> String.join "" <| List.map format2String children)
-    fstr
+indent : Context -> String
+indent context =
+  String.repeat context.nest "  "
 
-format2Html : (AST.ASTId -> msg) -> Set AST.ASTId -> FoldableString -> List (Html msg)
-format2Html transformMsg folded fstr =
-  format2Help
+
+
+joinX : String -> List FormatModel -> List FormatModel
+joinX s list =
+  case list of
+    [] -> []
+    [head] -> [head]
+    head :: tail -> head :: Plain s :: joinX s tail
+
+
+formatAsString : FormatModel -> String
+formatAsString model =
+  formatHelp
+    identity
+    (String.join "" << List.map formatAsString)
+    (\_ _ children -> String.join "" <| List.map formatAsString children)
+    model
+
+formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> FormatModel -> List (Html msg)
+formatAsHtml transformMsg folded model =
+  formatHelp
     (\s -> [span [ style S.modelDetailFlagment ] [ text s ]])
-    (\list -> List.concatMap (format2Html transformMsg folded) list)
+    (\list -> List.concatMap (formatAsHtml transformMsg folded) list)
     (\id alt children ->
       if Set.member id folded then
         [ span [ style S.modelDetailFlagmentToggle, onClick (transformMsg id) ] [ text alt ]]
       else
-        List.concatMap (format2Html transformMsg folded) children
-    ) fstr
+        List.concatMap (formatAsHtml transformMsg folded) children
+    ) model
 
-format2Help : (String -> a) -> (List FoldableString -> a) -> (AST.ASTId -> String -> List FoldableString -> a) -> FoldableString -> a
-format2Help formatPlain formatListed formatLong fstr =
-  case fstr of
+formatHelp : (String -> a) -> (List FormatModel -> a) -> (AST.ASTId -> String -> List FormatModel -> a) -> FormatModel -> a
+formatHelp formatPlain formatListed formatLong model =
+  case model of
     Plain s ->
       formatPlain s
     Listed list ->

@@ -116,7 +116,8 @@ modelView model' =
             case lazyModelAst of
               Just (Ok ast) ->
                 let
-                  html = Formatter.formatAsHtml ToggleModelTree {-model'.foldedTree -}Set.empty ast
+                  html =
+                    Formatter.formatAsHtml ToggleModelTree {-model'.foldedTree -}Set.empty (Formatter.makeModel ast)
                 in
                   div [ style <| S.modelDetailView model'.fixedToLeft ] html
 
@@ -161,7 +162,7 @@ detailView model =
           Just ast ->
             div
               [ style S.detailedMsgView ]
-              [ text (Formatter.formatAsString ast) ]
+              [ text (Formatter.formatAsString (Formatter.makeModel ast)) ]
 
           Nothing ->
             text ""
