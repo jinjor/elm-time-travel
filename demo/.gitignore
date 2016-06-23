@@ -2,7 +2,3 @@
 elm-stuff/
 # elm-repl generated files
 repl-temp-*
-
-*.js
-*.html
-!msg-tree.html
