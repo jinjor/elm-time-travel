@@ -1,62 +1,115 @@
-module TimeTravel.Internal.Update exposing (update) -- where
+module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg) -- where
 
 import TimeTravel.Internal.Model exposing (..)
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel exposing (..)
+import Set exposing (Set)
 
-update : Msg -> Model model msg -> Model model msg
-update message model =
+update : (OutgoingMsg -> Cmd Never) -> Msg -> Model model msg data -> (Model model msg data, Cmd Msg)
+update save message model =
   case message of
+    Receive incomingMsg ->
+      if incomingMsg.type_ == "load" then
+        case decodeSettings incomingMsg.settings of
+          Ok { fixedToLeft, filter } ->
+            { model | fixedToLeft = fixedToLeft, filter = filter } ! []
+          Err _ ->
+            model ! [] |> Debug.log "err decoing"
+      else
+        model ! []
+
     ToggleSync ->
       let
         nextSync = not model.sync
+        newModel =
+          { model |
+            selectedMsg =
+              if nextSync then
+                Nothing
+              else
+                model.selectedMsg
+          , sync = nextSync
+          , showModelDetail = False
+          }
+          |> selectFirstIfSync
+          |> if nextSync then futureToHistory else identity
       in
-        { model |
-          selectedMsg =
-            if nextSync then
-              Nothing
-            else
-              model.selectedMsg
-        , sync = nextSync
-        } |> if nextSync then futureToHistory else identity
+        newModel ! []
 
     ToggleExpand ->
-      { model | expand = not model.expand }
+      let
+        newModel =
+          { model | expand = not model.expand }
+      in
+        newModel ! []
 
     ToggleFilter name ->
-      { model |
-        filter =
-          List.map
-            (\(name', visible) ->
-              if name == name' then
-                (name', not visible)
-              else (name', visible)
-            )
-          model.filter
-      }
+      let
+        newModel =
+          { model |
+            filter =
+              List.map
+                (\(name', visible) ->
+                  if name == name' then
+                    (name', not visible)
+                  else (name', visible)
+                )
+              model.filter
+          }
+      in
+        newModel ! [ saveSetting save newModel ]
 
     SelectMsg id ->
-      { model |
-        selectedMsg = Just id
-      , sync = False
-      }
+      let
+        newModel =
+          { model |
+            selectedMsg = Just id
+          , sync = False
+          } |> updateLazyAst
+      in
+        newModel ! []
 
     Resync ->
-      { model |
-        sync = True
-      , selectedMsg = Nothing
-      } |> futureToHistory
-
-futureToHistory : Model model msg -> Model model msg
-futureToHistory model =
-  { model |
-    future = []
-  , history =
       let
-        (Nel current past) = model.history
+        newModel =
+          { model |
+            sync = True
+          , showModelDetail = False
+          } |> selectFirstIfSync |> futureToHistory
       in
-        case List.map (\(msg, model) -> (Just msg, model)) model.future of
-          head :: tail ->
-            Nel head (tail ++ (current :: past))
-          _ ->
-            Nel current past
-  }
+        newModel ! []
+
+    ToggleLayout ->
+      let
+        newModel =
+          { model |
+            fixedToLeft = not (model.fixedToLeft)
+          }
+      in
+        newModel ! [ saveSetting save newModel ]
+
+    ToggleModelDetail ->
+      if model.sync then
+        ( { model |
+            showModelDetail = not (model.showModelDetail)
+          , sync = False
+          }
+          |> selectFirstIfSync
+          |> futureToHistory
+        ) ! []
+      else
+        { model |
+          showModelDetail = not (model.showModelDetail)
+        } ! []
+
+    ToggleModelTree id ->
+      { model | expandedTree = toggleSet id model.expandedTree } ! []
+
+
+toggleSet : comparable -> Set comparable -> Set comparable
+toggleSet a set =
+  (if Set.member a set then Set.remove else Set.insert) a set
+
+
+updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg data -> (Model model msg data, Cmd Msg)
+updateAfterUserMsg save model =
+  model ! [ saveSetting save model ]

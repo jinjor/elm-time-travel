@@ -1,8 +1,6 @@
 module TimeTravel.Navigation exposing (program, programWithFlags) -- where
 
-{-|
-
-Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
+{-| Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
 
 # Create a Program
 @docs program, programWithFlags
@@ -12,7 +10,7 @@ Each functions in this module has the same interface as [Navigation](http://pack
 import TimeTravel.Internal.Model as Model exposing (..)
 import TimeTravel.Internal.Update as Update
 import TimeTravel.Internal.View as View
-import TimeTravel.Internal.Util exposing (..)
+import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
 import Navigation exposing (Parser)
@@ -20,7 +18,7 @@ import Navigation exposing (Parser)
 
 type Msg msg
   = DebuggerMsg Model.Msg
-  | UserMsg msg
+  | UserMsg (Maybe Int, msg)
 
 
 {- Alias for internal use -}
@@ -69,29 +67,36 @@ programWithFlags parser options =
   Navigation.programWithFlags parser (wrap options)
 
 
-wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg) (Msg msg)
+wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg data) (Msg msg)
 wrap { init, view, update, subscriptions, urlUpdate } =
   let
+    -- TODO save settings and refactor
+    outgoingMsg = always Cmd.none
+
     init' flags data =
       let
         (model, cmd) = init flags data
       in
-        Model.init model ! [ Cmd.map UserMsg cmd ]
+        Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
     update' msg model =
       case msg of
-        UserMsg msg ->
-          updateOnIncomingUserMsg UserMsg update msg model
+        UserMsg msgWithId ->
+          updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
         DebuggerMsg msg ->
-          (Update.update msg model) ! []
+          let
+            (m, c) =
+              Update.update outgoingMsg msg model
+          in
+            m ! [ Cmd.map DebuggerMsg c ]
     urlUpdate' data model =
-      urlUpdateOnIncomingData UserMsg urlUpdate data model
+      urlUpdateOnIncomingData (\(id, msg) -> UserMsg (Just id, msg)) urlUpdate data model
     view' model =
-      View.view UserMsg DebuggerMsg view model
+      View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
     subscriptions' model =
       let
-        (Nel (_, m) _) = model.history
+        item = Nel.head model.history
       in
-        Sub.map UserMsg (subscriptions m)
+        Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions item.model)
   in
     { init = init'
     , update = update'
