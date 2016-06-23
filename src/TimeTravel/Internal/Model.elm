@@ -3,7 +3,7 @@ module TimeTravel.Internal.Model exposing (..) -- where
 import String
 
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
-import TimeTravel.Internal.Parser.AST exposing (AST)
+import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
@@ -18,8 +18,8 @@ type alias HistoryItem model msg data =
   , msg : MsgLike msg data
   , causedBy : Maybe Id
   , model : model
-  , lazyMsgAst : Maybe (Result String AST)
-  , lazyModelAst : Maybe (Result String AST)
+  , lazyMsgAst : Maybe (Result String ASTX)
+  , lazyModelAst : Maybe (Result String ASTX)
   }
 
 type alias Model model msg data =
@@ -66,7 +66,7 @@ type Msg
   | ToggleLayout
   | Receive IncomingMsg
   | ToggleModelDetail
-  | ToggleModelTree Int
+  | ToggleModelTree AST.ASTId
 
 
 init : model -> Model model msg data
@@ -243,22 +243,22 @@ updateLazyAstHelp item =
       if item.lazyMsgAst == Nothing then
         case item.msg of
           Message msg ->
-            Just (Parser.parse (toString msg))
+            Just (Result.map (AST.attachId "") <| Parser.parse (toString msg))
           UrlData data ->
-            Just (Parser.parse (toString data))
+            Just (Result.map (AST.attachId "") <| Parser.parse (toString data))
           _ ->
             Just (Err "")
       else
         item.lazyMsgAst
   , lazyModelAst =
       if item.lazyModelAst == Nothing then
-        Just (Parser.parse (toString item.model))
+        Just (Result.map (AST.attachId "") <| Parser.parse (toString item.model))
       else
         item.lazyModelAst
   }
 
 
-selectedMsgAst : Model model msg data -> Maybe AST
+selectedMsgAst : Model model msg data -> Maybe ASTX
 selectedMsgAst model =
   case model.selectedMsg of
     Just id ->
@@ -271,7 +271,7 @@ selectedMsgAst model =
       Nothing
 
 
-selectedAndOldAst : Model model msg data -> Maybe (AST, AST)
+selectedAndOldAst : Model model msg data -> Maybe (ASTX, ASTX)
 selectedAndOldAst model =
   case model.selectedMsg of
     Just id ->

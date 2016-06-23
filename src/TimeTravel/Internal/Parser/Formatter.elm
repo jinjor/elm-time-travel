@@ -17,13 +17,13 @@ type alias Context =
   }
 
 
-formatAsString : AST -> String
+formatAsString : ASTX -> String
 formatAsString ast =
-  format2String <| format { nest = 0, parens = False, wordsLimit = 40 } (fst <| AST.attachId 0 ast)
+  format2String <| format { nest = 0, parens = False, wordsLimit = 40 } ast
 
-formatAsHtml : (Int -> msg) -> Set Int -> AST -> List (Html msg)
+formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> ASTX -> List (Html msg)
 formatAsHtml transformMsg folded ast =
-  format2Html transformMsg folded <| format { nest = 0, parens = False, wordsLimit = 40 } (fst <| AST.attachId 0 ast)
+  format2Html transformMsg folded <| format { nest = 0, parens = False, wordsLimit = 40 } ast
 
 
 indent : Context -> String
@@ -78,7 +78,7 @@ format c ast =
 ---
 
 type FoldableString =
-  Plain String | Listed (List FoldableString) | Long Int String (List FoldableString)
+  Plain String | Listed (List FoldableString) | Long AST.ASTId String (List FoldableString)
 
 joinX : String -> List FoldableString -> List FoldableString
 joinX s list =
@@ -117,7 +117,7 @@ format2String fstr =
     (\_ _ children -> String.join "" <| List.map format2String children)
     fstr
 
-format2Html : (Int -> msg) -> Set Int -> FoldableString -> List (Html msg)
+format2Html : (AST.ASTId -> msg) -> Set AST.ASTId -> FoldableString -> List (Html msg)
 format2Html transformMsg folded fstr =
   format2Help
     (\s -> [span [ style S.modelDetailFlagment ] [ text s ]])
@@ -129,7 +129,7 @@ format2Html transformMsg folded fstr =
         List.concatMap (format2Html transformMsg folded) children
     ) fstr
 
-format2Help : (String -> a) -> (List FoldableString -> a) -> (Int -> String -> List FoldableString -> a) -> FoldableString -> a
+format2Help : (String -> a) -> (List FoldableString -> a) -> (AST.ASTId -> String -> List FoldableString -> a) -> FoldableString -> a
 format2Help formatPlain formatListed formatLong fstr =
   case fstr of
     Plain s ->

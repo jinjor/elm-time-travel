@@ -9,7 +9,7 @@ type AST
   | Union String (List AST)
   | Property String AST
 
-type alias ASTId = Int
+type alias ASTId = String
 
 type ASTX
   = RecordX ASTId (List ASTX)
@@ -21,48 +21,32 @@ type ASTX
   | PropertyX ASTId String ASTX
 
 
-attachId : Int -> AST -> (ASTX, Int)
+attachId : String -> AST -> ASTX
 attachId id ast =
   case ast of
     Record children ->
-      let
-        (childrenX, nextId) =
-          attachIdToList id children
-      in
-        (RecordX nextId childrenX, nextId + 1)
+      RecordX id (attachIdToList id children)
     StringLiteral s ->
-      (StringLiteralX id s, id + 1)
+      StringLiteralX id s
     ListLiteral children ->
-      let
-        (childrenX, nextId) =
-          attachIdToList id children
-      in
-        (ListLiteralX nextId childrenX, nextId + 1)
+      ListLiteralX id (attachIdToList id children)
     TupleLiteral children ->
-      let
-        (childrenX, nextId) =
-          attachIdToList id children
-      in
-        (TupleLiteralX nextId childrenX, nextId + 1)
+      TupleLiteralX id (attachIdToList id children)
     Value s ->
-      (ValueX id s, id + 1)
+      ValueX id s
     Union tag children ->
       let
-        (childrenX, nextId) =
-          attachIdToList id children
+        id' = id ++ "." ++ tag
       in
-        (UnionX nextId tag childrenX, nextId + 1)
+        UnionX id' tag (attachIdToList id' children)
     Property key value ->
       let
-        (resX, nextId) = attachId id value
+        id' = id ++ "." ++ key
       in
-        (PropertyX nextId key resX, nextId + 1)
+        PropertyX id' key (attachId id' value)
 
-attachIdToList : Int -> List AST -> (List ASTX, Int)
+attachIdToList : String -> List AST -> List ASTX
 attachIdToList id list =
-  List.foldr (\p (list, id) ->
-    let
-      (res, nextId) = attachId id p
-    in
-      (res :: list, nextId)
-  ) ([], id) list
+  List.indexedMap (\index p ->
+    attachId (id ++ "." ++ toString index) p
+  ) list

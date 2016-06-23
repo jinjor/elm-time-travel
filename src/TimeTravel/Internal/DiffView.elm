@@ -1,7 +1,7 @@
 module TimeTravel.Internal.DiffView exposing (view) -- where
 
 import TimeTravel.Internal.Styles as S
-import TimeTravel.Internal.Parser.AST exposing (AST)
+import TimeTravel.Internal.Parser.AST exposing (ASTX)
 import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
@@ -13,7 +13,7 @@ import Diff exposing (..)
 import String
 
 
-view : AST -> AST -> Html msg
+view : ASTX -> ASTX -> Html msg
 view oldAst newAst =
   viewDiff (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
 
