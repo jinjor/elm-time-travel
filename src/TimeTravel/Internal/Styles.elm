@@ -13,6 +13,12 @@ button =
   ]
 
 
+buttonHover : List (String, String)
+buttonHover =
+  [ ("background-color", "#555")
+  ]
+  
+
 pointer : List (String, String)
 pointer =
   [ ("cursor", "pointer") ]
@@ -137,6 +143,11 @@ itemBackground selected =
   ]
 
 
+msgViewHover : Bool -> List (String, String)
+msgViewHover selected =
+  if selected then [] else [ ("background-color", "#555") ]
+
+
 msgView : Bool -> List (String, String)
 msgView selected =
   [ ("white-space", "nowrap")
@@ -170,6 +181,7 @@ subPain fixedToLeft =
         "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
   ]
 
+
 detailView : Bool -> Bool -> List (String, String)
 detailView fixedToLeft opened =
   [ ("position", "absolute")
@@ -188,6 +200,7 @@ detailedMsgView : List (String, String)
 detailedMsgView =
   [ ("white-space", "pre") ] ++ panel True ++ panelBorder
 
+
 msgTreeViewItemRow : Bool -> List (String, String)
 msgTreeViewItemRow selected =
   [ ("white-space", "pre")
@@ -195,6 +208,11 @@ msgTreeViewItemRow selected =
   , ("overflow", "hidden")
   ]
   ++ itemBackground selected ++ pointer
+
+
+msgTreeViewItemRowHover : Bool -> List (String, String)
+msgTreeViewItemRowHover selected =
+  if selected then [] else [ ("background-color", "#555") ]
 
 
 diffView : List (String, String)
@@ -230,10 +248,12 @@ addedLine =
   [ ("background-color", "rgba(100, 255, 100, 0.15)")
   ] ++ lineBase
 
+
 diffOrModelDetailViewContainer : List (String, String)
 diffOrModelDetailViewContainer =
   [ ("position", "relative")
   ]
+
 
 toggleModelDetailIcon : List (String, String)
 toggleModelDetailIcon =

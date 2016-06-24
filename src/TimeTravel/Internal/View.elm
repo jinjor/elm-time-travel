@@ -17,6 +17,7 @@ import Html.App as App
 
 import String
 import Set exposing (Set)
+import InlineHover exposing (hover)
 
 
 view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
@@ -76,7 +77,7 @@ headerView fixedToLeft sync expand filterOptions =
 
 buttonView : msg -> Bool -> List (Html msg) -> Html msg
 buttonView onClickMsg left inner =
-  div [ style (S.buttonView left), onClick onClickMsg ] inner
+  hover S.buttonHover div [ style (S.buttonView left), onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg
@@ -203,7 +204,9 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
   in
     if visible then
       Just (
-        div
+        hover
+          (S.msgViewHover selected)
+          div
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]

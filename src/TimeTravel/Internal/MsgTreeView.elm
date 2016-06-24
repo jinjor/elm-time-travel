@@ -12,6 +12,7 @@ import Html.Events exposing (..)
 import Diff exposing (..)
 
 import String
+import InlineHover exposing (hover)
 
 
 view : (Id -> m) -> Id -> RTree (HistoryItem model msg data) -> Html m
@@ -23,12 +24,15 @@ view onSelect selectedMsg tree =
 
 viewTree : (Id -> m) -> Int -> Int -> RTree (HistoryItem model msg data) -> List (Html m)
 viewTree onSelect indent selectedMsg (Node item list) =
-  itemRow onSelect indent selectedMsg item :: List.concatMap (viewTree onSelect (indent + 1) selectedMsg) list
+  itemRow onSelect indent selectedMsg item ::
+    List.concatMap (viewTree onSelect (indent + 1) selectedMsg) list
 
 
 itemRow : (Id -> m) -> Int -> Int -> HistoryItem model msg data -> Html m
 itemRow onSelect indent selectedMsg item =
-  div
+  hover
+    (S.msgTreeViewItemRowHover (selectedMsg == item.id))
+    div
     [ style (S.msgTreeViewItemRow (selectedMsg == item.id))
     , onClick (onSelect item.id)
     ]
