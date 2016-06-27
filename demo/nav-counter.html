@@ -10765,6 +10765,155 @@ var _elm_lang$navigation$Navigation$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Navigation'] = {pkg: 'elm-lang/navigation', init: _elm_lang$navigation$Navigation$init, onEffects: _elm_lang$navigation$Navigation$onEffects, onSelfMsg: _elm_lang$navigation$Navigation$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$navigation$Navigation$cmdMap, subMap: _elm_lang$navigation$Navigation$subMap};
+var _jinjor$elm_inline_hover$InlineHover$isValidChars = function (list) {
+	isValidChars:
+	while (true) {
+		var _p0 = list;
+		if (_p0.ctor === '::') {
+			var _p1 = _p0._0;
+			if (_elm_lang$core$Char$isLower(_p1) || _elm_lang$core$Native_Utils.eq(
+				_p1,
+				_elm_lang$core$Native_Utils.chr('-'))) {
+				var _v1 = _p0._1;
+				list = _v1;
+				continue isValidChars;
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+};
+var _jinjor$elm_inline_hover$InlineHover$isValidKey = function (s) {
+	return (!_elm_lang$core$Native_Utils.eq(s, '')) && (A2(
+		_elm_lang$core$List$any,
+		_elm_lang$core$Char$isLower,
+		_elm_lang$core$String$toList(s)) && A2(
+		_elm_lang$core$List$all,
+		function (c) {
+			return _elm_lang$core$Char$isLower(c) || _elm_lang$core$Native_Utils.eq(
+				c,
+				_elm_lang$core$Native_Utils.chr('-'));
+		},
+		_elm_lang$core$String$toList(s)));
+};
+var _jinjor$elm_inline_hover$InlineHover$toCamelCase = function (s) {
+	return _elm_lang$core$String$fromList(
+		_elm_lang$core$List$reverse(
+			_elm_lang$core$Basics$snd(
+				A3(
+					_elm_lang$core$List$foldl,
+					F2(
+						function (c, _p2) {
+							var _p3 = _p2;
+							var _p4 = _p3._1;
+							return _elm_lang$core$Native_Utils.eq(
+								c,
+								_elm_lang$core$Native_Utils.chr('-')) ? {ctor: '_Tuple2', _0: true, _1: _p4} : (_p3._0 ? {
+								ctor: '_Tuple2',
+								_0: false,
+								_1: A2(
+									_elm_lang$core$List_ops['::'],
+									_elm_lang$core$Char$toUpper(c),
+									_p4)
+							} : {
+								ctor: '_Tuple2',
+								_0: false,
+								_1: A2(_elm_lang$core$List_ops['::'], c, _p4)
+							});
+						}),
+					{
+						ctor: '_Tuple2',
+						_0: false,
+						_1: _elm_lang$core$Native_List.fromArray(
+							[])
+					},
+					_elm_lang$core$String$toList(s)))));
+};
+var _jinjor$elm_inline_hover$InlineHover$enterEach = function (_p5) {
+	var _p6 = _p5;
+	var _p8 = _p6._0;
+	var escapedValue = function (_p7) {
+		return A2(
+			_elm_lang$core$String$join,
+			'\"',
+			A2(_elm_lang$core$String$split, '\'', _p7));
+	}(_p6._1);
+	var keyCamel = _jinjor$elm_inline_hover$InlineHover$toCamelCase(_p8);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'this.setAttribute(\'data-hover-',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_p8,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\', this.style.',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					keyCamel,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'||\'\');',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'this.style.',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								keyCamel,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'=\'',
+									A2(_elm_lang$core$Basics_ops['++'], escapedValue, '\'')))))))));
+};
+var _jinjor$elm_inline_hover$InlineHover$leaveEach = function (_p9) {
+	var _p10 = _p9;
+	var _p11 = _p10._0;
+	var keyCamel = _jinjor$elm_inline_hover$InlineHover$toCamelCase(_p11);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'this.style.',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			keyCamel,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'=this.getAttribute(\'data-hover-',
+				A2(_elm_lang$core$Basics_ops['++'], _p11, '\')||\'\';'))));
+};
+var _jinjor$elm_inline_hover$InlineHover$hover = F4(
+	function (styles, tag, attrs, children) {
+		var validStyles = A2(
+			_elm_lang$core$List$filter,
+			function (_p12) {
+				var _p13 = _p12;
+				return _jinjor$elm_inline_hover$InlineHover$isValidKey(_p13._0);
+			},
+			styles);
+		var enter = A2(
+			_elm_lang$html$Html_Attributes$attribute,
+			'onmouseenter',
+			A2(
+				_elm_lang$core$String$join,
+				';',
+				A2(_elm_lang$core$List$map, _jinjor$elm_inline_hover$InlineHover$enterEach, validStyles)));
+		var leave = A2(
+			_elm_lang$html$Html_Attributes$attribute,
+			'onmouseleave',
+			A2(
+				_elm_lang$core$String$join,
+				';',
+				A2(_elm_lang$core$List$map, _jinjor$elm_inline_hover$InlineHover$leaveEach, validStyles)));
+		return A2(
+			tag,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Native_List.fromArray(
+					[enter, leave]),
+				attrs),
+			children);
+	});
 var _user$project$TimeTravel_Internal_Util_Nel$head = function (_p0) {
 	var _p1 = _p0;
 	return _p1._0;
@@ -11753,7 +11902,9 @@ var _user$project$TimeTravel_Internal_Model$IncomingMsg = F2(
 var _user$project$TimeTravel_Internal_Model$ToggleModelTree = function (a) {
 	return {ctor: 'ToggleModelTree', _0: a};
 };
-var _user$project$TimeTravel_Internal_Model$ToggleModelDetail = {ctor: 'ToggleModelDetail'};
+var _user$project$TimeTravel_Internal_Model$ToggleModelDetail = function (a) {
+	return {ctor: 'ToggleModelDetail', _0: a};
+};
 var _user$project$TimeTravel_Internal_Model$Receive = function (a) {
 	return {ctor: 'Receive', _0: a};
 };
@@ -11907,24 +12058,20 @@ var _user$project$TimeTravel_Internal_Update$update = F3(
 							A2(_user$project$TimeTravel_Internal_Model$saveSetting, save, newModel)
 						]));
 			case 'ToggleModelDetail':
+				var _p7 = _p0._0;
 				return model.sync ? A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_user$project$TimeTravel_Internal_Model$futureToHistory(
 						_user$project$TimeTravel_Internal_Model$selectFirstIfSync(
 							_elm_lang$core$Native_Utils.update(
 								model,
-								{
-									showModelDetail: _elm_lang$core$Basics$not(model.showModelDetail),
-									sync: false
-								}))),
+								{showModelDetail: _p7, sync: false}))),
 					_elm_lang$core$Native_List.fromArray(
 						[])) : A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{
-							showModelDetail: _elm_lang$core$Basics$not(model.showModelDetail)
-						}),
+						{showModelDetail: _p7}),
 					_elm_lang$core$Native_List.fromArray(
 						[]));
 			default:
@@ -11939,6 +12086,12 @@ var _user$project$TimeTravel_Internal_Update$update = F3(
 						[]));
 		}
 	});
+var _user$project$TimeTravel_Internal_Styles$detailTabHover = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+	]);
+var _user$project$TimeTravel_Internal_Styles$detailViewHead = _elm_lang$core$Native_List.fromArray(
+	[]);
 var _user$project$TimeTravel_Internal_Styles$diffOrModelDetailViewContainer = _elm_lang$core$Native_List.fromArray(
 	[
 		{ctor: '_Tuple2', _0: 'position', _1: 'relative'}
@@ -11964,14 +12117,28 @@ var _user$project$TimeTravel_Internal_Styles$addedLine = A2(
 			{ctor: '_Tuple2', _0: 'background-color', _1: 'rgba(100, 255, 100, 0.15)'}
 		]),
 	_user$project$TimeTravel_Internal_Styles$lineBase);
+var _user$project$TimeTravel_Internal_Styles$msgTreeViewItemRowHover = function (selected) {
+	return selected ? _elm_lang$core$Native_List.fromArray(
+		[]) : _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+		]);
+};
 var _user$project$TimeTravel_Internal_Styles$subPain = function (fixedToLeft) {
 	return _elm_lang$core$Native_List.fromArray(
 		[
 			{
 			ctor: '_Tuple2',
 			_0: 'box-shadow',
-			_1: fixedToLeft ? 'rgba(0, 0, 0, 0.15) 5px 0px 15px inset' : 'rgba(0, 0, 0, 0.15) -5px 0px 15px inset'
+			_1: fixedToLeft ? 'rgba(0, 0, 0, 0.15) 6px -3px 6px inset' : 'rgba(0, 0, 0, 0.15) -6px -3px 6px inset'
 		}
+		]);
+};
+var _user$project$TimeTravel_Internal_Styles$msgViewHover = function (selected) {
+	return selected ? _elm_lang$core$Native_List.fromArray(
+		[]) : _elm_lang$core$Native_List.fromArray(
+		[
+			{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
 		]);
 };
 var _user$project$TimeTravel_Internal_Styles$itemBackground = function (selected) {
@@ -12032,6 +12199,58 @@ var _user$project$TimeTravel_Internal_Styles$detailView = F2(
 				_elm_lang$core$Basics_ops['++'],
 				_user$project$TimeTravel_Internal_Styles$subPain(fixedToLeft),
 				_user$project$TimeTravel_Internal_Styles$debugViewTheme));
+	});
+var _user$project$TimeTravel_Internal_Styles$detailTab = function (active) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'border-radius', _1: '3px 3px 0 0'},
+				{ctor: '_Tuple2', _0: 'height', _1: '30px'},
+				{ctor: '_Tuple2', _0: 'top', _1: '-30px'},
+				{ctor: '_Tuple2', _0: 'cursor', _1: 'pointer'},
+				{ctor: '_Tuple2', _0: 'position', _1: 'absolute'},
+				{ctor: '_Tuple2', _0: 'text-align', _1: 'center'},
+				{ctor: '_Tuple2', _0: 'line-height', _1: '30px'}
+			]),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			active ? _elm_lang$core$Native_List.fromArray(
+				[]) : _elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'box-shadow', _1: 'rgba(0, 0, 0, 0.25) 0px -1px 5px inset'}
+				]),
+			_user$project$TimeTravel_Internal_Styles$debugViewTheme));
+};
+var _user$project$TimeTravel_Internal_Styles$detailTabModel = F2(
+	function (fixedToLeft, active) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'width', _1: '130px'},
+					{
+					ctor: '_Tuple2',
+					_0: 'left',
+					_1: fixedToLeft ? '10px' : '0'
+				}
+				]),
+			_user$project$TimeTravel_Internal_Styles$detailTab(active));
+	});
+var _user$project$TimeTravel_Internal_Styles$detailTabDiff = F2(
+	function (fixedToLeft, active) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'width', _1: '170px'},
+					{
+					ctor: '_Tuple2',
+					_0: 'left',
+					_1: fixedToLeft ? '150px' : '140px'
+				}
+				]),
+			_user$project$TimeTravel_Internal_Styles$detailTab(active));
 	});
 var _user$project$TimeTravel_Internal_Styles$panelBorder = _elm_lang$core$Native_List.fromArray(
 	[
@@ -12164,6 +12383,10 @@ var _user$project$TimeTravel_Internal_Styles$msgTreeViewItemRow = function (sele
 			_user$project$TimeTravel_Internal_Styles$itemBackground(selected),
 			_user$project$TimeTravel_Internal_Styles$pointer));
 };
+var _user$project$TimeTravel_Internal_Styles$buttonHover = _elm_lang$core$Native_List.fromArray(
+	[
+		{ctor: '_Tuple2', _0: 'background-color', _1: '#555'}
+	]);
 var _user$project$TimeTravel_Internal_Styles$button = _elm_lang$core$Native_List.fromArray(
 	[
 		{ctor: '_Tuple2', _0: 'padding', _1: '10px'},
@@ -12246,7 +12469,10 @@ var _user$project$TimeTravel_Internal_Icons$sync = function ($synchronized) {
 };
 var _user$project$TimeTravel_Internal_MsgTreeView$itemRow = F4(
 	function (onSelect, indent, selectedMsg, item) {
-		return A2(
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_user$project$TimeTravel_Internal_Styles$msgTreeViewItemRowHover(
+				_elm_lang$core$Native_Utils.eq(selectedMsg, item.id)),
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -12944,7 +13170,9 @@ var _user$project$TimeTravel_Internal_View$msgView = F3(
 			}
 		}();
 		return visible ? _elm_lang$core$Maybe$Just(
-			A2(
+			A4(
+				_jinjor$elm_inline_hover$InlineHover$hover,
+				_user$project$TimeTravel_Internal_Styles$msgViewHover(selected),
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -12962,6 +13190,22 @@ var _user$project$TimeTravel_Internal_View$msgView = F3(
 							A2(_elm_lang$core$Basics_ops['++'], ': ', str)))
 					]))) : _elm_lang$core$Maybe$Nothing;
 	});
+var _user$project$TimeTravel_Internal_View$detailTab = F3(
+	function (style$, msg, name) {
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_user$project$TimeTravel_Internal_Styles$detailTabHover,
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(style$),
+					_elm_lang$html$Html_Events$onClick(msg)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html$text(name)
+				]));
+	});
 var _user$project$TimeTravel_Internal_View$msgListView = F4(
 	function (filterOptions, selectedMsg, items, detailView) {
 		return A2(
@@ -12978,9 +13222,12 @@ var _user$project$TimeTravel_Internal_View$msgListView = F4(
 							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$msgListView)
 						]),
 					A2(
-						_elm_lang$core$List$filterMap,
-						A2(_user$project$TimeTravel_Internal_View$msgView, filterOptions, selectedMsg),
-						items))
+						_elm_lang$core$List$take,
+						60,
+						A2(
+							_elm_lang$core$List$filterMap,
+							A2(_user$project$TimeTravel_Internal_View$msgView, filterOptions, selectedMsg),
+							items)))
 				]));
 	});
 var _user$project$TimeTravel_Internal_View$modelDetailView = F4(
@@ -13014,9 +13261,103 @@ var _user$project$TimeTravel_Internal_View$modelDetailView = F4(
 					]));
 		}
 	});
-var _user$project$TimeTravel_Internal_View$filterItemView = function (_p9) {
-	var _p10 = _p9;
-	var _p11 = _p10._0;
+var _user$project$TimeTravel_Internal_View$detailView = function (model) {
+	if (_elm_lang$core$Basics$not(model.sync)) {
+		var head = A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$detailViewHead)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[
+					A3(
+					_user$project$TimeTravel_Internal_View$detailTab,
+					A2(_user$project$TimeTravel_Internal_Styles$detailTabModel, model.fixedToLeft, model.showModelDetail),
+					_user$project$TimeTravel_Internal_Model$ToggleModelDetail(true),
+					'Model'),
+					A3(
+					_user$project$TimeTravel_Internal_View$detailTab,
+					A2(
+						_user$project$TimeTravel_Internal_Styles$detailTabDiff,
+						model.fixedToLeft,
+						_elm_lang$core$Basics$not(model.showModelDetail)),
+					_user$project$TimeTravel_Internal_Model$ToggleModelDetail(false),
+					'Messages and Diff')
+				]));
+		var detailedMsgView = function () {
+			var _p9 = _user$project$TimeTravel_Internal_Model$selectedMsgAst(model);
+			if (_p9.ctor === 'Just') {
+				return A2(
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$detailedMsgView)
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(
+							_user$project$TimeTravel_Internal_Parser_Formatter$formatAsString(
+								_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p9._0)))
+						]));
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var diffView = function () {
+			var _p10 = _user$project$TimeTravel_Internal_Model$selectedAndOldAst(model);
+			if (_p10.ctor === 'Just') {
+				return A2(_user$project$TimeTravel_Internal_DiffView$view, _p10._0._0, _p10._0._1);
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var msgTreeView = function () {
+			var _p11 = {
+				ctor: '_Tuple2',
+				_0: model.selectedMsg,
+				_1: _user$project$TimeTravel_Internal_Model$selectedMsgTree(model)
+			};
+			if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Just')) && (_p11._1.ctor === 'Just')) {
+				return A3(_user$project$TimeTravel_Internal_MsgTreeView$view, _user$project$TimeTravel_Internal_Model$SelectMsg, _p11._0._0, _p11._1._0);
+			} else {
+				return _elm_lang$html$Html$text('');
+			}
+		}();
+		var body = function () {
+			if (model.showModelDetail) {
+				var _p12 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
+				if (_p12.ctor === 'Just') {
+					var _p13 = _p12._0;
+					return A2(
+						_elm_lang$core$List_ops['::'],
+						A4(_user$project$TimeTravel_Internal_View$modelDetailView, model.fixedToLeft, model.expandedTree, _p13.lazyModelAst, _p13.model),
+						_elm_lang$core$Native_List.fromArray(
+							[]));
+				} else {
+					return _elm_lang$core$Native_List.fromArray(
+						[]);
+				}
+			} else {
+				return _elm_lang$core$Native_List.fromArray(
+					[msgTreeView, detailedMsgView, diffView]);
+			}
+		}();
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$style(
+					A2(_user$project$TimeTravel_Internal_Styles$detailView, model.fixedToLeft, true))
+				]),
+			A2(_elm_lang$core$List_ops['::'], head, body));
+	} else {
+		return _elm_lang$html$Html$text('');
+	}
+};
+var _user$project$TimeTravel_Internal_View$filterItemView = function (_p14) {
+	var _p15 = _p14;
+	var _p16 = _p15._0;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -13034,13 +13375,13 @@ var _user$project$TimeTravel_Internal_View$filterItemView = function (_p9) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html_Attributes$type$('checkbox'),
-								_elm_lang$html$Html_Attributes$checked(_p10._1),
+								_elm_lang$html$Html_Attributes$checked(_p15._1),
 								_elm_lang$html$Html_Events$onClick(
-								_user$project$TimeTravel_Internal_Model$ToggleFilter(_p11))
+								_user$project$TimeTravel_Internal_Model$ToggleFilter(_p16))
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[])),
-						_elm_lang$html$Html$text(_p11)
+						_elm_lang$html$Html$text(_p16)
 					]))
 			]));
 };
@@ -13057,7 +13398,9 @@ var _user$project$TimeTravel_Internal_View$filterView = F2(
 	});
 var _user$project$TimeTravel_Internal_View$buttonView = F3(
 	function (onClickMsg, left, inner) {
-		return A2(
+		return A4(
+			_jinjor$elm_inline_hover$InlineHover$hover,
+			_user$project$TimeTravel_Internal_Styles$buttonHover,
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
 				[
@@ -13067,94 +13410,6 @@ var _user$project$TimeTravel_Internal_View$buttonView = F3(
 				]),
 			inner);
 	});
-var _user$project$TimeTravel_Internal_View$detailView = function (model) {
-	if (_elm_lang$core$Basics$not(model.sync)) {
-		var detailedMsgView = function () {
-			var _p12 = _user$project$TimeTravel_Internal_Model$selectedMsgAst(model);
-			if (_p12.ctor === 'Just') {
-				return A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$detailedMsgView)
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(
-							_user$project$TimeTravel_Internal_Parser_Formatter$formatAsString(
-								_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p12._0)))
-						]));
-			} else {
-				return _elm_lang$html$Html$text('');
-			}
-		}();
-		var diffOrModelDetailView = function () {
-			var _p13 = _user$project$TimeTravel_Internal_Model$selectedAndOldAst(model);
-			if (_p13.ctor === 'Just') {
-				return A2(_user$project$TimeTravel_Internal_DiffView$view, _p13._0._0, _p13._0._1);
-			} else {
-				return _elm_lang$html$Html$text('');
-			}
-		}();
-		var msgTreeView = function () {
-			var _p14 = {
-				ctor: '_Tuple2',
-				_0: model.selectedMsg,
-				_1: _user$project$TimeTravel_Internal_Model$selectedMsgTree(model)
-			};
-			if (((_p14.ctor === '_Tuple2') && (_p14._0.ctor === 'Just')) && (_p14._1.ctor === 'Just')) {
-				return A3(_user$project$TimeTravel_Internal_MsgTreeView$view, _user$project$TimeTravel_Internal_Model$SelectMsg, _p14._0._0, _p14._1._0);
-			} else {
-				return _elm_lang$html$Html$text('');
-			}
-		}();
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_elm_lang$html$Html_Attributes$style(
-					A2(_user$project$TimeTravel_Internal_Styles$detailView, model.fixedToLeft, true))
-				]),
-			A2(
-				_elm_lang$core$List_ops['::'],
-				A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$subHeaderView)
-						]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							A3(
-							_user$project$TimeTravel_Internal_View$buttonView,
-							_user$project$TimeTravel_Internal_Model$ToggleModelDetail,
-							false,
-							_elm_lang$core$Native_List.fromArray(
-								[_user$project$TimeTravel_Internal_Icons$toggleModelDetail]))
-						])),
-				function () {
-					if (model.showModelDetail) {
-						var _p15 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
-						if (_p15.ctor === 'Just') {
-							var _p16 = _p15._0;
-							return A2(
-								_elm_lang$core$List_ops['::'],
-								A4(_user$project$TimeTravel_Internal_View$modelDetailView, model.fixedToLeft, model.expandedTree, _p16.lazyModelAst, _p16.model),
-								_elm_lang$core$Native_List.fromArray(
-									[]));
-						} else {
-							return _elm_lang$core$Native_List.fromArray(
-								[]);
-						}
-					} else {
-						return _elm_lang$core$Native_List.fromArray(
-							[msgTreeView, detailedMsgView, diffOrModelDetailView]);
-					}
-				}()));
-	} else {
-		return _elm_lang$html$Html$text('');
-	}
-};
 var _user$project$TimeTravel_Internal_View$headerView = F4(
 	function (fixedToLeft, sync, expand, filterOptions) {
 		return A2(
