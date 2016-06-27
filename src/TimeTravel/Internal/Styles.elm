@@ -17,7 +17,7 @@ buttonHover : List (String, String)
 buttonHover =
   [ ("background-color", "#555")
   ]
-  
+
 
 pointer : List (String, String)
 pointer =
@@ -176,9 +176,9 @@ subPain : Bool -> List (String, String)
 subPain fixedToLeft =
   [ ( "box-shadow"
     , if fixedToLeft then
-        "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
+        "rgba(0, 0, 0, 0.15) 6px -3px 6px inset"
       else
-        "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
+        "rgba(0, 0, 0, 0.15) -6px -3px 6px inset")
   ]
 
 
@@ -265,3 +265,45 @@ toggleModelDetailIcon =
 subHeaderView : List (String, String)
 subHeaderView =
   headerView ++ panelBorder
+
+
+detailViewHead : List (String, String)
+detailViewHead =
+  []
+
+
+detailTab : Bool -> List (String, String)
+detailTab active =
+  [ ("border-radius", "3px 3px 0 0")
+  , ("height", "30px")
+  , ("top", "-30px")
+  , ("cursor", "pointer")
+  , ("position", "absolute")
+  , ("text-align", "center")
+  , ("line-height", "30px")
+  ] ++
+  ( if active then
+      []
+    else
+      [ ("box-shadow", "rgba(0, 0, 0, 0.25) 0px -1px 5px inset") ]
+  ) ++ debugViewTheme
+
+
+detailTabHover : List (String, String)
+detailTabHover =
+  [ ("background-color", "#555")
+  ]
+
+
+detailTabModel : Bool -> Bool -> List (String, String)
+detailTabModel fixedToLeft active =
+   [ ("width", "130px")
+   , ("left", if fixedToLeft then "10px" else "0")
+   ] ++ detailTab active
+
+
+detailTabDiff : Bool -> Bool -> List (String, String)
+detailTabDiff fixedToLeft active =
+   [ ("width", "170px")
+   , ("left", if fixedToLeft then "150px" else "140px")
+   ] ++ detailTab active

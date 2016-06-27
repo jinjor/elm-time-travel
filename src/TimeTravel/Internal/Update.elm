@@ -87,10 +87,10 @@ update save message model =
       in
         newModel ! [ saveSetting save newModel ]
 
-    ToggleModelDetail ->
+    ToggleModelDetail showModelDetail ->
       if model.sync then
         ( { model |
-            showModelDetail = not (model.showModelDetail)
+            showModelDetail = showModelDetail
           , sync = False
           }
           |> selectFirstIfSync
@@ -98,7 +98,7 @@ update save message model =
         ) ! []
       else
         { model |
-          showModelDetail = not (model.showModelDetail)
+          showModelDetail = showModelDetail
         } ! []
 
     ToggleModelTree id ->

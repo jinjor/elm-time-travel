@@ -123,7 +123,7 @@ msgListView filterOptions selectedMsg items detailView =
   [ detailView
   , div
       [ style S.msgListView ]
-      ( List.filterMap (msgView filterOptions selectedMsg) items )
+      ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
   ]
 
 detailView : Model model msg data -> Html Msg
@@ -137,7 +137,7 @@ detailView model =
           _ ->
             text ""
 
-      diffOrModelDetailView =
+      diffView =
         case selectedAndOldAst model of
           Just (oldAst, newAst) ->
             DiffView.view oldAst newAst
@@ -154,33 +154,45 @@ detailView model =
           Nothing ->
             text ""
 
+      head =
+        div
+          [ style S.detailViewHead ]
+          [ detailTab (S.detailTabModel model.fixedToLeft model.showModelDetail) (ToggleModelDetail True) "Model"
+          , detailTab (S.detailTabDiff model.fixedToLeft (not model.showModelDetail)) (ToggleModelDetail False) "Messages and Diff"
+          -- buttonView ToggleModelDetail False [ I.toggleModelDetail ]
+          ]
+
+      body =
+        if model.showModelDetail then
+          case selectedItem model of
+            Just item ->
+              modelDetailView
+                model.fixedToLeft
+                model.expandedTree
+                item.lazyModelAst
+                item.model
+              :: []
+            _ ->
+              []
+        else
+          [ msgTreeView
+          , detailedMsgView
+          , diffView
+          ]
+
     in
       div
         [ style (S.detailView model.fixedToLeft True) ]
-        ( div
-            [ style S.subHeaderView ]
-            [ buttonView ToggleModelDetail False [ I.toggleModelDetail ]
-            ]
-        ::
-          if model.showModelDetail then
-            case selectedItem model of
-              Just item ->
-                modelDetailView
-                  model.fixedToLeft
-                  model.expandedTree
-                  item.lazyModelAst
-                  item.model
-                :: []
-              _ ->
-                []
-          else
-            [ msgTreeView
-            , detailedMsgView
-            , diffOrModelDetailView
-            ]
-        )
+        ( head :: body )
   else
     text ""
+
+
+detailTab : List (String, String) -> msg -> String -> Html msg
+detailTab style' msg name =
+  hover S.detailTabHover div [ style style', onClick msg ] [ text name ]
+
+
 
 
 msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (Html Msg)

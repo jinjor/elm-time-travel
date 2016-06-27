@@ -66,7 +66,7 @@ type Msg
   | Resync
   | ToggleLayout
   | Receive IncomingMsg
-  | ToggleModelDetail
+  | ToggleModelDetail Bool
   | ToggleModelTree AST.ASTId
 
 
