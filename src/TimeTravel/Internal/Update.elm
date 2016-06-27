@@ -2,7 +2,7 @@ module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg) -- where
 
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
-
+import Set exposing (Set)
 
 update : (OutgoingMsg -> Cmd Never) -> Msg -> Model model msg data -> (Model model msg data, Cmd Msg)
 update save message model =
@@ -28,6 +28,7 @@ update save message model =
               else
                 model.selectedMsg
           , sync = nextSync
+          , showModelDetail = False
           }
           |> selectFirstIfSync
           |> if nextSync then futureToHistory else identity
@@ -72,14 +73,10 @@ update save message model =
         newModel =
           { model |
             sync = True
+          , showModelDetail = False
           } |> selectFirstIfSync |> futureToHistory
       in
         newModel ! []
-
-    -- ToggleDiff ->
-    --   { model |
-    --     showDiff = not (model.showDiff)
-    --   } |> updateLazyAst
 
     ToggleLayout ->
       let
@@ -89,6 +86,28 @@ update save message model =
           }
       in
         newModel ! [ saveSetting save newModel ]
+
+    ToggleModelDetail showModelDetail ->
+      if model.sync then
+        ( { model |
+            showModelDetail = showModelDetail
+          , sync = False
+          }
+          |> selectFirstIfSync
+          |> futureToHistory
+        ) ! []
+      else
+        { model |
+          showModelDetail = showModelDetail
+        } ! []
+
+    ToggleModelTree id ->
+      { model | expandedTree = toggleSet id model.expandedTree } ! []
+
+
+toggleSet : comparable -> Set comparable -> Set comparable
+toggleSet a set =
+  (if Set.member a set then Set.remove else Set.insert) a set
 
 
 updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg data -> (Model model msg data, Cmd Msg)

@@ -1,5 +1,7 @@
 # elm-time-travel
 
+[![Build Status](https://travis-ci.org/jinjor/elm-time-travel.svg)](https://travis-ci.org/jinjor/elm-time-travel)
+
 A time travel debugger for Elm 0.17 (or above). See [DEMO](http://jinjor.github.io/elm-time-travel/)
 
 ## How to use

@@ -1,9 +1,10 @@
 module TimeTravel.Internal.Model exposing (..) -- where
 
 import String
+import Set exposing (Set)
 
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
-import TimeTravel.Internal.Parser.AST exposing (AST)
+import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
@@ -18,8 +19,8 @@ type alias HistoryItem model msg data =
   , msg : MsgLike msg data
   , causedBy : Maybe Id
   , model : model
-  , lazyMsgAst : Maybe (Result String AST)
-  , lazyModelAst : Maybe (Result String AST)
+  , lazyMsgAst : Maybe (Result String ASTX)
+  , lazyModelAst : Maybe (Result String ASTX)
   }
 
 type alias Model model msg data =
@@ -27,11 +28,13 @@ type alias Model model msg data =
   , history : Nel (HistoryItem model msg data)
   , filter : FilterOptions
   , sync : Bool
+  , showModelDetail : Bool
   , expand : Bool
   , msgId : Id
   , selectedMsg : Maybe Id
   , showDiff : Bool
   , fixedToLeft : Bool
+  , expandedTree : Set AST.ASTId
   }
 
 type alias Id = Int
@@ -61,9 +64,10 @@ type Msg
   | ToggleFilter String
   | SelectMsg Id
   | Resync
-  -- | ToggleDif
   | ToggleLayout
   | Receive IncomingMsg
+  | ToggleModelDetail Bool
+  | ToggleModelTree AST.ASTId
 
 
 init : model -> Model model msg data
@@ -72,11 +76,13 @@ init model =
   , history = Nel (initItem model) []
   , filter = []
   , sync = True
+  , showModelDetail = False
   , expand = False
   , msgId = 1
   , selectedMsg = Nothing
   , showDiff = False
   , fixedToLeft = False
+  , expandedTree = Set.empty
   }
 
 
@@ -239,22 +245,22 @@ updateLazyAstHelp item =
       if item.lazyMsgAst == Nothing then
         case item.msg of
           Message msg ->
-            Just (Parser.parse (toString msg))
+            Just (Result.map (AST.attachId "") <| Parser.parse (toString msg))
           UrlData data ->
-            Just (Parser.parse (toString data))
+            Just (Result.map (AST.attachId "") <| Parser.parse (toString data))
           _ ->
             Just (Err "")
       else
         item.lazyMsgAst
   , lazyModelAst =
       if item.lazyModelAst == Nothing then
-        Just (Parser.parse (toString item.model))
+        Just (Result.map (AST.attachId "") <| Parser.parse (toString item.model))
       else
         item.lazyModelAst
   }
 
 
-selectedMsgAst : Model model msg data -> Maybe AST
+selectedMsgAst : Model model msg data -> Maybe ASTX
 selectedMsgAst model =
   case model.selectedMsg of
     Just id ->
@@ -267,7 +273,7 @@ selectedMsgAst model =
       Nothing
 
 
-selectedAndOldAst : Model model msg data -> Maybe (AST, AST)
+selectedAndOldAst : Model model msg data -> Maybe (ASTX, ASTX)
 selectedAndOldAst model =
   case model.selectedMsg of
     Just id ->
@@ -363,6 +369,7 @@ encodeSetting settings =
 saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
 saveSetting save model =
   Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+
 
 decodeSettings : String -> Result String Settings
 decodeSettings =

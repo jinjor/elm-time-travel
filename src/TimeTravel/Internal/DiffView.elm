@@ -1,7 +1,7 @@
 module TimeTravel.Internal.DiffView exposing (view) -- where
 
 import TimeTravel.Internal.Styles as S
-import TimeTravel.Internal.Parser.AST exposing (AST)
+import TimeTravel.Internal.Parser.AST exposing (ASTX)
 import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
@@ -13,31 +13,96 @@ import Diff exposing (..)
 import String
 
 
-view : AST -> AST -> Html msg
+view : ASTX -> ASTX -> Html msg
 view oldAst newAst =
-  viewDiff (Formatter.formatAsString oldAst) (Formatter.formatAsString newAst)
+  viewDiff
+    (Formatter.formatAsString (Formatter.makeModel oldAst))
+    (Formatter.formatAsString (Formatter.makeModel newAst))
+
+
+type Line = Normal String | Delete String | Add String | Omit
+
+
+lines : String -> List String
+lines s =
+  List.filter ((/=) "") <| String.lines s
 
 viewDiff : String -> String -> Html msg
 viewDiff old new =
   let
-    changes = diffLines old new
+    changes =
+      diffLines old new
+
     list =
       List.concatMap (\change ->
         case change of
           NoChange s ->
-            List.map normalLine (String.lines s)
+            List.map Normal (lines s)
           Changed old new ->
-            List.map deletedLine (String.lines old) ++
-            List.map addedLine (String.lines new)
+            List.map Delete (lines old) ++
+            List.map Add (lines new)
           Added new ->
-            List.map addedLine (String.lines new)
+            List.map Add (lines new)
           Removed old ->
-            List.map deletedLine (String.lines old)
+            List.map Delete (lines old)
         ) changes
+
+    linesView =
+      List.map (\line ->
+        case line of
+          Normal s ->
+            normalLine s
+          Delete s ->
+            deletedLine s
+          Add s ->
+            addedLine s
+          Omit ->
+            omittedLine
+        ) (reduceLines list)
   in
     div
       [ style S.diffView ]
-      list
+      linesView
+
+
+reduceLines : List Line -> List Line
+reduceLines list =
+  let
+    additionalLines = 2
+    (tmp, result) =
+      List.foldr (\line (tmp, result) ->
+        case line of
+          Normal s ->
+            ((Normal s) :: tmp, result)
+          Delete s ->
+            tmpToResult additionalLines (Delete s) tmp result
+          Add s ->
+            tmpToResult additionalLines (Add s) tmp result
+          _ -> (tmp, result)
+        ) ([], []) list
+  in
+    if result == [] then
+      -- no change found
+      []
+    else if List.length tmp > additionalLines then
+      Omit :: (List.drop (List.length tmp - additionalLines) tmp ++ result)
+    else
+      tmp ++ result
+
+
+tmpToResult : Int -> Line -> List Line -> List Line -> (List Line, List Line)
+tmpToResult additionalLines next tmp result =
+  if result == [] then
+    ([], next :: (List.take additionalLines tmp ++ (if List.length tmp > additionalLines then [ Omit ] else [])))
+  else if List.length tmp > (additionalLines * 2) then
+    ([], next :: (List.take additionalLines tmp ++ [Omit] ++ List.drop (List.length tmp - additionalLines) tmp ++ result))
+  else
+    ([], next :: (tmp ++ result))
+
+
+omittedLine : Html msg
+omittedLine =
+  div [ style S.omittedLine ] [ text "..." ]
 
 
 deletedLine : String -> Html msg

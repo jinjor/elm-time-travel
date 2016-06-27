@@ -1,7 +1,7 @@
 module TimeTravel.Internal.Styles exposing (..) -- where
 
 
-zIndex = { debugView = "2147483647", resyncView = "2147483646" }
+zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
 
 
 button : List (String, String)
@@ -10,6 +10,12 @@ button =
   , ("border", "solid 1px #666")
   , ("border-radius", "3px")
   , ("cursor", "pointer")
+  ]
+
+
+buttonHover : List (String, String)
+buttonHover =
+  [ ("background-color", "#555")
   ]
 
 
@@ -51,7 +57,7 @@ debugViewTheme =
   , ("color", "#eee")
   , ("font-family", "calibri, helvetica, arial, sans-serif")
   ]
-  
+
 
 debugView : Bool -> List (String, String)
 debugView fixedToLeft =
@@ -80,10 +86,50 @@ headerView =
   ] ++ panel True
 
 
+
+modelViewContainer : List (String, String)
+modelViewContainer =
+  []
+
+
 modelView : List (String, String)
 modelView =
-  [ ("height", "100px") ]
+  [ ("height", "150px")
+  , ("box-sizing", "border-box")
+  ]
   ++ panelBorder ++ panel True
+
+
+modelDetailView : Bool -> List (String, String)
+modelDetailView fixedToLeft =
+  [ ("width", "320px")
+  , ("z-index", zIndex.modelDetailView)
+  , ("box-sizing", "border-box")
+  ] ++ panel True
+
+
+modelDetailFlagment : List (String, String)
+modelDetailFlagment =
+  [ ("white-space", "pre")
+  , ("display", "inline")
+  ]
+
+
+modelDetailFlagmentToggle : List (String, String)
+modelDetailFlagmentToggle =
+  [ ("white-space", "pre")
+  , ("display", "inline")
+  , ("background-color", "#777")
+  , ("cursor", "pointer")
+  ]
+
+
+modelDetailFlagmentToggleExpand : List (String, String)
+modelDetailFlagmentToggleExpand =
+  [ ("position", "relative")
+  , ("left", "-16px")
+  , ("margin-right", "-14px")
+  ] ++ modelDetailFlagmentToggle
 
 
 msgListView : List (String, String)
@@ -95,6 +141,12 @@ itemBackground : Bool -> List (String, String)
 itemBackground selected =
   [ ("background-color", if selected then "rgba(0, 0, 0, 0.5)" else "")
   ]
+
+
+msgViewHover : Bool -> List (String, String)
+msgViewHover selected =
+  if selected then [] else [ ("background-color", "#555") ]
+
 
 msgView : Bool -> List (String, String)
 msgView selected =
@@ -120,18 +172,23 @@ resyncView sync =
   ]
 
 
+subPain : Bool -> List (String, String)
+subPain fixedToLeft =
+  [ ( "box-shadow"
+    , if fixedToLeft then
+        "rgba(0, 0, 0, 0.15) 6px -3px 6px inset"
+      else
+        "rgba(0, 0, 0, 0.15) -6px -3px 6px inset")
+  ]
+
+
 detailView : Bool -> Bool -> List (String, String)
 detailView fixedToLeft opened =
   [ ("position", "absolute")
   , ("width", "320px")
   , (if fixedToLeft then "right" else "left", "-320px")
   , ("box-sizing", "border-box")
-  , ( "box-shadow"
-    , if fixedToLeft then
-        "rgba(0, 0, 0, 0.15) 5px 0px 15px inset"
-      else
-        "rgba(0, 0, 0, 0.15) -5px 0px 15px inset")
-  ] ++ debugViewTheme
+  ] ++ subPain fixedToLeft ++ debugViewTheme
 
 
 msgTreeView : List (String, String)
@@ -143,6 +200,7 @@ detailedMsgView : List (String, String)
 detailedMsgView =
   [ ("white-space", "pre") ] ++ panel True ++ panelBorder
 
+
 msgTreeViewItemRow : Bool -> List (String, String)
 msgTreeViewItemRow selected =
   [ ("white-space", "pre")
@@ -150,6 +208,11 @@ msgTreeViewItemRow selected =
   , ("overflow", "hidden")
   ]
   ++ itemBackground selected ++ pointer
+
+
+msgTreeViewItemRowHover : Bool -> List (String, String)
+msgTreeViewItemRowHover selected =
+  if selected then [] else [ ("background-color", "#555") ]
 
 
 diffView : List (String, String)
@@ -163,10 +226,15 @@ lineBase =
   , ("white-space", "pre")
   ]
 
+
+omittedLine : List (String, String)
+omittedLine =
+  lineBase
+
+
 normalLine : List (String, String)
 normalLine =
-  [ --("background-color", "rgba(100, 100, 100, 0.15)")
-  ] ++ lineBase
+  lineBase
 
 
 deletedLine : List (String, String)
@@ -179,3 +247,63 @@ addedLine : List (String, String)
 addedLine =
   [ ("background-color", "rgba(100, 255, 100, 0.15)")
   ] ++ lineBase
+
+
+diffOrModelDetailViewContainer : List (String, String)
+diffOrModelDetailViewContainer =
+  [ ("position", "relative")
+  ]
+
+
+toggleModelDetailIcon : List (String, String)
+toggleModelDetailIcon =
+  [ ("right", "20px")
+  , ("top", "20px")
+  , ("position", "absolute")
+  ] ++ iconButton ++ debugViewTheme
+
+subHeaderView : List (String, String)
+subHeaderView =
+  headerView ++ panelBorder
+
+
+detailViewHead : List (String, String)
+detailViewHead =
+  []
+
+
+detailTab : Bool -> List (String, String)
+detailTab active =
+  [ ("border-radius", "3px 3px 0 0")
+  , ("height", "30px")
+  , ("top", "-30px")
+  , ("cursor", "pointer")
+  , ("position", "absolute")
+  , ("text-align", "center")
+  , ("line-height", "30px")
+  ] ++
+  ( if active then
+      []
+    else
+      [ ("box-shadow", "rgba(0, 0, 0, 0.25) 0px -1px 5px inset") ]
+  ) ++ debugViewTheme
+
+
+detailTabHover : List (String, String)
+detailTabHover =
+  [ ("background-color", "#555")
+  ]
+
+
+detailTabModel : Bool -> Bool -> List (String, String)
+detailTabModel fixedToLeft active =
+   [ ("width", "130px")
+   , ("left", if fixedToLeft then "10px" else "0")
+   ] ++ detailTab active
+
+
+detailTabDiff : Bool -> Bool -> List (String, String)
+detailTabDiff fixedToLeft active =
+   [ ("width", "170px")
+   , ("left", if fixedToLeft then "150px" else "140px")
+   ] ++ detailTab active

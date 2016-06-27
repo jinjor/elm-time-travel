@@ -8,6 +8,7 @@ import TimeTravel.Internal.Icons as I
 import TimeTravel.Internal.MsgTreeView as MsgTreeView
 import TimeTravel.Internal.DiffView as DiffView
 import TimeTravel.Internal.Parser.Formatter as Formatter
+import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,6 +16,8 @@ import Html.Events exposing (..)
 import Html.App as App
 
 import String
+import Set exposing (Set)
+import InlineHover exposing (hover)
 
 
 view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
@@ -43,7 +46,6 @@ debugView model =
     , div
         [ style (S.debugView model.fixedToLeft) ]
         [ headerView model.fixedToLeft model.sync model.expand model.filter
-        , modelView model
         , msgListView
             model.filter
             model.selectedMsg
@@ -75,7 +77,7 @@ headerView fixedToLeft sync expand filterOptions =
 
 buttonView : msg -> Bool -> List (Html msg) -> Html msg
 buttonView onClickMsg left inner =
-  div [ style (S.buttonView left), onClick onClickMsg ] inner
+  hover S.buttonHover div [ style (S.buttonView left), onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg
@@ -100,18 +102,19 @@ filterItemView (name, visible) =
         ]
     ]
 
+modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
+modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
+  case lazyModelAst of
+    Just (Ok ast) ->
+      let
+        html =
+          Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+      in
+        div [ style <| S.modelDetailView fixedToLeft ] html
 
-modelView : Model model msg data -> Html Msg
-modelView model =
-  case selectedItem model of
-    Just { model, lazyModelAst } ->
-      div
-        []
-        [ div [ style S.modelView ] [ text (toString model) ]
-        ]
+    _ ->
+      div [ style S.modelView ] [ text (toString userModel) ]
 
-    Nothing ->
-      text ""
 
 
 msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
@@ -120,7 +123,7 @@ msgListView filterOptions selectedMsg items detailView =
   [ detailView
   , div
       [ style S.msgListView ]
-      ( List.filterMap (msgView filterOptions selectedMsg) items )
+      ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
   ]
 
 detailView : Model model msg data -> Html Msg
@@ -146,20 +149,50 @@ detailView model =
           Just ast ->
             div
               [ style S.detailedMsgView ]
-              [ text (Formatter.formatAsString ast) ]
+              [ text (Formatter.formatAsString (Formatter.makeModel ast)) ]
 
           Nothing ->
             text ""
 
+      head =
+        div
+          [ style S.detailViewHead ]
+          [ detailTab (S.detailTabModel model.fixedToLeft model.showModelDetail) (ToggleModelDetail True) "Model"
+          , detailTab (S.detailTabDiff model.fixedToLeft (not model.showModelDetail)) (ToggleModelDetail False) "Messages and Diff"
+          -- buttonView ToggleModelDetail False [ I.toggleModelDetail ]
+          ]
+
+      body =
+        if model.showModelDetail then
+          case selectedItem model of
+            Just item ->
+              modelDetailView
+                model.fixedToLeft
+                model.expandedTree
+                item.lazyModelAst
+                item.model
+              :: []
+            _ ->
+              []
+        else
+          [ msgTreeView
+          , detailedMsgView
+          , diffView
+          ]
+
     in
       div
         [ style (S.detailView model.fixedToLeft True) ]
-        [ msgTreeView
-        , detailedMsgView
-        , diffView
-        ]
+        ( head :: body )
   else
     text ""
+
+
+detailTab : List (String, String) -> msg -> String -> Html msg
+detailTab style' msg name =
+  hover S.detailTabHover div [ style style', onClick msg ] [ text name ]
+
+
 
 
 msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (Html Msg)
@@ -183,7 +216,9 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
   in
     if visible then
       Just (
-        div
+        hover
+          (S.msgViewHover selected)
+          div
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
           ]
