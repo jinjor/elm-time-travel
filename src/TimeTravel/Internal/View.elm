@@ -123,8 +123,26 @@ msgListView filterOptions selectedMsg items detailView =
   [ detailView
   , div
       [ style S.msgListView ]
-      ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
+      -- ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
+      ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
   ]
+
+
+filterMapUntilLimit : Int -> (a -> Maybe b) -> List a -> List b
+filterMapUntilLimit limit f list =
+  if limit <= 0 then
+    []
+  else
+    case list of
+      [] -> []
+      h :: t ->
+        case f h of
+          Just b ->
+            -- TODO tailrec
+            b :: filterMapUntilLimit (limit - 1) f t
+          Nothing ->
+            filterMapUntilLimit limit f t
+
 
 detailView : Model model msg data -> Html Msg
 detailView model =
