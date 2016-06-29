@@ -40,6 +40,11 @@ userView userView model =
 
 debugView : Model model msg data -> Html Msg
 debugView model =
+  (if model.minimized then minimizedDebugView else normalDebugView) model
+
+
+normalDebugView : Model model msg data -> Html Msg
+normalDebugView model =
   div
     []
     [ resyncView model.sync
@@ -55,6 +60,11 @@ debugView model =
     ]
 
 
+minimizedDebugView : Model model msg data -> Html Msg
+minimizedDebugView model =
+  buttonView ToggleMinimize (S.minimizedButton model.fixedToLeft) [ I.minimize True ]
+
+
 resyncView : Bool -> Html Msg
 resyncView sync =
   if sync then
@@ -67,17 +77,18 @@ headerView : Bool -> Bool -> Bool -> FilterOptions -> Html Msg
 headerView fixedToLeft sync expand filterOptions =
   div []
   [ div [ style S.headerView ]
-    [ buttonView ToggleLayout True [ I.layout ]
-    , buttonView ToggleSync False [ I.sync sync ]
-    , buttonView ToggleExpand False [ I.filterExpand expand ]
+    [ buttonView ToggleLayout (S.buttonView True) [ I.layout ]
+    , buttonView ToggleMinimize (S.buttonView True) [ I.minimize False ]
+    , buttonView ToggleSync (S.buttonView False) [ I.sync sync ]
+    , buttonView ToggleExpand (S.buttonView False) [ I.filterExpand expand ]
     ]
   , filterView expand filterOptions
   ]
 
 
-buttonView : msg -> Bool -> List (Html msg) -> Html msg
-buttonView onClickMsg left inner =
-  hover S.buttonHover div [ style (S.buttonView left), onClick onClickMsg ] inner
+buttonView : msg -> List (String, String) -> List (Html msg) -> Html msg
+buttonView onClickMsg buttonStyle inner =
+  hover S.buttonHover div [ style buttonStyle, onClick onClickMsg ] inner
 
 
 filterView : Bool -> FilterOptions -> Html Msg

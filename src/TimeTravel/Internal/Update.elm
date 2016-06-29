@@ -104,6 +104,15 @@ update save message model =
     ToggleModelTree id ->
       { model | expandedTree = toggleSet id model.expandedTree } ! []
 
+    ToggleMinimize ->
+      ( { model |
+          minimized = not model.minimized
+        , sync = True
+        }
+        |> selectFirstIfSync
+        |> futureToHistory
+      ) ! []
+
 
 toggleSet : comparable -> Set comparable -> Set comparable
 toggleSet a set =

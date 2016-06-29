@@ -1,6 +1,6 @@
 module TimeTravel.Internal.Icons exposing (..)
 
-import Material.Icons.Content exposing (filter_list, content_copy)
+import Material.Icons.Content exposing (filter_list, content_copy, remove, add)
 import Material.Icons.Navigation exposing (arrow_drop_down, arrow_drop_up)
 import Material.Icons.Av exposing (play_arrow, pause)
 import Material.Icons.Action exposing (swap_horiz)
@@ -31,3 +31,8 @@ layout =
 toggleModelDetail : Svg msg
 toggleModelDetail =
   content_copy Color.white 24
+
+
+minimize : Bool -> Svg msg
+minimize minimized =
+  (if minimized then add else remove) Color.white 24
