@@ -1,4 +1,4 @@
-module TimeTravel.Internal.View exposing (view) -- where
+module TimeTravel.Internal.View exposing (view)
 
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.MsgLike as MsgLike exposing (MsgLike(..))

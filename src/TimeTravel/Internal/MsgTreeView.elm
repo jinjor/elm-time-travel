@@ -1,4 +1,4 @@
-module TimeTravel.Internal.MsgTreeView exposing (view) -- where
+module TimeTravel.Internal.MsgTreeView exposing (view)
 
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Util.RTree exposing (RTree(..))

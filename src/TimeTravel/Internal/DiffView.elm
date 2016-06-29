@@ -1,4 +1,4 @@
-module TimeTravel.Internal.DiffView exposing (view) -- where
+module TimeTravel.Internal.DiffView exposing (view)
 
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Parser.AST exposing (ASTX)

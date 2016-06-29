@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg) -- where
+module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg)
 
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)

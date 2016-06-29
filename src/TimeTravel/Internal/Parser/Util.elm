@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Parser.Util exposing (..) -- where
+module TimeTravel.Internal.Parser.Util exposing (..)
 
 import String
 import Parser exposing (..)

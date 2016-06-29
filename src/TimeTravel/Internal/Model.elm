@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Model exposing (..) -- where
+module TimeTravel.Internal.Model exposing (..)
 
 import String
 import Set exposing (Set)

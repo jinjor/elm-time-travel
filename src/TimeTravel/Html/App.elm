@@ -6,7 +6,7 @@ module TimeTravel.Html.App exposing
   -- , programWithFlagsWithOptions
   -- , OutgoingMsg
   -- , IncomingMsg
-  ) -- where
+  )
 
 
 {-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)

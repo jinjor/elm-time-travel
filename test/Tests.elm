@@ -1,4 +1,4 @@
-module Tests exposing (..) -- where
+module Tests exposing (..)
 
 import String
 import Parser as RawParser exposing (..)

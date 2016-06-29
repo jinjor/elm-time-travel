@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Icons exposing (..) -- where
+module TimeTravel.Internal.Icons exposing (..)
 
 import Material.Icons.Content exposing (filter_list, content_copy)
 import Material.Icons.Navigation exposing (arrow_drop_down, arrow_drop_up)

@@ -1,10 +1,10 @@
-module Benchmark exposing (..) -- where
+module Benchmark exposing (..)
 
 import String
 import Parser as RawParser exposing (..)
-import TimeTravel.Internal.Parser.AST exposing(..)
-import TimeTravel.Internal.Parser.Parser as Parser exposing(..)
-import TimeTravel.Internal.Parser.Formatter as Formatter exposing(..)
+import TimeTravel.Internal.Parser.AST exposing (..)
+import TimeTravel.Internal.Parser.Parser as Parser exposing (..)
+import TimeTravel.Internal.Parser.Formatter as Formatter exposing (..)
 import ElmTest exposing (..)
 
 isOk : Result a b -> Bool
@@ -24,7 +24,8 @@ parseAndFormatManyTimes times s =
         case Parser.parse s of
           Ok ast ->
             let
-              str = Formatter.formatAsString ast
+              -- str = Formatter.formatAsString ast
+              str = toString ast
             in
               memo + String.length str
           _ ->

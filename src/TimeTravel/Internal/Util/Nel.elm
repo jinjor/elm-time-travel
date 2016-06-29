@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Util.Nel exposing (..) -- where
+module TimeTravel.Internal.Util.Nel exposing (..)
 
 -- non-empty list
 type Nel a =

@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Styles exposing (..) -- where
+module TimeTravel.Internal.Styles exposing (..)
 
 
 zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
