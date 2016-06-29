@@ -11240,6 +11240,19 @@ var _user$project$TimeTravel_Internal_Parser_Parser$tag = A2(
 					c,
 					_elm_lang$core$Native_Utils.chr('.'))));
 			})));
+var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Dandandan$parser$Parser$recursively(
+	function (_p1) {
+		return A2(
+			_Dandandan$parser$Parser$map,
+			function (tag) {
+				return A2(
+					_user$project$TimeTravel_Internal_Parser_AST$Union,
+					tag,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			},
+			_user$project$TimeTravel_Internal_Parser_Parser$tag);
+	});
 var _user$project$TimeTravel_Internal_Parser_Parser$function = A2(
 	_Dandandan$parser$Parser$and,
 	A2(
@@ -11247,7 +11260,7 @@ var _user$project$TimeTravel_Internal_Parser_Parser$function = A2(
 		A2(
 			_Dandandan$parser$Parser$map,
 			F3(
-				function (_p2, name, _p1) {
+				function (_p3, name, _p2) {
 					return _user$project$TimeTravel_Internal_Parser_AST$Value(name);
 				}),
 			_Dandandan$parser$Parser$token('<function')),
@@ -11262,16 +11275,16 @@ var _user$project$TimeTravel_Internal_Parser_Parser$function = A2(
 		_elm_lang$core$Native_Utils.chr('>')));
 var _user$project$TimeTravel_Internal_Parser_Parser$floatLiteral = A2(
 	_Dandandan$parser$Parser$map,
-	function (_p3) {
+	function (_p4) {
 		return _user$project$TimeTravel_Internal_Parser_AST$Value(
-			_elm_lang$core$Basics$toString(_p3));
+			_elm_lang$core$Basics$toString(_p4));
 	},
 	_Dandandan$parser$Parser_Number$float);
 var _user$project$TimeTravel_Internal_Parser_Parser$intLiteral = A2(
 	_Dandandan$parser$Parser$map,
-	function (_p4) {
+	function (_p5) {
 		return _user$project$TimeTravel_Internal_Parser_AST$Value(
-			_elm_lang$core$Basics$toString(_p4));
+			_elm_lang$core$Basics$toString(_p5));
 	},
 	_Dandandan$parser$Parser_Number$integer);
 var _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
@@ -11284,7 +11297,7 @@ var _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
 			A2(
 				_Dandandan$parser$Parser$map,
 				F3(
-					function (_p6, s, _p5) {
+					function (_p7, s, _p6) {
 						return s;
 					}),
 				_Dandandan$parser$Parser$symbol(
@@ -11293,11 +11306,11 @@ var _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
 		_Dandandan$parser$Parser$symbol(
 			_elm_lang$core$Native_Utils.chr('\"'))));
 var _user$project$TimeTravel_Internal_Parser_Parser$expression = _Dandandan$parser$Parser$recursively(
-	function (_p7) {
+	function (_p8) {
 		return A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$union, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Dandandan$parser$Parser$recursively(
-	function (_p8) {
+	function (_p9) {
 		return A2(
 			_Dandandan$parser$Parser$or,
 			_user$project$TimeTravel_Internal_Parser_Parser$record,
@@ -11316,14 +11329,14 @@ var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Da
 							A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$intLiteral, _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral))))));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$listLiteral = _Dandandan$parser$Parser$recursively(
-	function (_p9) {
+	function (_p10) {
 		return A2(
 			_Dandandan$parser$Parser$map,
 			_user$project$TimeTravel_Internal_Parser_AST$ListLiteral,
 			_Dandandan$parser$Parser_Char$bracketed(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$items = _Dandandan$parser$Parser$recursively(
-	function (_p10) {
+	function (_p11) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
 			A2(
 				_Dandandan$parser$Parser$separatedBy,
@@ -11331,19 +11344,19 @@ var _user$project$TimeTravel_Internal_Parser_Parser$items = _Dandandan$parser$Pa
 				_user$project$TimeTravel_Internal_Parser_Util$comma));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$record = _Dandandan$parser$Parser$recursively(
-	function (_p11) {
+	function (_p12) {
 		return A2(
 			_Dandandan$parser$Parser$map,
 			_user$project$TimeTravel_Internal_Parser_AST$Record,
 			_Dandandan$parser$Parser_Char$braced(_user$project$TimeTravel_Internal_Parser_Parser$properties));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$properties = _Dandandan$parser$Parser$recursively(
-	function (_p12) {
+	function (_p13) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
 			A2(_Dandandan$parser$Parser$separatedBy, _user$project$TimeTravel_Internal_Parser_Parser$property, _user$project$TimeTravel_Internal_Parser_Util$comma));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$property = _Dandandan$parser$Parser$recursively(
-	function (_p13) {
+	function (_p14) {
 		return A2(
 			_Dandandan$parser$Parser$and,
 			A2(
@@ -11359,7 +11372,7 @@ var _user$project$TimeTravel_Internal_Parser_Parser$property = _Dandandan$parser
 								A2(
 									_Dandandan$parser$Parser$map,
 									F7(
-										function (_p18, key, _p17, _p16, _p15, value, _p14) {
+										function (_p19, key, _p18, _p17, _p16, value, _p15) {
 											return A2(_user$project$TimeTravel_Internal_Parser_AST$Property, key, value);
 										}),
 									_user$project$TimeTravel_Internal_Parser_Util$spaces),
@@ -11371,14 +11384,14 @@ var _user$project$TimeTravel_Internal_Parser_Parser$property = _Dandandan$parser
 			_user$project$TimeTravel_Internal_Parser_Util$spaces);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral = _Dandandan$parser$Parser$recursively(
-	function (_p19) {
+	function (_p20) {
 		return A2(
 			_Dandandan$parser$Parser$map,
 			_user$project$TimeTravel_Internal_Parser_AST$TupleLiteral,
 			_Dandandan$parser$Parser_Char$parenthesized(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$union = _Dandandan$parser$Parser$recursively(
-	function (_p20) {
+	function (_p21) {
 		return A2(
 			_Dandandan$parser$Parser$and,
 			A2(
@@ -11391,17 +11404,17 @@ var _user$project$TimeTravel_Internal_Parser_Parser$union = _Dandandan$parser$Pa
 			_Dandandan$parser$Parser$many(_user$project$TimeTravel_Internal_Parser_Parser$unionParam));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$unionParam = _Dandandan$parser$Parser$recursively(
-	function (_p21) {
+	function (_p22) {
 		return A2(
 			_Dandandan$parser$Parser$and,
 			A2(
 				_Dandandan$parser$Parser$map,
 				F2(
-					function (_p22, exp) {
+					function (_p23, exp) {
 						return exp;
 					}),
 				_user$project$TimeTravel_Internal_Parser_Util$spaces),
-			_user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
+			A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$singleUnion, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$parse = function (s) {
 	return A2(
@@ -11874,7 +11887,8 @@ var _user$project$TimeTravel_Internal_Model$init = function (model) {
 		selectedMsg: _elm_lang$core$Maybe$Nothing,
 		showDiff: false,
 		fixedToLeft: false,
-		expandedTree: _elm_lang$core$Set$empty
+		expandedTree: _elm_lang$core$Set$empty,
+		minimized: false
 	};
 };
 var _user$project$TimeTravel_Internal_Model$HistoryItem = F6(
@@ -11892,7 +11906,9 @@ var _user$project$TimeTravel_Internal_Model$Model = function (a) {
 								return function (i) {
 									return function (j) {
 										return function (k) {
-											return {future: a, history: b, filter: c, sync: d, showModelDetail: e, expand: f, msgId: g, selectedMsg: h, showDiff: i, fixedToLeft: j, expandedTree: k};
+											return function (l) {
+												return {future: a, history: b, filter: c, sync: d, showModelDetail: e, expand: f, msgId: g, selectedMsg: h, showDiff: i, fixedToLeft: j, expandedTree: k, minimized: l};
+											};
 										};
 									};
 								};
@@ -11933,6 +11949,7 @@ var _user$project$TimeTravel_Internal_Model$IncomingMsg = F2(
 	function (a, b) {
 		return {type_: a, settings: b};
 	});
+var _user$project$TimeTravel_Internal_Model$ToggleMinimize = {ctor: 'ToggleMinimize'};
 var _user$project$TimeTravel_Internal_Model$ToggleModelTree = function (a) {
 	return {ctor: 'ToggleModelTree', _0: a};
 };
@@ -12109,7 +12126,7 @@ var _user$project$TimeTravel_Internal_Update$update = F3(
 						{showModelDetail: _p7}),
 					_elm_lang$core$Native_List.fromArray(
 						[]));
-			default:
+			case 'ToggleModelTree':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
@@ -12117,6 +12134,19 @@ var _user$project$TimeTravel_Internal_Update$update = F3(
 						{
 							expandedTree: A2(_user$project$TimeTravel_Internal_Update$toggleSet, _p0._0, model.expandedTree)
 						}),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_user$project$TimeTravel_Internal_Model$futureToHistory(
+						_user$project$TimeTravel_Internal_Model$selectFirstIfSync(
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									minimized: _elm_lang$core$Basics$not(model.minimized),
+									sync: true
+								}))),
 					_elm_lang$core$Native_List.fromArray(
 						[]));
 		}
@@ -12214,7 +12244,8 @@ var _user$project$TimeTravel_Internal_Styles$debugViewTheme = _elm_lang$core$Nat
 	[
 		{ctor: '_Tuple2', _0: 'background-color', _1: '#444'},
 		{ctor: '_Tuple2', _0: 'color', _1: '#eee'},
-		{ctor: '_Tuple2', _0: 'font-family', _1: 'calibri, helvetica, arial, sans-serif'}
+		{ctor: '_Tuple2', _0: 'font-family', _1: 'calibri, helvetica, arial, sans-serif'},
+		{ctor: '_Tuple2', _0: 'font-size', _1: '14px'}
 	]);
 var _user$project$TimeTravel_Internal_Styles$detailView = F2(
 	function (fixedToLeft, opened) {
@@ -12378,7 +12409,7 @@ var _user$project$TimeTravel_Internal_Styles$buttonView = function (left) {
 				{ctor: '_Tuple2', _0: 'margin-right', _1: 'auto'}
 			]) : _elm_lang$core$Native_List.fromArray(
 			[
-				{ctor: '_Tuple2', _0: 'margin-left', _1: '7px'}
+				{ctor: '_Tuple2', _0: 'margin-left', _1: 'auto'}
 			]),
 		_user$project$TimeTravel_Internal_Styles$iconButton);
 };
@@ -12449,6 +12480,22 @@ var _user$project$TimeTravel_Internal_Styles$debugView = function (fixedToLeft) 
 			]),
 		_user$project$TimeTravel_Internal_Styles$debugViewTheme);
 };
+var _user$project$TimeTravel_Internal_Styles$minimizedButton = function (fixedToLeft) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Native_List.fromArray(
+			[
+				{ctor: '_Tuple2', _0: 'position', _1: 'fixed'},
+				{ctor: '_Tuple2', _0: 'bottom', _1: '0'},
+				{
+				ctor: '_Tuple2',
+				_0: fixedToLeft ? 'left' : 'right',
+				_1: '0'
+			},
+				{ctor: '_Tuple2', _0: 'z-index', _1: _user$project$TimeTravel_Internal_Styles$zIndex.debugView}
+			]),
+		A2(_elm_lang$core$Basics_ops['++'], _user$project$TimeTravel_Internal_Styles$iconButton, _user$project$TimeTravel_Internal_Styles$debugViewTheme));
+};
 var _user$project$TimeTravel_Internal_Styles$modelDetailView = function (fixedToLeft) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
@@ -12484,6 +12531,12 @@ var _user$project$TimeTravel_Internal_Styles$resyncView = function (sync) {
 		]);
 };
 
+var _user$project$TimeTravel_Internal_Icons$minimize = function (minimized) {
+	return A2(
+		minimized ? _elm_community$elm_material_icons$Material_Icons_Content$add : _elm_community$elm_material_icons$Material_Icons_Content$remove,
+		_elm_lang$core$Color$white,
+		24);
+};
 var _user$project$TimeTravel_Internal_Icons$toggleModelDetail = A2(_elm_community$elm_material_icons$Material_Icons_Content$content_copy, _elm_lang$core$Color$white, 24);
 var _user$project$TimeTravel_Internal_Icons$layout = A2(_elm_community$elm_material_icons$Material_Icons_Action$swap_horiz, _elm_lang$core$Color$white, 24);
 var _user$project$TimeTravel_Internal_Icons$filterExpand = function (expanded) {
@@ -13247,6 +13300,39 @@ var _user$project$TimeTravel_Internal_View$detailTab = F3(
 					_elm_lang$html$Html$text(name)
 				]));
 	});
+var _user$project$TimeTravel_Internal_View$filterMapUntilLimit = F3(
+	function (limit, f, list) {
+		filterMapUntilLimit:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(limit, 0) < 1) {
+				return _elm_lang$core$Native_List.fromArray(
+					[]);
+			} else {
+				var _p8 = list;
+				if (_p8.ctor === '[]') {
+					return _elm_lang$core$Native_List.fromArray(
+						[]);
+				} else {
+					var _p10 = _p8._1;
+					var _p9 = f(_p8._0);
+					if (_p9.ctor === 'Just') {
+						return A2(
+							_elm_lang$core$List_ops['::'],
+							_p9._0,
+							A3(_user$project$TimeTravel_Internal_View$filterMapUntilLimit, limit - 1, f, _p10));
+					} else {
+						var _v6 = limit,
+							_v7 = f,
+							_v8 = _p10;
+						limit = _v6;
+						f = _v7;
+						list = _v8;
+						continue filterMapUntilLimit;
+					}
+				}
+			}
+		}
+	});
 var _user$project$TimeTravel_Internal_View$msgListView = F4(
 	function (filterOptions, selectedMsg, items, detailView) {
 		return A2(
@@ -13262,24 +13348,22 @@ var _user$project$TimeTravel_Internal_View$msgListView = F4(
 						[
 							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$msgListView)
 						]),
-					A2(
-						_elm_lang$core$List$take,
+					A3(
+						_user$project$TimeTravel_Internal_View$filterMapUntilLimit,
 						60,
-						A2(
-							_elm_lang$core$List$filterMap,
-							A2(_user$project$TimeTravel_Internal_View$msgView, filterOptions, selectedMsg),
-							items)))
+						A2(_user$project$TimeTravel_Internal_View$msgView, filterOptions, selectedMsg),
+						items))
 				]));
 	});
 var _user$project$TimeTravel_Internal_View$modelDetailView = F4(
 	function (fixedToLeft, expandedTree, lazyModelAst, userModel) {
-		var _p8 = lazyModelAst;
-		if ((_p8.ctor === 'Just') && (_p8._0.ctor === 'Ok')) {
+		var _p11 = lazyModelAst;
+		if ((_p11.ctor === 'Just') && (_p11._0.ctor === 'Ok')) {
 			var html = A3(
 				_user$project$TimeTravel_Internal_Parser_Formatter$formatAsHtml,
 				_user$project$TimeTravel_Internal_Model$ToggleModelTree,
 				expandedTree,
-				_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p8._0._0));
+				_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p11._0._0));
 			return A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(
@@ -13327,8 +13411,8 @@ var _user$project$TimeTravel_Internal_View$detailView = function (model) {
 					'Messages and Diff')
 				]));
 		var detailedMsgView = function () {
-			var _p9 = _user$project$TimeTravel_Internal_Model$selectedMsgAst(model);
-			if (_p9.ctor === 'Just') {
+			var _p12 = _user$project$TimeTravel_Internal_Model$selectedMsgAst(model);
+			if (_p12.ctor === 'Just') {
 				return A2(
 					_elm_lang$html$Html$div,
 					_elm_lang$core$Native_List.fromArray(
@@ -13339,40 +13423,40 @@ var _user$project$TimeTravel_Internal_View$detailView = function (model) {
 						[
 							_elm_lang$html$Html$text(
 							_user$project$TimeTravel_Internal_Parser_Formatter$formatAsString(
-								_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p9._0)))
+								_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(_p12._0)))
 						]));
 			} else {
 				return _elm_lang$html$Html$text('');
 			}
 		}();
 		var diffView = function () {
-			var _p10 = _user$project$TimeTravel_Internal_Model$selectedAndOldAst(model);
-			if (_p10.ctor === 'Just') {
-				return A2(_user$project$TimeTravel_Internal_DiffView$view, _p10._0._0, _p10._0._1);
+			var _p13 = _user$project$TimeTravel_Internal_Model$selectedAndOldAst(model);
+			if (_p13.ctor === 'Just') {
+				return A2(_user$project$TimeTravel_Internal_DiffView$view, _p13._0._0, _p13._0._1);
 			} else {
 				return _elm_lang$html$Html$text('');
 			}
 		}();
 		var msgTreeView = function () {
-			var _p11 = {
+			var _p14 = {
 				ctor: '_Tuple2',
 				_0: model.selectedMsg,
 				_1: _user$project$TimeTravel_Internal_Model$selectedMsgTree(model)
 			};
-			if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Just')) && (_p11._1.ctor === 'Just')) {
-				return A3(_user$project$TimeTravel_Internal_MsgTreeView$view, _user$project$TimeTravel_Internal_Model$SelectMsg, _p11._0._0, _p11._1._0);
+			if (((_p14.ctor === '_Tuple2') && (_p14._0.ctor === 'Just')) && (_p14._1.ctor === 'Just')) {
+				return A3(_user$project$TimeTravel_Internal_MsgTreeView$view, _user$project$TimeTravel_Internal_Model$SelectMsg, _p14._0._0, _p14._1._0);
 			} else {
 				return _elm_lang$html$Html$text('');
 			}
 		}();
 		var body = function () {
 			if (model.showModelDetail) {
-				var _p12 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
-				if (_p12.ctor === 'Just') {
-					var _p13 = _p12._0;
+				var _p15 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
+				if (_p15.ctor === 'Just') {
+					var _p16 = _p15._0;
 					return A2(
 						_elm_lang$core$List_ops['::'],
-						A4(_user$project$TimeTravel_Internal_View$modelDetailView, model.fixedToLeft, model.expandedTree, _p13.lazyModelAst, _p13.model),
+						A4(_user$project$TimeTravel_Internal_View$modelDetailView, model.fixedToLeft, model.expandedTree, _p16.lazyModelAst, _p16.model),
 						_elm_lang$core$Native_List.fromArray(
 							[]));
 				} else {
@@ -13396,9 +13480,9 @@ var _user$project$TimeTravel_Internal_View$detailView = function (model) {
 		return _elm_lang$html$Html$text('');
 	}
 };
-var _user$project$TimeTravel_Internal_View$filterItemView = function (_p14) {
-	var _p15 = _p14;
-	var _p16 = _p15._0;
+var _user$project$TimeTravel_Internal_View$filterItemView = function (_p17) {
+	var _p18 = _p17;
+	var _p19 = _p18._0;
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -13416,13 +13500,13 @@ var _user$project$TimeTravel_Internal_View$filterItemView = function (_p14) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html_Attributes$type$('checkbox'),
-								_elm_lang$html$Html_Attributes$checked(_p15._1),
+								_elm_lang$html$Html_Attributes$checked(_p18._1),
 								_elm_lang$html$Html_Events$onClick(
-								_user$project$TimeTravel_Internal_Model$ToggleFilter(_p16))
+								_user$project$TimeTravel_Internal_Model$ToggleFilter(_p19))
 							]),
 						_elm_lang$core$Native_List.fromArray(
 							[])),
-						_elm_lang$html$Html$text(_p16)
+						_elm_lang$html$Html$text(_p19)
 					]))
 			]));
 };
@@ -13438,15 +13522,14 @@ var _user$project$TimeTravel_Internal_View$filterView = F2(
 			A2(_elm_lang$core$List$map, _user$project$TimeTravel_Internal_View$filterItemView, filterOptions));
 	});
 var _user$project$TimeTravel_Internal_View$buttonView = F3(
-	function (onClickMsg, left, inner) {
+	function (onClickMsg, buttonStyle, inner) {
 		return A4(
 			_jinjor$elm_inline_hover$InlineHover$hover,
 			_user$project$TimeTravel_Internal_Styles$buttonHover,
 			_elm_lang$html$Html$div,
 			_elm_lang$core$Native_List.fromArray(
 				[
-					_elm_lang$html$Html_Attributes$style(
-					_user$project$TimeTravel_Internal_Styles$buttonView(left)),
+					_elm_lang$html$Html_Attributes$style(buttonStyle),
 					_elm_lang$html$Html_Events$onClick(onClickMsg)
 				]),
 			inner);
@@ -13470,13 +13553,21 @@ var _user$project$TimeTravel_Internal_View$headerView = F4(
 							A3(
 							_user$project$TimeTravel_Internal_View$buttonView,
 							_user$project$TimeTravel_Internal_Model$ToggleLayout,
-							true,
+							_user$project$TimeTravel_Internal_Styles$buttonView(true),
 							_elm_lang$core$Native_List.fromArray(
 								[_user$project$TimeTravel_Internal_Icons$layout])),
 							A3(
 							_user$project$TimeTravel_Internal_View$buttonView,
+							_user$project$TimeTravel_Internal_Model$ToggleMinimize,
+							_user$project$TimeTravel_Internal_Styles$buttonView(true),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_user$project$TimeTravel_Internal_Icons$minimize(false)
+								])),
+							A3(
+							_user$project$TimeTravel_Internal_View$buttonView,
 							_user$project$TimeTravel_Internal_Model$ToggleSync,
-							false,
+							_user$project$TimeTravel_Internal_Styles$buttonView(false),
 							_elm_lang$core$Native_List.fromArray(
 								[
 									_user$project$TimeTravel_Internal_Icons$sync(sync)
@@ -13484,7 +13575,7 @@ var _user$project$TimeTravel_Internal_View$headerView = F4(
 							A3(
 							_user$project$TimeTravel_Internal_View$buttonView,
 							_user$project$TimeTravel_Internal_Model$ToggleExpand,
-							false,
+							_user$project$TimeTravel_Internal_Styles$buttonView(false),
 							_elm_lang$core$Native_List.fromArray(
 								[
 									_user$project$TimeTravel_Internal_Icons$filterExpand(expand)
@@ -13505,7 +13596,17 @@ var _user$project$TimeTravel_Internal_View$resyncView = function (sync) {
 		_elm_lang$core$Native_List.fromArray(
 			[]));
 };
-var _user$project$TimeTravel_Internal_View$debugView = function (model) {
+var _user$project$TimeTravel_Internal_View$minimizedDebugView = function (model) {
+	return A3(
+		_user$project$TimeTravel_Internal_View$buttonView,
+		_user$project$TimeTravel_Internal_Model$ToggleMinimize,
+		_user$project$TimeTravel_Internal_Styles$minimizedButton(model.fixedToLeft),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_user$project$TimeTravel_Internal_Icons$minimize(true)
+			]));
+};
+var _user$project$TimeTravel_Internal_View$normalDebugView = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -13532,11 +13633,14 @@ var _user$project$TimeTravel_Internal_View$debugView = function (model) {
 					]))
 			]));
 };
+var _user$project$TimeTravel_Internal_View$debugView = function (model) {
+	return (model.minimized ? _user$project$TimeTravel_Internal_View$minimizedDebugView : _user$project$TimeTravel_Internal_View$normalDebugView)(model);
+};
 var _user$project$TimeTravel_Internal_View$userView = F2(
 	function (userView, model) {
-		var _p17 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
-		if (_p17.ctor === 'Just') {
-			return userView(_p17._0.model);
+		var _p20 = _user$project$TimeTravel_Internal_Model$selectedItem(model);
+		if (_p20.ctor === 'Just') {
+			return userView(_p20._0.model);
 		} else {
 			return _elm_lang$html$Html$text('Error: Unable to render');
 		}
