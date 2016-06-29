@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg) -- where
+module TimeTravel.Internal.Update exposing (update, updateAfterUserMsg)
 
 import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
@@ -103,6 +103,15 @@ update save message model =
 
     ToggleModelTree id ->
       { model | expandedTree = toggleSet id model.expandedTree } ! []
+
+    ToggleMinimize ->
+      ( { model |
+          minimized = not model.minimized
+        , sync = True
+        }
+        |> selectFirstIfSync
+        |> futureToHistory
+      ) ! []
 
 
 toggleSet : comparable -> Set comparable -> Set comparable

@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Styles exposing (..) -- where
+module TimeTravel.Internal.Styles exposing (..)
 
 
 zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
@@ -34,7 +34,7 @@ iconButton =
 
 buttonView : Bool -> List (String, String)
 buttonView left =
-  (if left then [("margin-right", "auto")] else [ ("margin-left", "7px")])
+  (if left then [("margin-right", "auto")] else [ ("margin-left", "auto")])
   ++ iconButton
 
 
@@ -56,6 +56,7 @@ debugViewTheme =
   [ ("background-color", "#444")
   , ("color", "#eee")
   , ("font-family", "calibri, helvetica, arial, sans-serif")
+  , ("font-size", "14px")
   ]
 
 
@@ -84,6 +85,16 @@ headerView =
   [ ("display", "flex")
   , ("justify-content", "flex-end")
   ] ++ panel True
+
+
+minimizedButton : Bool -> List (String, String)
+minimizedButton fixedToLeft =
+  [ ("position", "fixed")
+  , ("bottom", "0")
+  , (if fixedToLeft then "left" else "right", "0")
+  , ("z-index", zIndex.debugView)
+  ] ++ iconButton ++ debugViewTheme
+
 
 
 

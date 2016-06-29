@@ -1,4 +1,4 @@
-module TimeTravel.Internal.MsgLike exposing (..) -- where
+module TimeTravel.Internal.MsgLike exposing (..)
 
 
 type MsgLike msg data

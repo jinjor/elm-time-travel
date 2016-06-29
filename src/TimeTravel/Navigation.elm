@@ -1,4 +1,4 @@
-module TimeTravel.Navigation exposing (program, programWithFlags) -- where
+module TimeTravel.Navigation exposing (program, programWithFlags)
 
 {-| Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
 

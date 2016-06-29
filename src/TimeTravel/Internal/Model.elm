@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Model exposing (..) -- where
+module TimeTravel.Internal.Model exposing (..)
 
 import String
 import Set exposing (Set)
@@ -35,6 +35,7 @@ type alias Model model msg data =
   , showDiff : Bool
   , fixedToLeft : Bool
   , expandedTree : Set AST.ASTId
+  , minimized : Bool
   }
 
 type alias Id = Int
@@ -68,6 +69,7 @@ type Msg
   | Receive IncomingMsg
   | ToggleModelDetail Bool
   | ToggleModelTree AST.ASTId
+  | ToggleMinimize
 
 
 init : model -> Model model msg data
@@ -83,6 +85,7 @@ init model =
   , showDiff = False
   , fixedToLeft = False
   , expandedTree = Set.empty
+  , minimized = False
   }
 
 

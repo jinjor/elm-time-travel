@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Parser.AST exposing (..) -- where
+module TimeTravel.Internal.Parser.AST exposing (..)
 
 type AST
   = Record (List AST)

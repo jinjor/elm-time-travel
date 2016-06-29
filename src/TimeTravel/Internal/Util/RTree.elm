@@ -1,4 +1,4 @@
-module TimeTravel.Internal.Util.RTree exposing (..) -- where
+module TimeTravel.Internal.Util.RTree exposing (..)
 
 type RTree a =
   Node a (List (RTree a))
