@@ -63,6 +63,8 @@ tests =
     , test "union2" (testParseUnion "Tag 1" (Union "Tag" [Value "1"]))
     , test "union3" (testParseUnion "Tag  1  \"a\"" (Union "Tag" [Value "1", StringLiteral "a"]))
     , test "union4" (testParseUnion "Tag { a = Inner }" (Union "Tag" [Record [Property "a" (Union "Inner" [])]]))
+    , test "union5" (testParseUnion "Tag Nothing" (Union "Tag" [Union "Nothing" []]))
+    , test "union6" (testParseUnion "Tag Nothing Nothing" (Union "Tag" [Union "Nothing" [], Union "Nothing" []]))
     , test "property" (testParseProperty "a=1" (Property "a" (Value "1")))
     , test "property" (testParseProperty "a = 1" (Property "a" (Value "1")))
     , test "properties" (testParseProperties "a=1" [Property "a" (Value "1")])
@@ -145,7 +147,6 @@ complexString = """
     )
 }
 """
-
 
 main : Program Never
 main =

@@ -92,12 +92,19 @@ union =
   )
 
 
+singleUnion : Parser AST
+singleUnion =
+  recursively (\_ ->
+    map (\tag -> Union tag []) tag
+  )
+
+
 unionParam : Parser AST
 unionParam =
   recursively (\_ ->
   (\_ exp  -> exp)
   `map` spaces
-  `and` expressionWithoutUnion
+  `and` (singleUnion `or` expressionWithoutUnion)
   )
 
 

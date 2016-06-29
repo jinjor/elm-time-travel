@@ -25,7 +25,6 @@ parseAndFormatManyTimes times s =
           Ok ast ->
             let
               str = Formatter.formatAsString ast
-              -- _ = Debug.log str ""
             in
               memo + String.length str
           _ ->
