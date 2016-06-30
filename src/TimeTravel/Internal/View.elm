@@ -137,22 +137,26 @@ msgListView filterOptions selectedMsg items detailView =
       -- ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
       ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
   ]
-
+  
 
 filterMapUntilLimit : Int -> (a -> Maybe b) -> List a -> List b
 filterMapUntilLimit limit f list =
+  List.reverse (filterMapUntilLimitHelp [] limit f list)
+
+
+filterMapUntilLimitHelp : List b -> Int -> (a -> Maybe b) -> List a -> List b
+filterMapUntilLimitHelp result limit f list =
   if limit <= 0 then
-    []
+    result
   else
     case list of
-      [] -> []
+      [] -> result
       h :: t ->
         case f h of
           Just b ->
-            -- TODO tailrec
-            b :: filterMapUntilLimit (limit - 1) f t
+            filterMapUntilLimitHelp (b :: result) (limit - 1) f t
           Nothing ->
-            filterMapUntilLimit limit f t
+            filterMapUntilLimitHelp result limit f t
 
 
 detailView : Model model msg data -> Html Msg
