@@ -24,6 +24,12 @@ main =
 
 That's it!
 
+## Context: Is this "Time Travel"?
+
+Maybe not. I borrowed this name from the original debugger, but currently the "Hot swap" feature is not implemented. After some [discussion](https://groups.google.com/forum/#!searchin/elm-discuss/debugger/elm-discuss/vtDxwvsL7DE/_G1jrjLUAQAJ), I found people think Time Travel debugger need to implement hot swap so that users can "change the future", which I personally don't need for now. I think hot swap can be implemented separately from this tool (e.g. [elm-hot-loader](https://github.com/fluxxu/elm-hot-loader)). So, the name will probably be changed in the future. Maybe "elm-dev-tool" or something.
+
+BTW, The official Time Travel Debugger is [coming back soon](https://github.com/elm-lang/elm-reactor#note-about-time-travel)! Meanwhile, I'm trying to find out what the ideal debugger would be.
+
 
 ## TODO
 
