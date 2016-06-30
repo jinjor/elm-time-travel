@@ -134,10 +134,9 @@ msgListView filterOptions selectedMsg items detailView =
   [ detailView
   , div
       [ style S.msgListView ]
-      -- ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
       ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
   ]
-  
+
 
 filterMapUntilLimit : Int -> (a -> Maybe b) -> List a -> List b
 filterMapUntilLimit limit f list =
