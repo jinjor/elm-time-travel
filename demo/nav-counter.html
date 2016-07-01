@@ -2511,6 +2511,118 @@ var _elm_lang$core$Platform_Sub$none = _elm_lang$core$Platform_Sub$batch(
 		[]));
 var _elm_lang$core$Platform_Sub$map = _elm_lang$core$Native_Platform.map;
 var _elm_lang$core$Platform_Sub$Sub = {ctor: 'Sub'};
+var _elm_lang$lazy$Native_Lazy = function() {
+
+function memoize(thunk)
+{
+    var value;
+    var isForced = false;
+    return function(tuple0) {
+        if (!isForced) {
+            value = thunk(tuple0);
+            isForced = true;
+        }
+        return value;
+    };
+}
+
+return {
+    memoize: memoize
+};
+
+}();
+var _elm_lang$lazy$Lazy$force = function (_p0) {
+	var _p1 = _p0;
+	return _p1._0(
+		{ctor: '_Tuple0'});
+};
+var _elm_lang$lazy$Lazy$Lazy = function (a) {
+	return {ctor: 'Lazy', _0: a};
+};
+var _elm_lang$lazy$Lazy$lazy = function (thunk) {
+	return _elm_lang$lazy$Lazy$Lazy(
+		_elm_lang$lazy$Native_Lazy.memoize(thunk));
+};
+var _elm_lang$lazy$Lazy$map = F2(
+	function (f, a) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p2) {
+				var _p3 = _p2;
+				return f(
+					_elm_lang$lazy$Lazy$force(a));
+			});
+	});
+var _elm_lang$lazy$Lazy$map2 = F3(
+	function (f, a, b) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p4) {
+				var _p5 = _p4;
+				return A2(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b));
+			});
+	});
+var _elm_lang$lazy$Lazy$map3 = F4(
+	function (f, a, b, c) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p6) {
+				var _p7 = _p6;
+				return A3(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c));
+			});
+	});
+var _elm_lang$lazy$Lazy$map4 = F5(
+	function (f, a, b, c, d) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p8) {
+				var _p9 = _p8;
+				return A4(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c),
+					_elm_lang$lazy$Lazy$force(d));
+			});
+	});
+var _elm_lang$lazy$Lazy$map5 = F6(
+	function (f, a, b, c, d, e) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p10) {
+				var _p11 = _p10;
+				return A5(
+					f,
+					_elm_lang$lazy$Lazy$force(a),
+					_elm_lang$lazy$Lazy$force(b),
+					_elm_lang$lazy$Lazy$force(c),
+					_elm_lang$lazy$Lazy$force(d),
+					_elm_lang$lazy$Lazy$force(e));
+			});
+	});
+var _elm_lang$lazy$Lazy$apply = F2(
+	function (f, x) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p12) {
+				var _p13 = _p12;
+				return A2(
+					_elm_lang$lazy$Lazy$force,
+					f,
+					_elm_lang$lazy$Lazy$force(x));
+			});
+	});
+var _elm_lang$lazy$Lazy$andThen = F2(
+	function (a, callback) {
+		return _elm_lang$lazy$Lazy$lazy(
+			function (_p14) {
+				var _p15 = _p14;
+				return _elm_lang$lazy$Lazy$force(
+					callback(
+						_elm_lang$lazy$Lazy$force(a)));
+			});
+	});
 //import Maybe, Native.List, Native.Utils, Result //
 
 var _elm_lang$core$Native_String = function() {
@@ -2935,515 +3047,991 @@ var _elm_lang$core$String$fromChar = function ($char) {
 	return A2(_elm_lang$core$String$cons, $char, '');
 };
 var _elm_lang$core$String$isEmpty = _elm_lang$core$Native_String.isEmpty;
-var _elm_lang$lazy$Native_Lazy = function() {
+//import Maybe, Native.List //
 
-function memoize(thunk)
+var _elm_lang$core$Native_Regex = function() {
+
+function escape(str)
 {
-    var value;
-    var isForced = false;
-    return function(tuple0) {
-        if (!isForced) {
-            value = thunk(tuple0);
-            isForced = true;
-        }
-        return value;
-    };
+	return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+function caseInsensitive(re)
+{
+	return new RegExp(re.source, 'gi');
+}
+function regex(raw)
+{
+	return new RegExp(raw, 'g');
+}
+
+function contains(re, string)
+{
+	return string.match(re) !== null;
+}
+
+function find(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex === re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		out.push({
+			match: result[0],
+			submatches: _elm_lang$core$Native_List.fromArray(subs),
+			index: result.index,
+			number: number
+		});
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+function replace(n, re, replacer, string)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		return replacer({
+			match: match,
+			submatches: _elm_lang$core$Native_List.fromArray(submatches),
+			index: arguments[i - 1],
+			number: count
+		});
+	}
+	return string.replace(re, jsReplacer);
+}
+
+function split(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	if (n === Infinity)
+	{
+		return _elm_lang$core$Native_List.fromArray(str.split(re));
+	}
+	var string = str;
+	var result;
+	var out = [];
+	var start = re.lastIndex;
+	while (n--)
+	{
+		if (!(result = re.exec(string))) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	return _elm_lang$core$Native_List.fromArray(out);
 }
 
 return {
-    memoize: memoize
+	regex: regex,
+	caseInsensitive: caseInsensitive,
+	escape: escape,
+
+	contains: F2(contains),
+	find: F3(find),
+	replace: F4(replace),
+	split: F3(split)
 };
 
 }();
-var _elm_lang$lazy$Lazy$force = function (_p0) {
-	var _p1 = _p0;
-	return _p1._0(
-		{ctor: '_Tuple0'});
+var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
+var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
+var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
+var _elm_lang$core$Regex$contains = _elm_lang$core$Native_Regex.contains;
+var _elm_lang$core$Regex$caseInsensitive = _elm_lang$core$Native_Regex.caseInsensitive;
+var _elm_lang$core$Regex$regex = _elm_lang$core$Native_Regex.regex;
+var _elm_lang$core$Regex$escape = _elm_lang$core$Native_Regex.escape;
+var _elm_lang$core$Regex$Match = F4(
+	function (a, b, c, d) {
+		return {match: a, submatches: b, index: c, number: d};
+	});
+var _elm_lang$core$Regex$Regex = {ctor: 'Regex'};
+var _elm_lang$core$Regex$AtMost = function (a) {
+	return {ctor: 'AtMost', _0: a};
 };
-var _elm_lang$lazy$Lazy$Lazy = function (a) {
-	return {ctor: 'Lazy', _0: a};
-};
-var _elm_lang$lazy$Lazy$lazy = function (thunk) {
-	return _elm_lang$lazy$Lazy$Lazy(
-		_elm_lang$lazy$Native_Lazy.memoize(thunk));
-};
-var _elm_lang$lazy$Lazy$map = F2(
-	function (f, a) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p2) {
-				var _p3 = _p2;
-				return f(
-					_elm_lang$lazy$Lazy$force(a));
-			});
-	});
-var _elm_lang$lazy$Lazy$map2 = F3(
-	function (f, a, b) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p4) {
-				var _p5 = _p4;
-				return A2(
-					f,
-					_elm_lang$lazy$Lazy$force(a),
-					_elm_lang$lazy$Lazy$force(b));
-			});
-	});
-var _elm_lang$lazy$Lazy$map3 = F4(
-	function (f, a, b, c) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p6) {
-				var _p7 = _p6;
-				return A3(
-					f,
-					_elm_lang$lazy$Lazy$force(a),
-					_elm_lang$lazy$Lazy$force(b),
-					_elm_lang$lazy$Lazy$force(c));
-			});
-	});
-var _elm_lang$lazy$Lazy$map4 = F5(
-	function (f, a, b, c, d) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p8) {
-				var _p9 = _p8;
-				return A4(
-					f,
-					_elm_lang$lazy$Lazy$force(a),
-					_elm_lang$lazy$Lazy$force(b),
-					_elm_lang$lazy$Lazy$force(c),
-					_elm_lang$lazy$Lazy$force(d));
-			});
-	});
-var _elm_lang$lazy$Lazy$map5 = F6(
-	function (f, a, b, c, d, e) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p10) {
-				var _p11 = _p10;
-				return A5(
-					f,
-					_elm_lang$lazy$Lazy$force(a),
-					_elm_lang$lazy$Lazy$force(b),
-					_elm_lang$lazy$Lazy$force(c),
-					_elm_lang$lazy$Lazy$force(d),
-					_elm_lang$lazy$Lazy$force(e));
-			});
-	});
-var _elm_lang$lazy$Lazy$apply = F2(
-	function (f, x) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p12) {
-				var _p13 = _p12;
-				return A2(
-					_elm_lang$lazy$Lazy$force,
-					f,
-					_elm_lang$lazy$Lazy$force(x));
-			});
-	});
-var _elm_lang$lazy$Lazy$andThen = F2(
-	function (a, callback) {
-		return _elm_lang$lazy$Lazy$lazy(
-			function (_p14) {
-				var _p15 = _p14;
-				return _elm_lang$lazy$Lazy$force(
-					callback(
-						_elm_lang$lazy$Lazy$force(a)));
-			});
-	});
-var _Dandandan$parser$Parser$funP = function (p) {
+var _elm_lang$core$Regex$All = {ctor: 'All'};
+var _Bogdanp$elm_combine$Combine$app = function (p) {
 	var _p0 = p;
-	if (_p0.ctor === 'Direct') {
+	if (_p0.ctor === 'Parser') {
 		return _p0._0;
 	} else {
 		return _elm_lang$lazy$Lazy$force(_p0._0);
 	}
 };
-var _Dandandan$parser$Parser$parse = F2(
-	function (p, xs) {
-		var _p1 = A2(_Dandandan$parser$Parser$funP, p, xs);
-		if (_p1.ctor === '[]') {
-			return _elm_lang$core$Result$Err('parse error');
-		} else {
-			return _elm_lang$core$Result$Ok(
-				_elm_lang$core$Basics$fst(_p1._0));
-		}
+var _Bogdanp$elm_combine$Combine$parse = F2(
+	function (p, input) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$app,
+			p,
+			{input: input, position: 0});
 	});
-var _Dandandan$parser$Parser$parseAll = F2(
-	function (p, xs) {
-		var _p2 = A2(_Dandandan$parser$Parser$funP, p, xs);
-		if (_p2.ctor === '[]') {
-			return _elm_lang$core$Result$Err('parse error');
-		} else {
-			return _elm_lang$core$Result$Ok(
-				A2(_elm_lang$core$List$map, _elm_lang$core$Basics$fst, _p2));
-		}
+var _Bogdanp$elm_combine$Combine$Context = F2(
+	function (a, b) {
+		return {input: a, position: b};
 	});
-var _Dandandan$parser$Parser$Delayed = function (a) {
-	return {ctor: 'Delayed', _0: a};
+var _Bogdanp$elm_combine$Combine$RecursiveParser = function (a) {
+	return {ctor: 'RecursiveParser', _0: a};
 };
-var _Dandandan$parser$Parser$recursively = function (t) {
-	return function (_p3) {
-		return _Dandandan$parser$Parser$Delayed(
-			_elm_lang$lazy$Lazy$lazy(_p3));
-	}(
-		function (_p4) {
-			var _p5 = _p4;
-			return _Dandandan$parser$Parser$funP(
-				t(
-					{ctor: '_Tuple0'}));
+var _Bogdanp$elm_combine$Combine$rec = function (t) {
+	return _Bogdanp$elm_combine$Combine$RecursiveParser(
+		_elm_lang$lazy$Lazy$lazy(
+			function (_p1) {
+				var _p2 = _p1;
+				return _Bogdanp$elm_combine$Combine$app(
+					t(
+						{ctor: '_Tuple0'}));
+			}));
+};
+var _Bogdanp$elm_combine$Combine$Parser = function (a) {
+	return {ctor: 'Parser', _0: a};
+};
+var _Bogdanp$elm_combine$Combine$primitive = _Bogdanp$elm_combine$Combine$Parser;
+var _Bogdanp$elm_combine$Combine$bimap = F3(
+	function (fok, ferr, p) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var _p3 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if (_p3._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Ok(
+							fok(_p3._0._0)),
+						_1: _p3._1
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Err(
+							ferr(_p3._0._0)),
+						_1: _p3._1
+					};
+				}
+			});
+	});
+var _Bogdanp$elm_combine$Combine$map = F2(
+	function (f, p) {
+		return A3(_Bogdanp$elm_combine$Combine$bimap, f, _elm_lang$core$Basics$identity, p);
+	});
+var _Bogdanp$elm_combine$Combine$mapError = _Bogdanp$elm_combine$Combine$bimap(_elm_lang$core$Basics$identity);
+var _Bogdanp$elm_combine$Combine$andThen = F2(
+	function (p, f) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var _p4 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if (_p4._0.ctor === 'Ok') {
+					return A2(
+						_Bogdanp$elm_combine$Combine$app,
+						f(_p4._0._0),
+						_p4._1);
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Err(_p4._0._0),
+						_1: _p4._1
+					};
+				}
+			});
+	});
+var _Bogdanp$elm_combine$Combine$sequence = function (ps) {
+	var accumulate = F3(
+		function (acc, ps, cx) {
+			accumulate:
+			while (true) {
+				var _p5 = ps;
+				if (_p5.ctor === '[]') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Result$Ok(
+							_elm_lang$core$List$reverse(acc)),
+						_1: cx
+					};
+				} else {
+					var _p6 = A2(_Bogdanp$elm_combine$Combine$app, _p5._0, cx);
+					if (_p6._0.ctor === 'Ok') {
+						var _v6 = A2(_elm_lang$core$List_ops['::'], _p6._0._0, acc),
+							_v7 = _p5._1,
+							_v8 = _p6._1;
+						acc = _v6;
+						ps = _v7;
+						cx = _v8;
+						continue accumulate;
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Result$Err(_p6._0._0),
+							_1: _p6._1
+						};
+					}
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return A3(
+				accumulate,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				ps,
+				cx);
 		});
 };
-var _Dandandan$parser$Parser$Direct = function (a) {
-	return {ctor: 'Direct', _0: a};
-};
-var _Dandandan$parser$Parser$succeed = function (b) {
-	return _Dandandan$parser$Parser$Direct(
-		function (xs) {
-			return _elm_lang$core$Native_List.fromArray(
-				[
-					{ctor: '_Tuple2', _0: b, _1: xs}
-				]);
+var _Bogdanp$elm_combine$Combine$fail = function (ms) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Err(ms),
+				_1: cx
+			};
 		});
 };
-var _Dandandan$parser$Parser$satisfy = function (p) {
-	return _Dandandan$parser$Parser$Direct(
-		function (xs) {
-			var _p6 = _elm_lang$core$String$uncons(xs);
-			if (_p6.ctor === 'Nothing') {
-				return _elm_lang$core$Native_List.fromArray(
-					[]);
+var _Bogdanp$elm_combine$Combine$succeed = function (r) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(r),
+				_1: cx
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$andMap = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andThen,
+			lp,
+			function (f) {
+				return A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					rp,
+					function (x) {
+						return _Bogdanp$elm_combine$Combine$succeed(
+							f(x));
+					});
+			});
+	});
+var _Bogdanp$elm_combine$Combine$between = F3(
+	function (lp, rp, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$andMap,
+				A2(
+					_Bogdanp$elm_combine$Combine$map,
+					_elm_lang$core$Basics$flip(
+						function (_p7) {
+							return _elm_lang$core$Basics$always(
+								_elm_lang$core$Basics$always(_p7));
+						}),
+					lp),
+				p),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine$skip = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		p,
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$count = F2(
+	function (n, p) {
+		var accumulate = F2(
+			function (x, acc) {
+				return (_elm_lang$core$Native_Utils.cmp(x, 0) < 1) ? _Bogdanp$elm_combine$Combine$succeed(
+					_elm_lang$core$List$reverse(acc)) : A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					p,
+					function (res) {
+						return A2(
+							accumulate,
+							x - 1,
+							A2(_elm_lang$core$List_ops['::'], res, acc));
+					});
+			});
+		return A2(
+			accumulate,
+			n,
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	});
+var _Bogdanp$elm_combine$Combine$string = function (s) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			if (A2(_elm_lang$core$String$startsWith, s, cx.input)) {
+				var len = _elm_lang$core$String$length(s);
+				var rem = A2(_elm_lang$core$String$dropLeft, len, cx.input);
+				var pos = cx.position + len;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(s),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: rem, position: pos})
+				};
 			} else {
-				var _p7 = _p6._0._0;
-				return p(_p7) ? _elm_lang$core$Native_List.fromArray(
-					[
-						{ctor: '_Tuple2', _0: _p7, _1: _p6._0._1}
-					]) : _elm_lang$core$Native_List.fromArray(
-					[]);
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$core$Basics_ops['++'],
+								'expected ',
+								_elm_lang$core$Basics$toString(s))
+							])),
+					_1: cx
+				};
 			}
 		});
 };
-var _Dandandan$parser$Parser$symbol = function (x) {
-	return _Dandandan$parser$Parser$satisfy(
-		function (s) {
-			return _elm_lang$core$Native_Utils.eq(s, x);
+var _Bogdanp$elm_combine$Combine$parens = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('('),
+	_Bogdanp$elm_combine$Combine$string(')'));
+var _Bogdanp$elm_combine$Combine$braces = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('{'),
+	_Bogdanp$elm_combine$Combine$string('}'));
+var _Bogdanp$elm_combine$Combine$brackets = A2(
+	_Bogdanp$elm_combine$Combine$between,
+	_Bogdanp$elm_combine$Combine$string('['),
+	_Bogdanp$elm_combine$Combine$string(']'));
+var _Bogdanp$elm_combine$Combine$regex = function (pattern) {
+	var pattern$ = A2(_elm_lang$core$String$startsWith, '^', pattern) ? pattern : A2(_elm_lang$core$Basics_ops['++'], '^', pattern);
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p8 = A3(
+				_elm_lang$core$Regex$find,
+				_elm_lang$core$Regex$AtMost(1),
+				_elm_lang$core$Regex$regex(pattern$),
+				cx.input);
+			if ((_p8.ctor === '::') && (_p8._1.ctor === '[]')) {
+				var _p9 = _p8._0;
+				var len = _elm_lang$core$String$length(_p9.match);
+				var rem = A2(_elm_lang$core$String$dropLeft, len, cx.input);
+				var pos = cx.position + len;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_p9.match),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: rem, position: pos})
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								A2(
+								_elm_lang$core$Basics_ops['++'],
+								'expected input matching Regexp /',
+								A2(_elm_lang$core$Basics_ops['++'], pattern$, '/'))
+							])),
+					_1: cx
+				};
+			}
 		});
 };
-var _Dandandan$parser$Parser$empty = _Dandandan$parser$Parser$Direct(
-	_elm_lang$core$Basics$always(
-		_elm_lang$core$Native_List.fromArray(
-			[])));
-var _Dandandan$parser$Parser$map = F2(
-	function (f, p) {
-		return _Dandandan$parser$Parser$Direct(
-			function (xs) {
-				return A2(
-					_elm_lang$core$List$map,
-					function (_p8) {
-						var _p9 = _p8;
+var _Bogdanp$elm_combine$Combine$while = function (pred) {
+	var accumulate = F2(
+		function (acc, cx) {
+			accumulate:
+			while (true) {
+				var _p10 = _elm_lang$core$String$uncons(cx.input);
+				if (_p10.ctor === 'Just') {
+					var _p11 = _p10._0._0;
+					if (pred(_p11)) {
+						var pos = cx.position + 1;
+						var c = A2(_elm_lang$core$String$cons, _p11, '');
+						var _v11 = A2(_elm_lang$core$Basics_ops['++'], acc, c),
+							_v12 = _elm_lang$core$Native_Utils.update(
+							cx,
+							{input: _p10._0._1, position: pos});
+						acc = _v11;
+						cx = _v12;
+						continue accumulate;
+					} else {
+						return {ctor: '_Tuple2', _0: acc, _1: cx};
+					}
+				} else {
+					return {ctor: '_Tuple2', _0: acc, _1: cx};
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p12 = A2(accumulate, '', cx);
+			var res = _p12._0;
+			var cx$ = _p12._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(res),
+				_1: cx$
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$end = _Bogdanp$elm_combine$Combine$Parser(
+	function (cx) {
+		return _elm_lang$core$Native_Utils.eq(cx.input, '') ? {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Result$Ok(
+				{ctor: '_Tuple0'}),
+			_1: cx
+		} : {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Result$Err(
+				_elm_lang$core$Native_List.fromArray(
+					['expected end of input'])),
+			_1: cx
+		};
+	});
+var _Bogdanp$elm_combine$Combine$or = F2(
+	function (lp, rp) {
+		return _Bogdanp$elm_combine$Combine$Parser(
+			function (cx) {
+				var res = A2(_Bogdanp$elm_combine$Combine$app, lp, cx);
+				var _p13 = res;
+				if (_p13._0.ctor === 'Ok') {
+					return res;
+				} else {
+					var res$ = A2(_Bogdanp$elm_combine$Combine$app, rp, cx);
+					var _p14 = res$;
+					if (_p14._0.ctor === 'Ok') {
+						return res$;
+					} else {
 						return {
 							ctor: '_Tuple2',
-							_0: f(_p9._0),
-							_1: _p9._1
+							_0: _elm_lang$core$Result$Err(
+								A2(_elm_lang$core$Basics_ops['++'], _p13._0._0, _p14._0._0)),
+							_1: cx
 						};
-					},
-					A2(_Dandandan$parser$Parser$funP, p, xs));
+					}
+				}
 			});
 	});
-var _Dandandan$parser$Parser_ops = _Dandandan$parser$Parser_ops || {};
-_Dandandan$parser$Parser_ops['<$'] = F2(
-	function (f, p) {
-		return A2(
-			_Dandandan$parser$Parser$map,
-			_elm_lang$core$Basics$always(f),
-			p);
-	});
-var _Dandandan$parser$Parser$or = F2(
-	function (p, q) {
-		return _Dandandan$parser$Parser$Direct(
-			function (xs) {
-				return A2(
-					_elm_lang$core$Basics_ops['++'],
-					A2(_Dandandan$parser$Parser$funP, p, xs),
-					A2(_Dandandan$parser$Parser$funP, q, xs));
-			});
-	});
-var _Dandandan$parser$Parser$choice = A2(_elm_lang$core$List$foldr, _Dandandan$parser$Parser$or, _Dandandan$parser$Parser$empty);
-var _Dandandan$parser$Parser$optional = F2(
-	function (p, x) {
-		return A2(
-			_Dandandan$parser$Parser$or,
-			p,
-			_Dandandan$parser$Parser$succeed(x));
-	});
-var _Dandandan$parser$Parser$andMap = F2(
-	function (q, p) {
-		return _Dandandan$parser$Parser$Direct(
-			function (xs) {
-				return _elm_lang$core$List$concat(
-					A2(
-						_elm_lang$core$List$map,
-						function (_p10) {
-							var _p11 = _p10;
-							return A2(
-								_elm_lang$core$List$map,
-								function (_p12) {
-									var _p13 = _p12;
-									return {
-										ctor: '_Tuple2',
-										_0: _p11._0(_p13._0),
-										_1: _p13._1
-									};
-								},
-								A2(_Dandandan$parser$Parser$funP, q, _p11._1));
-						},
-						A2(_Dandandan$parser$Parser$funP, p, xs)));
-			});
-	});
-var _Dandandan$parser$Parser$token = function (xs) {
-	var _p14 = _elm_lang$core$String$uncons(xs);
-	if (_p14.ctor === 'Nothing') {
-		return _Dandandan$parser$Parser$succeed('');
-	} else {
-		return A2(
-			_Dandandan$parser$Parser$andMap,
-			_Dandandan$parser$Parser$token(_p14._0._1),
-			A2(
-				_Dandandan$parser$Parser$map,
-				_elm_lang$core$String$cons,
-				_Dandandan$parser$Parser$symbol(_p14._0._0)));
-	}
+var _Bogdanp$elm_combine$Combine$choice = function (xs) {
+	return A3(
+		_elm_lang$core$List$foldr,
+		_Bogdanp$elm_combine$Combine$or,
+		_Bogdanp$elm_combine$Combine$fail(
+			_elm_lang$core$Native_List.fromArray(
+				[])),
+		xs);
 };
-var _Dandandan$parser$Parser$some = function (p) {
+var _Bogdanp$elm_combine$Combine$optional = F2(
+	function (res, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			p,
+			_Bogdanp$elm_combine$Combine$succeed(res));
+	});
+var _Bogdanp$elm_combine$Combine$chainl = F2(
+	function (p, op) {
+		var accumulate = function (x) {
+			return A2(
+				_Bogdanp$elm_combine$Combine$or,
+				A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					op,
+					function (f) {
+						return A2(
+							_Bogdanp$elm_combine$Combine$andThen,
+							p,
+							function (y) {
+								return accumulate(
+									A2(f, x, y));
+							});
+					}),
+				_Bogdanp$elm_combine$Combine$succeed(x));
+		};
+		return A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate);
+	});
+var _Bogdanp$elm_combine$Combine$chainr = F2(
+	function (p, op) {
+		var accumulate = function (x) {
+			return A2(
+				_Bogdanp$elm_combine$Combine$or,
+				A2(
+					_Bogdanp$elm_combine$Combine$andThen,
+					op,
+					function (f) {
+						return A2(
+							_Bogdanp$elm_combine$Combine$andThen,
+							A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate),
+							function (y) {
+								return _Bogdanp$elm_combine$Combine$succeed(
+									A2(f, x, y));
+							});
+					}),
+				_Bogdanp$elm_combine$Combine$succeed(x));
+		};
+		return A2(_Bogdanp$elm_combine$Combine$andThen, p, accumulate);
+	});
+var _Bogdanp$elm_combine$Combine$maybe = function (p) {
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p15 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+			if ((_p15.ctor === '_Tuple2') && (_p15._0.ctor === 'Ok')) {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(
+						_elm_lang$core$Maybe$Just(_p15._0._0)),
+					_1: _p15._1
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_elm_lang$core$Maybe$Nothing),
+					_1: cx
+				};
+			}
+		});
+};
+var _Bogdanp$elm_combine$Combine$many = function (p) {
+	var accumulate = F2(
+		function (acc, cx) {
+			accumulate:
+			while (true) {
+				var _p16 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+				if ((_p16.ctor === '_Tuple2') && (_p16._0.ctor === 'Ok')) {
+					var _p17 = _p16._1;
+					if (_elm_lang$core$Native_Utils.eq(cx, _p17)) {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$List$reverse(acc),
+							_1: cx
+						};
+					} else {
+						var _v17 = A2(_elm_lang$core$List_ops['::'], _p16._0._0, acc),
+							_v18 = _p17;
+						acc = _v17;
+						cx = _v18;
+						continue accumulate;
+					}
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$List$reverse(acc),
+						_1: cx
+					};
+				}
+			}
+		});
+	return _Bogdanp$elm_combine$Combine$Parser(
+		function (cx) {
+			var _p18 = A2(
+				accumulate,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				cx);
+			var res = _p18._0;
+			var cx$ = _p18._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Result$Ok(res),
+				_1: cx$
+			};
+		});
+};
+var _Bogdanp$elm_combine$Combine$many1 = function (p) {
 	return A2(
-		_Dandandan$parser$Parser$andMap,
-		_Dandandan$parser$Parser$many(p),
+		_Bogdanp$elm_combine$Combine$andMap,
 		A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			F2(
 				function (x, y) {
 					return A2(_elm_lang$core$List_ops['::'], x, y);
 				}),
-			p));
+			p),
+		_Bogdanp$elm_combine$Combine$many(p));
 };
-var _Dandandan$parser$Parser$many = function (p) {
-	return _Dandandan$parser$Parser$Direct(
-		function (xs) {
-			var _p15 = A2(_Dandandan$parser$Parser$funP, p, xs);
-			if (_p15.ctor === '[]') {
-				return A2(
-					_Dandandan$parser$Parser$funP,
-					_Dandandan$parser$Parser$succeed(
+var _Bogdanp$elm_combine$Combine$skipMany1 = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		_Bogdanp$elm_combine$Combine$many1(
+			_Bogdanp$elm_combine$Combine$skip(p)),
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$sepBy1 = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				F2(
+					function (x, y) {
+						return A2(_elm_lang$core$List_ops['::'], x, y);
+					}),
+				p),
+			_Bogdanp$elm_combine$Combine$many(
+				A2(
+					_Bogdanp$elm_combine$Combine$andMap,
+					A2(
+						_Bogdanp$elm_combine$Combine$map,
+						_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always),
+						sep),
+					p)));
+	});
+var _Bogdanp$elm_combine$Combine$sepBy = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			A2(_Bogdanp$elm_combine$Combine$sepBy1, sep, p),
+			_Bogdanp$elm_combine$Combine$succeed(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _Bogdanp$elm_combine$Combine$sepEndBy1 = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				_elm_lang$core$Basics$always,
+				A2(_Bogdanp$elm_combine$Combine$sepBy1, sep, p)),
+			_Bogdanp$elm_combine$Combine$maybe(sep));
+	});
+var _Bogdanp$elm_combine$Combine$sepEndBy = F2(
+	function (sep, p) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$or,
+			A2(_Bogdanp$elm_combine$Combine$sepEndBy1, sep, p),
+			_Bogdanp$elm_combine$Combine$succeed(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _Bogdanp$elm_combine$Combine$skipMany = function (p) {
+	return A2(
+		_Bogdanp$elm_combine$Combine$andThen,
+		_Bogdanp$elm_combine$Combine$many(
+			_Bogdanp$elm_combine$Combine$skip(p)),
+		_elm_lang$core$Basics$always(
+			_Bogdanp$elm_combine$Combine$succeed(
+				{ctor: '_Tuple0'})));
+};
+var _Bogdanp$elm_combine$Combine$manyTill = F2(
+	function (p, end) {
+		var accumulate = F2(
+			function (acc, cx) {
+				accumulate:
+				while (true) {
+					var _p19 = A2(_Bogdanp$elm_combine$Combine$app, end, cx);
+					if (_p19._0.ctor === 'Ok') {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Result$Ok(
+								_elm_lang$core$List$reverse(acc)),
+							_1: _p19._1
+						};
+					} else {
+						var _p20 = A2(_Bogdanp$elm_combine$Combine$app, p, cx);
+						if ((_p20.ctor === '_Tuple2') && (_p20._0.ctor === 'Ok')) {
+							var _v21 = A2(_elm_lang$core$List_ops['::'], _p20._0._0, acc),
+								_v22 = _p20._1;
+							acc = _v21;
+							cx = _v22;
+							continue accumulate;
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Result$Err(_p19._0._0),
+								_1: _p19._1
+							};
+						}
+					}
+				}
+			});
+		return _Bogdanp$elm_combine$Combine$Parser(
+			accumulate(
+				_elm_lang$core$Native_List.fromArray(
+					[])));
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<|>'] = _Bogdanp$elm_combine$Combine$or;
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['*>'] = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(
+				_Bogdanp$elm_combine$Combine$map,
+				_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always),
+				lp),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<*'] = F2(
+	function (lp, rp) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$andMap,
+			A2(_Bogdanp$elm_combine$Combine$map, _elm_lang$core$Basics$always, lp),
+			rp);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<?>'] = F2(
+	function (p, m) {
+		return A2(
+			_Bogdanp$elm_combine$Combine$mapError,
+			function (_p0) {
+				return _elm_lang$core$Native_List.fromArray(
+					[m]);
+			},
+			p);
+	});
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<$'] = function (res) {
+	return _Bogdanp$elm_combine$Combine$map(
+		function (_p1) {
+			return res;
+		});
+};
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<*>'] = _Bogdanp$elm_combine$Combine$andMap;
+var _Bogdanp$elm_combine$Combine_Infix_ops = _Bogdanp$elm_combine$Combine_Infix_ops || {};
+_Bogdanp$elm_combine$Combine_Infix_ops['<$>'] = _Bogdanp$elm_combine$Combine$map;
+var _Bogdanp$elm_combine$Combine_Char$crlf = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+		_elm_lang$core$Native_Utils.chr('\n'),
+		_Bogdanp$elm_combine$Combine$regex('\r\n')),
+	'expected crlf');
+var _Bogdanp$elm_combine$Combine_Char$satisfy = function (pred) {
+	return _Bogdanp$elm_combine$Combine$primitive(
+		function (cx) {
+			var message = 'could not satisfy predicate';
+			var _p0 = _elm_lang$core$String$uncons(cx.input);
+			if (_p0.ctor === 'Just') {
+				var _p1 = _p0._0._0;
+				return pred(_p1) ? {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Ok(_p1),
+					_1: _elm_lang$core$Native_Utils.update(
+						cx,
+						{input: _p0._0._1, position: cx.position + 1})
+				} : {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
 						_elm_lang$core$Native_List.fromArray(
-							[])),
-					xs);
+							[message])),
+					_1: cx
+				};
 			} else {
-				return A2(
-					_Dandandan$parser$Parser$funP,
-					_Dandandan$parser$Parser$some(p),
-					xs);
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Result$Err(
+						_elm_lang$core$Native_List.fromArray(
+							[message])),
+					_1: cx
+				};
 			}
 		});
 };
-var _Dandandan$parser$Parser$and = F2(
-	function (p, q) {
-		return A2(_Dandandan$parser$Parser$andMap, q, p);
-	});
-var _Dandandan$parser$Parser$separatedBy = F2(
-	function (p, s) {
-		return A3(
-			_elm_lang$core$Basics$flip,
-			_Dandandan$parser$Parser$or,
-			_Dandandan$parser$Parser$succeed(
-				_elm_lang$core$Native_List.fromArray(
-					[])),
-			A2(
-				_Dandandan$parser$Parser$andMap,
-				_Dandandan$parser$Parser$many(
-					A2(
-						_Dandandan$parser$Parser$andMap,
-						p,
-						A2(
-							_Dandandan$parser$Parser$map,
-							F2(
-								function (x, y) {
-									return y;
-								}),
-							s))),
-				A2(
-					_Dandandan$parser$Parser$map,
-					F2(
-						function (x, y) {
-							return A2(_elm_lang$core$List_ops['::'], x, y);
-						}),
-					p)));
-	});
-var _Dandandan$parser$Parser_ops = _Dandandan$parser$Parser_ops || {};
-_Dandandan$parser$Parser_ops['<*'] = F2(
-	function (p, q) {
-		return A2(
-			_Dandandan$parser$Parser$andMap,
-			q,
-			A2(_Dandandan$parser$Parser$map, _elm_lang$core$Basics$always, p));
-	});
-var _Dandandan$parser$Parser_ops = _Dandandan$parser$Parser_ops || {};
-_Dandandan$parser$Parser_ops['*>'] = F2(
-	function (p, q) {
-		return A2(
-			_Dandandan$parser$Parser$andMap,
-			q,
-			A2(
-				_Dandandan$parser$Parser$map,
-				_elm_lang$core$Basics$flip(_elm_lang$core$Basics$always),
-				p));
-	});
-var _Dandandan$parser$Parser$andThen = F2(
-	function (p, f) {
-		return _Dandandan$parser$Parser$Direct(
-			function (xs) {
-				return _elm_lang$core$List$concat(
-					A2(
-						_elm_lang$core$List$map,
-						function (_p16) {
-							var _p17 = _p16;
-							return A2(
-								_Dandandan$parser$Parser$funP,
-								f(_p17._0),
-								_p17._1);
-						},
-						A2(_Dandandan$parser$Parser$funP, p, xs)));
-			});
-	});
-var _Dandandan$parser$Parser$end = _Dandandan$parser$Parser$Direct(
-	function (xs) {
-		var _p18 = xs;
-		if (_p18 === '') {
-			return A2(
-				_Dandandan$parser$Parser$funP,
-				_Dandandan$parser$Parser$succeed(
-					{ctor: '_Tuple0'}),
-				xs);
-		} else {
-			return _elm_lang$core$Native_List.fromArray(
-				[]);
-		}
-	});
-var _Dandandan$parser$Parser_Char$between = F3(
-	function (x, y, parser) {
-		return A2(
-			_Dandandan$parser$Parser_ops['<*'],
-			A2(
-				_Dandandan$parser$Parser_ops['*>'],
-				_Dandandan$parser$Parser$symbol(x),
-				parser),
-			_Dandandan$parser$Parser$symbol(y));
-	});
-var _Dandandan$parser$Parser_Char$parenthesized = A2(
-	_Dandandan$parser$Parser_Char$between,
-	_elm_lang$core$Native_Utils.chr('('),
-	_elm_lang$core$Native_Utils.chr(')'));
-var _Dandandan$parser$Parser_Char$bracketed = A2(
-	_Dandandan$parser$Parser_Char$between,
-	_elm_lang$core$Native_Utils.chr('['),
-	_elm_lang$core$Native_Utils.chr(']'));
-var _Dandandan$parser$Parser_Char$braced = A2(
-	_Dandandan$parser$Parser_Char$between,
-	_elm_lang$core$Native_Utils.chr('{'),
-	_elm_lang$core$Native_Utils.chr('}'));
-var _Dandandan$parser$Parser_Char$quoted = A2(
-	_Dandandan$parser$Parser_Char$between,
-	_elm_lang$core$Native_Utils.chr('\"'),
-	_elm_lang$core$Native_Utils.chr('\"'));
-var _Dandandan$parser$Parser_Char$singleQuoted = A2(
-	_Dandandan$parser$Parser_Char$between,
-	_elm_lang$core$Native_Utils.chr('\''),
-	_elm_lang$core$Native_Utils.chr('\''));
-var _Dandandan$parser$Parser_Char$lower = _Dandandan$parser$Parser$satisfy(_elm_lang$core$Char$isLower);
-var _Dandandan$parser$Parser_Char$upper = _Dandandan$parser$Parser$satisfy(_elm_lang$core$Char$isUpper);
-var _Dandandan$parser$Parser_Number$fromOk = F2(
-	function ($default, result) {
-		return A2(
-			_elm_lang$core$Maybe$withDefault,
-			$default,
-			_elm_lang$core$Result$toMaybe(result));
-	});
-var _Dandandan$parser$Parser_Number$sign = function () {
-	var min = A2(
-		_Dandandan$parser$Parser$map,
-		_elm_lang$core$Basics$always(1),
-		_Dandandan$parser$Parser$symbol(
-			_elm_lang$core$Native_Utils.chr('+')));
-	var plus = A2(
-		_Dandandan$parser$Parser$map,
-		_elm_lang$core$Basics$always(-1),
-		_Dandandan$parser$Parser$symbol(
-			_elm_lang$core$Native_Utils.chr('-')));
+var _Bogdanp$elm_combine$Combine_Char$char = function (c) {
 	return A2(
-		_Dandandan$parser$Parser$optional,
-		A2(_Dandandan$parser$Parser$or, plus, min),
-		1);
-}();
-var _Dandandan$parser$Parser_Number$digit = function () {
-	var charToInt = function (c) {
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			F2(
+				function (x, y) {
+					return _elm_lang$core$Native_Utils.eq(x, y);
+				})(c)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected ',
+			_elm_lang$core$Basics$toString(c)));
+};
+var _Bogdanp$elm_combine$Combine_Char$anyChar = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		_elm_lang$core$Basics$always(true)),
+	'expected any character');
+var _Bogdanp$elm_combine$Combine_Char$oneOf = function (cs) {
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			A2(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, cs)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected one of ',
+			_elm_lang$core$Basics$toString(cs)));
+};
+var _Bogdanp$elm_combine$Combine_Char$noneOf = function (cs) {
+	return A2(
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
+			function (_p2) {
+				return _elm_lang$core$Basics$not(
+					A3(_elm_lang$core$Basics$flip, _elm_lang$core$List$member, cs, _p2));
+			}),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'expected none of ',
+			_elm_lang$core$Basics$toString(cs)));
+};
+var _Bogdanp$elm_combine$Combine_Char$space = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr(' '))),
+	'expected space');
+var _Bogdanp$elm_combine$Combine_Char$tab = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr('\t'))),
+	'expected tab');
+var _Bogdanp$elm_combine$Combine_Char$newline = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return _elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr('\n'))),
+	'expected newline');
+var _Bogdanp$elm_combine$Combine_Char$eol = A2(_Bogdanp$elm_combine$Combine_Infix_ops['<|>'], _Bogdanp$elm_combine$Combine_Char$newline, _Bogdanp$elm_combine$Combine_Char$crlf);
+var _Bogdanp$elm_combine$Combine_Char$lower = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isLower),
+	'expected a lowercase character');
+var _Bogdanp$elm_combine$Combine_Char$upper = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isUpper),
+	'expected an uppercase character');
+var _Bogdanp$elm_combine$Combine_Char$digit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isDigit),
+	'expected a digit');
+var _Bogdanp$elm_combine$Combine_Char$octDigit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isOctDigit),
+	'expected an octal digit');
+var _Bogdanp$elm_combine$Combine_Char$hexDigit = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+	_Bogdanp$elm_combine$Combine_Char$satisfy(_elm_lang$core$Char$isHexDigit),
+	'expected a hexadecimal digit');
+var _Bogdanp$elm_combine$Combine_Num$digit = function () {
+	var toDigit = function (c) {
 		return _elm_lang$core$Char$toCode(c) - _elm_lang$core$Char$toCode(
 			_elm_lang$core$Native_Utils.chr('0'));
 	};
 	return A2(
-		_Dandandan$parser$Parser$map,
-		charToInt,
-		_Dandandan$parser$Parser$satisfy(_elm_lang$core$Char$isDigit));
+		_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
+		A2(_Bogdanp$elm_combine$Combine_Infix_ops['<$>'], toDigit, _Bogdanp$elm_combine$Combine_Char$digit),
+		'expected a digit');
 }();
-var _Dandandan$parser$Parser_Number$natural = A2(
-	_Dandandan$parser$Parser$map,
+var _Bogdanp$elm_combine$Combine_Num$sign = A2(
+	_Bogdanp$elm_combine$Combine$optional,
+	1,
+	_Bogdanp$elm_combine$Combine$choice(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+				1,
+				_Bogdanp$elm_combine$Combine$string('+')),
+				A2(
+				_Bogdanp$elm_combine$Combine_Infix_ops['<$'],
+				-1,
+				_Bogdanp$elm_combine$Combine$string('-'))
+			])));
+var _Bogdanp$elm_combine$Combine_Num$unwrap = F2(
+	function (f, s) {
+		var _p0 = f(s);
+		if (_p0.ctor === 'Ok') {
+			return _p0._0;
+		} else {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'Combine.Num',
+				{
+					start: {line: 19, column: 3},
+					end: {line: 24, column: 73}
+				},
+				_p0)(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'impossible state in Combine.Num.unwrap: ',
+					_elm_lang$core$Basics$toString(_p0._0)));
+		}
+	});
+var _Bogdanp$elm_combine$Combine_Num$toInt = _Bogdanp$elm_combine$Combine_Num$unwrap(_elm_lang$core$String$toInt);
+var _Bogdanp$elm_combine$Combine_Num$int = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
 	A2(
-		_elm_lang$core$List$foldl,
-		F2(
-			function (b, a) {
-				return (a * 10) + b;
-			}),
-		0),
-	_Dandandan$parser$Parser$some(_Dandandan$parser$Parser_Number$digit));
-var _Dandandan$parser$Parser_Number$integer = A2(
-	_Dandandan$parser$Parser$andMap,
-	_Dandandan$parser$Parser_Number$natural,
+		_Bogdanp$elm_combine$Combine$andMap,
+		A2(
+			_Bogdanp$elm_combine$Combine$map,
+			F2(
+				function (x, y) {
+					return x * y;
+				}),
+			_Bogdanp$elm_combine$Combine_Num$sign),
+		A2(
+			_Bogdanp$elm_combine$Combine_Infix_ops['<$>'],
+			_Bogdanp$elm_combine$Combine_Num$toInt,
+			_Bogdanp$elm_combine$Combine$regex('(0|[1-9][0-9]*)'))),
+	'expected an integer');
+var _Bogdanp$elm_combine$Combine_Num$toFloat = _Bogdanp$elm_combine$Combine_Num$unwrap(_elm_lang$core$String$toFloat);
+var _Bogdanp$elm_combine$Combine_Num$float = A2(
+	_Bogdanp$elm_combine$Combine_Infix_ops['<?>'],
 	A2(
-		_Dandandan$parser$Parser$map,
-		F2(
-			function (x, y) {
-				return x * y;
-			}),
-		_Dandandan$parser$Parser_Number$sign));
-var _Dandandan$parser$Parser_Number$float = function () {
-	var toFloatString = function (_p0) {
-		var _p1 = _p0;
-		return A2(
-			_elm_lang$core$Basics_ops['++'],
-			_elm_lang$core$Basics$toString(_p1._0),
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				'.',
-				_elm_lang$core$String$concat(
-					A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, _p1._1))));
-	};
-	var convertToFloat = F3(
-		function (sig, $int, digs) {
-			return _elm_lang$core$Basics$toFloat(sig) * function (_p2) {
-				return A2(
-					_Dandandan$parser$Parser_Number$fromOk,
-					0.0,
-					_elm_lang$core$String$toFloat(
-						toFloatString(_p2)));
-			}(
-				{ctor: '_Tuple2', _0: $int, _1: digs});
-		});
-	return A2(
-		_Dandandan$parser$Parser$andMap,
+		_Bogdanp$elm_combine$Combine$andMap,
 		A2(
-			_Dandandan$parser$Parser_ops['*>'],
-			_Dandandan$parser$Parser$symbol(
-				_elm_lang$core$Native_Utils.chr('.')),
-			_Dandandan$parser$Parser$some(_Dandandan$parser$Parser_Number$digit)),
+			_Bogdanp$elm_combine$Combine$map,
+			function (_p2) {
+				return F2(
+					function (x, y) {
+						return x * y;
+					})(
+					_elm_lang$core$Basics$toFloat(_p2));
+			},
+			_Bogdanp$elm_combine$Combine_Num$sign),
 		A2(
-			_Dandandan$parser$Parser$andMap,
-			_Dandandan$parser$Parser_Number$integer,
-			A2(_Dandandan$parser$Parser$map, convertToFloat, _Dandandan$parser$Parser_Number$sign)));
-}();
+			_Bogdanp$elm_combine$Combine_Infix_ops['<$>'],
+			_Bogdanp$elm_combine$Combine_Num$toFloat,
+			_Bogdanp$elm_combine$Combine$regex('(0|[1-9][0-9]*)(\\.[0-9]+)'))),
+	'expected a float');
 var _elm_lang$core$Dict$foldr = F3(
 	function (f, acc, t) {
 		foldr:
@@ -6496,6 +7084,34 @@ function nodeHelp(tag, factList, kidList)
 }
 
 
+function keyedNode(tag, factList, kidList)
+{
+	var organized = organizeFacts(factList);
+	var namespace = organized.namespace;
+	var facts = organized.facts;
+
+	var children = [];
+	var descendantsCount = 0;
+	while (kidList.ctor !== '[]')
+	{
+		var kid = kidList._0;
+		descendantsCount += (kid._1.descendantsCount || 0);
+		children.push(kid);
+		kidList = kidList._1;
+	}
+	descendantsCount += children.length;
+
+	return {
+		type: 'keyed-node',
+		tag: tag,
+		facts: facts,
+		children: children,
+		namespace: namespace,
+		descendantsCount: descendantsCount
+	};
+}
+
+
 function custom(factList, model, impl)
 {
 	var facts = organizeFacts(factList).facts;
@@ -6527,7 +7143,7 @@ function thunk(func, args, thunk)
 		func: func,
 		args: args,
 		thunk: thunk,
-		node: null
+		node: undefined
 	};
 }
 
@@ -6679,7 +7295,7 @@ function equalEvents(a, b)
 
 function renderer(parent, tagger, initialVirtualNode)
 {
-	var eventNode = { tagger: tagger, parent: null };
+	var eventNode = { tagger: tagger, parent: undefined };
 
 	var domNode = render(initialVirtualNode, eventNode);
 	parent.appendChild(domNode);
@@ -6752,7 +7368,7 @@ function render(vNode, eventNode)
 		case 'tagger':
 			var subNode = vNode.node;
 			var tagger = vNode.tagger;
-		
+
 			while (subNode.type === 'tagger')
 			{
 				typeof tagger !== 'object'
@@ -6761,12 +7377,12 @@ function render(vNode, eventNode)
 
 				subNode = subNode.node;
 			}
-            
+
 			var subEventRoot = {
 				tagger: tagger,
 				parent: eventNode
 			};
-			
+
 			var domNode = render(subNode, subEventRoot);
 			domNode.elm_event_node_ref = subEventRoot;
 			return domNode;
@@ -6786,6 +7402,22 @@ function render(vNode, eventNode)
 			for (var i = 0; i < children.length; i++)
 			{
 				domNode.appendChild(render(children[i], eventNode));
+			}
+
+			return domNode;
+
+		case 'keyed-node':
+			var domNode = vNode.namespace
+				? document.createElementNS(vNode.namespace, vNode.tag)
+				: document.createElement(vNode.tag);
+
+			applyFacts(domNode, eventNode, vNode.facts);
+
+			var children = vNode.children;
+
+			for (var i = 0; i < children.length; i++)
+			{
+				domNode.appendChild(render(children[i]._1, eventNode));
 			}
 
 			return domNode;
@@ -6980,8 +7612,8 @@ function makePatch(type, index, data)
 		index: index,
 		type: type,
 		data: data,
-		domNode: null,
-		eventNode: null
+		domNode: undefined,
+		eventNode: undefined
 	};
 }
 
@@ -7106,6 +7738,25 @@ function diffHelp(a, b, patches, index)
 			diffChildren(a, b, patches, index);
 			return;
 
+		case 'keyed-node':
+			// Bail if obvious indicators have changed. Implies more serious
+			// structural changes such that it's not worth it to diff.
+			if (a.tag !== b.tag || a.namespace !== b.namespace)
+			{
+				patches.push(makePatch('p-redraw', index, b));
+				return;
+			}
+
+			var factsDiff = diffFacts(a.facts, b.facts);
+
+			if (typeof factsDiff !== 'undefined')
+			{
+				patches.push(makePatch('p-facts', index, factsDiff));
+			}
+
+			diffKeyedChildren(a, b, patches, index);
+			return;
+
 		case 'custom':
 			if (a.impl !== b.impl)
 			{
@@ -7226,11 +7877,11 @@ function diffChildren(aParent, bParent, patches, rootIndex)
 
 	if (aLen > bLen)
 	{
-		patches.push(makePatch('p-remove', rootIndex, aLen - bLen));
+		patches.push(makePatch('p-remove-last', rootIndex, aLen - bLen));
 	}
 	else if (aLen < bLen)
 	{
-		patches.push(makePatch('p-insert', rootIndex, bChildren.slice(aLen)));
+		patches.push(makePatch('p-append', rootIndex, bChildren.slice(aLen)));
 	}
 
 	// PAIRWISE DIFF EVERYTHING ELSE
@@ -7244,6 +7895,260 @@ function diffChildren(aParent, bParent, patches, rootIndex)
 		diffHelp(aChild, bChildren[i], patches, index);
 		index += aChild.descendantsCount || 0;
 	}
+}
+
+
+
+////////////  KEYED DIFF  ////////////
+
+
+function diffKeyedChildren(aParent, bParent, patches, rootIndex)
+{
+	var localPatches = [];
+
+	var changes = {}; // Dict String Entry
+	var inserts = []; // Array { index : Int, entry : Entry }
+	// type Entry = { tag : String, vnode : VNode, index : Int, data : _ }
+
+	var aChildren = aParent.children;
+	var bChildren = bParent.children;
+	var aLen = aChildren.length;
+	var bLen = bChildren.length;
+	var aIndex = 0;
+	var bIndex = 0;
+
+	var index = rootIndex;
+
+	while (aIndex < aLen && bIndex < bLen)
+	{
+		var a = aChildren[aIndex];
+		var b = bChildren[bIndex];
+
+		var aKey = a._0;
+		var bKey = b._0;
+		var aNode = a._1;
+		var bNode = b._1;
+
+		// check if keys match
+
+		if (aKey === bKey)
+		{
+			index++;
+			diffHelp(aNode, bNode, localPatches, index);
+			index += aNode.descendantsCount || 0;
+
+			aIndex++;
+			bIndex++;
+			continue;
+		}
+
+		// look ahead 1 to detect insertions and removals.
+
+		var aLookAhead = aIndex + 1 < aLen;
+		var bLookAhead = bIndex + 1 < bLen;
+
+		if (aLookAhead)
+		{
+			var aNext = aChildren[aIndex + 1];
+			var aNextKey = aNext._0;
+			var aNextNode = aNext._1;
+			var oldMatch = bKey === aNextKey;
+		}
+
+		if (bLookAhead)
+		{
+			var bNext = bChildren[bIndex + 1];
+			var bNextKey = bNext._0;
+			var bNextNode = bNext._1;
+			var newMatch = aKey === bNextKey;
+		}
+
+
+		// swap a and b
+		if (aLookAhead && bLookAhead && newMatch && oldMatch)
+		{
+			index++;
+			diffHelp(aNode, bNextNode, localPatches, index);
+			insertNode(changes, localPatches, aKey, bNode, bIndex, inserts);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			removeNode(changes, localPatches, aKey, aNextNode, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 2;
+			continue;
+		}
+
+		// insert b
+		if (bLookAhead && newMatch)
+		{
+			index++;
+			insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
+			diffHelp(aNode, bNextNode, localPatches, index);
+			index += aNode.descendantsCount || 0;
+
+			aIndex += 1;
+			bIndex += 2;
+			continue;
+		}
+
+		// remove a
+		if (aLookAhead && oldMatch)
+		{
+			index++;
+			removeNode(changes, localPatches, aKey, aNode, index);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			diffHelp(aNextNode, bNode, localPatches, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 1;
+			continue;
+		}
+
+		// remove a, insert b
+		if (aLookAhead && bLookAhead && aNextKey === bNextKey)
+		{
+			index++;
+			removeNode(changes, localPatches, aKey, aNode, index);
+			insertNode(changes, localPatches, bKey, bNode, bIndex, inserts);
+			index += aNode.descendantsCount || 0;
+
+			index++;
+			diffHelp(aNextNode, bNextNode, localPatches, index);
+			index += aNextNode.descendantsCount || 0;
+
+			aIndex += 2;
+			bIndex += 2;
+			continue;
+		}
+
+		break;
+	}
+
+	// eat up any remaining nodes with removeNode and insertNode
+
+	while (aIndex < aLen)
+	{
+		index++;
+		var a = aChildren[aIndex];
+		var aNode = a._1;
+		removeNode(changes, localPatches, a._0, aNode, index);
+		index += aNode.descendantsCount || 0;
+		aIndex++;
+	}
+
+	var endInserts;
+	while (bIndex < bLen)
+	{
+		endInserts = endInserts || [];
+		var b = bChildren[bIndex];
+		insertNode(changes, localPatches, b._0, b._1, undefined, endInserts);
+		bIndex++;
+	}
+
+	if (localPatches.length > 0 || inserts.length > 0 || typeof endInserts !== 'undefined')
+	{
+		patches.push(makePatch('p-reorder', rootIndex, {
+			patches: localPatches,
+			inserts: inserts,
+			endInserts: endInserts
+		}));
+	}
+}
+
+
+
+////////////  CHANGES FROM KEYED DIFF  ////////////
+
+
+var POSTFIX = '_elmW6BL';
+
+
+function insertNode(changes, localPatches, key, vnode, bIndex, inserts)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (typeof entry === 'undefined')
+	{
+		entry = {
+			tag: 'insert',
+			vnode: vnode,
+			index: bIndex,
+			data: undefined
+		};
+
+		inserts.push({ index: bIndex, entry: entry });
+		changes[key] = entry;
+
+		return;
+	}
+
+	// this key was removed earlier, a match!
+	if (entry.tag === 'remove')
+	{
+		inserts.push({ index: bIndex, entry: entry });
+
+		entry.tag = 'move';
+		var subPatches = [];
+		diffHelp(entry.vnode, vnode, subPatches, entry.index);
+		entry.index = bIndex;
+		entry.data.data = {
+			patches: subPatches,
+			entry: entry
+		};
+
+		return;
+	}
+
+	// this key has already been inserted or moved, a duplicate!
+	insertNode(changes, localPatches, key + POSTFIX, vnode, bIndex, inserts);
+}
+
+
+function removeNode(changes, localPatches, key, vnode, index)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (typeof entry === 'undefined')
+	{
+		var patch = makePatch('p-remove', index, undefined);
+		localPatches.push(patch);
+
+		changes[key] = {
+			tag: 'remove',
+			vnode: vnode,
+			index: index,
+			data: patch
+		};
+
+		return;
+	}
+
+	// this key was inserted earlier, a match!
+	if (entry.tag === 'insert')
+	{
+		entry.tag = 'move';
+		var subPatches = [];
+		diffHelp(vnode, entry.vnode, subPatches, index);
+
+		var patch = makePatch('p-remove', index, {
+			patches: subPatches,
+			entry: entry
+		});
+		localPatches.push(patch);
+
+		return;
+	}
+
+	// this key has already been removed or moved, a duplicate!
+	removeNode(changes, localPatches, key + POSTFIX, vnode, index);
 }
 
 
@@ -7276,6 +8181,33 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
 		{
 			addDomNodes(domNode, vNode.node, patch.data, eventNode);
 		}
+		else if (patchType === 'p-reorder')
+		{
+			patch.domNode = domNode;
+			patch.eventNode = eventNode;
+
+			var subPatches = patch.data.patches;
+			if (subPatches.length > 0)
+			{
+				addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+			}
+		}
+		else if (patchType === 'p-remove')
+		{
+			patch.domNode = domNode;
+			patch.eventNode = eventNode;
+
+			var data = patch.data;
+			if (typeof data !== 'undefined')
+			{
+				data.entry.data = domNode;
+				var subPatches = data.patches;
+				if (subPatches.length > 0)
+				{
+					addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+				}
+			}
+		}
 		else
 		{
 			patch.domNode = domNode;
@@ -7294,12 +8226,12 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
 	{
 		case 'tagger':
 			var subNode = vNode.node;
-            
+
 			while (subNode.type === "tagger")
 			{
 				subNode = subNode.node;
 			}
-            
+
 			return addDomNodesHelp(domNode, subNode, patches, i, low + 1, high, domNode.elm_event_node_ref);
 
 		case 'node':
@@ -7309,6 +8241,26 @@ function addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
 			{
 				low++;
 				var vChild = vChildren[j];
+				var nextLow = low + (vChild.descendantsCount || 0);
+				if (low <= index && index <= nextLow)
+				{
+					i = addDomNodesHelp(childNodes[j], vChild, patches, i, low, nextLow, eventNode);
+					if (!(patch = patches[i]) || (index = patch.index) > high)
+					{
+						return i;
+					}
+				}
+				low = nextLow;
+			}
+			return i;
+
+		case 'keyed-node':
+			var vChildren = vNode.children;
+			var childNodes = domNode.childNodes;
+			for (var j = 0; j < vChildren.length; j++)
+			{
+				low++;
+				var vChild = vChildren[j]._1;
 				var nextLow = low + (vChild.descendantsCount || 0);
 				if (low <= index && index <= nextLow)
 				{
@@ -7381,7 +8333,7 @@ function applyPatch(domNode, patch)
 			domNode.elm_event_node_ref.tagger = patch.data;
 			return domNode;
 
-		case 'p-remove':
+		case 'p-remove-last':
 			var i = patch.data;
 			while (i--)
 			{
@@ -7389,12 +8341,80 @@ function applyPatch(domNode, patch)
 			}
 			return domNode;
 
-		case 'p-insert':
+		case 'p-append':
 			var newNodes = patch.data;
 			for (var i = 0; i < newNodes.length; i++)
 			{
 				domNode.appendChild(render(newNodes[i], patch.eventNode));
 			}
+			return domNode;
+
+		case 'p-remove':
+			var data = patch.data;
+			if (typeof data === 'undefined')
+			{
+				domNode.parentNode.removeChild(domNode);
+				return domNode;
+			}
+			var entry = data.entry;
+			if (typeof entry.index !== 'undefined')
+			{
+				domNode.parentNode.removeChild(domNode);
+			}
+			entry.data = applyPatchesHelp(domNode, data.patches);
+			return domNode;
+
+		case 'p-reorder':
+			var data = patch.data;
+
+			// end inserts
+			var endInserts = data.endInserts;
+			var end;
+			if (typeof endInserts !== 'undefined')
+			{
+				if (endInserts.length === 1)
+				{
+					var insert = endInserts[0];
+					var entry = insert.entry;
+					var end = entry.tag === 'move'
+						? entry.data
+						: render(entry.vnode, patch.eventNode);
+				}
+				else
+				{
+					end = document.createDocumentFragment();
+					for (var i = 0; i < endInserts.length; i++)
+					{
+						var insert = endInserts[i];
+						var entry = insert.entry;
+						var node = entry.tag === 'move'
+							? entry.data
+							: render(entry.vnode, patch.eventNode);
+						end.appendChild(node);
+					}
+				}
+			}
+
+			// removals
+			domNode = applyPatchesHelp(domNode, data.patches);
+
+			// inserts
+			var inserts = data.inserts;
+			for (var i = 0; i < inserts.length; i++)
+			{
+				var insert = inserts[i];
+				var entry = insert.entry;
+				var node = entry.tag === 'move'
+					? entry.data
+					: render(entry.vnode, patch.eventNode);
+				domNode.insertBefore(node, domNode.childNodes[insert.index]);
+			}
+
+			if (typeof end !== 'undefined')
+			{
+				domNode.appendChild(end);
+			}
+
 			return domNode;
 
 		case 'p-custom':
@@ -7458,11 +8478,13 @@ return {
 	lazy: F2(lazy),
 	lazy2: F3(lazy2),
 	lazy3: F4(lazy3),
+	keyedNode: F3(keyedNode),
 
 	programWithFlags: programWithFlags
 };
 
 }();var _elm_lang$virtual_dom$VirtualDom$programWithFlags = _elm_lang$virtual_dom$Native_VirtualDom.programWithFlags;
+var _elm_lang$virtual_dom$VirtualDom$keyedNode = _elm_lang$virtual_dom$Native_VirtualDom.keyedNode;
 var _elm_lang$virtual_dom$VirtualDom$lazy3 = _elm_lang$virtual_dom$Native_VirtualDom.lazy3;
 var _elm_lang$virtual_dom$VirtualDom$lazy2 = _elm_lang$virtual_dom$Native_VirtualDom.lazy2;
 var _elm_lang$virtual_dom$VirtualDom$lazy = _elm_lang$virtual_dom$Native_VirtualDom.lazy;
@@ -9973,6 +10995,36 @@ var _elm_lang$html$Html_Attributes$attribute = _elm_lang$virtual_dom$VirtualDom$
 var _elm_lang$html$Html_Attributes$contextmenu = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$attribute, 'contextmenu', value);
 };
+var _elm_lang$html$Html_Attributes$draggable = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'draggable', value);
+};
+var _elm_lang$html$Html_Attributes$list = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'list', value);
+};
+var _elm_lang$html$Html_Attributes$maxlength = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'maxlength',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$datetime = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'datetime', value);
+};
+var _elm_lang$html$Html_Attributes$pubdate = function (value) {
+	return A2(_elm_lang$html$Html_Attributes$attribute, 'pubdate', value);
+};
+var _elm_lang$html$Html_Attributes$colspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'colspan',
+		_elm_lang$core$Basics$toString(n));
+};
+var _elm_lang$html$Html_Attributes$rowspan = function (n) {
+	return A2(
+		_elm_lang$html$Html_Attributes$attribute,
+		'rowspan',
+		_elm_lang$core$Basics$toString(n));
+};
 var _elm_lang$html$Html_Attributes$property = _elm_lang$virtual_dom$VirtualDom$property;
 var _elm_lang$html$Html_Attributes$stringProperty = F2(
 	function (name, string) {
@@ -9998,9 +11050,6 @@ var _elm_lang$html$Html_Attributes$accesskey = function ($char) {
 };
 var _elm_lang$html$Html_Attributes$dir = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dir', value);
-};
-var _elm_lang$html$Html_Attributes$draggable = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'draggable', value);
 };
 var _elm_lang$html$Html_Attributes$dropzone = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'dropzone', value);
@@ -10101,19 +11150,10 @@ var _elm_lang$html$Html_Attributes$enctype = function (value) {
 var _elm_lang$html$Html_Attributes$formaction = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'formAction', value);
 };
-var _elm_lang$html$Html_Attributes$list = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'list', value);
-};
 var _elm_lang$html$Html_Attributes$minlength = function (n) {
 	return A2(
 		_elm_lang$html$Html_Attributes$stringProperty,
 		'minLength',
-		_elm_lang$core$Basics$toString(n));
-};
-var _elm_lang$html$Html_Attributes$maxlength = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'maxLength',
 		_elm_lang$core$Basics$toString(n));
 };
 var _elm_lang$html$Html_Attributes$method = function (value) {
@@ -10203,32 +11243,14 @@ var _elm_lang$html$Html_Attributes$ping = function (value) {
 var _elm_lang$html$Html_Attributes$rel = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'rel', value);
 };
-var _elm_lang$html$Html_Attributes$datetime = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'datetime', value);
-};
-var _elm_lang$html$Html_Attributes$pubdate = function (value) {
-	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'pubdate', value);
-};
 var _elm_lang$html$Html_Attributes$start = function (n) {
 	return A2(
 		_elm_lang$html$Html_Attributes$stringProperty,
 		'start',
 		_elm_lang$core$Basics$toString(n));
 };
-var _elm_lang$html$Html_Attributes$colspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'colSpan',
-		_elm_lang$core$Basics$toString(n));
-};
 var _elm_lang$html$Html_Attributes$headers = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'headers', value);
-};
-var _elm_lang$html$Html_Attributes$rowspan = function (n) {
-	return A2(
-		_elm_lang$html$Html_Attributes$stringProperty,
-		'rowSpan',
-		_elm_lang$core$Basics$toString(n));
 };
 var _elm_lang$html$Html_Attributes$scope = function (value) {
 	return A2(_elm_lang$html$Html_Attributes$stringProperty, 'scope', value);
@@ -10420,6 +11442,9 @@ var _elm_lang$html$Html_Events$Options = F2(
 	function (a, b) {
 		return {stopPropagation: a, preventDefault: b};
 	});
+var _elm_lang$html$Html_Keyed$node = _elm_lang$virtual_dom$VirtualDom$keyedNode;
+var _elm_lang$html$Html_Keyed$ol = _elm_lang$html$Html_Keyed$node('ol');
+var _elm_lang$html$Html_Keyed$ul = _elm_lang$html$Html_Keyed$node('ul');
 var _elm_lang$navigation$Native_Navigation = function() {
 
 function go(n)
@@ -10918,30 +11943,111 @@ var _user$project$TimeTravel_Internal_Util_Nel$head = function (_p0) {
 	var _p1 = _p0;
 	return _p1._0;
 };
+var _user$project$TimeTravel_Internal_Util_Nel$takeHelp = F3(
+	function (result, n, list) {
+		takeHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
+				return result;
+			} else {
+				var _p2 = list;
+				if (_p2.ctor === '[]') {
+					return result;
+				} else {
+					var _v2 = A2(_elm_lang$core$List_ops['::'], _p2._0, result),
+						_v3 = n - 1,
+						_v4 = _p2._1;
+					result = _v2;
+					n = _v3;
+					list = _v4;
+					continue takeHelp;
+				}
+			}
+		}
+	});
+var _user$project$TimeTravel_Internal_Util_Nel$findMapManyHelp = F4(
+	function (result, n, f, list) {
+		findMapManyHelp:
+		while (true) {
+			if (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) {
+				return result;
+			} else {
+				var _p3 = list;
+				if (_p3.ctor === '[]') {
+					return result;
+				} else {
+					var _p5 = _p3._1;
+					var _p4 = f(_p3._0);
+					if (_p4.ctor === 'Just') {
+						var _v7 = A2(_elm_lang$core$List_ops['::'], _p4._0, result),
+							_v8 = n - 1,
+							_v9 = f,
+							_v10 = _p5;
+						result = _v7;
+						n = _v8;
+						f = _v9;
+						list = _v10;
+						continue findMapManyHelp;
+					} else {
+						var _v11 = result,
+							_v12 = n,
+							_v13 = f,
+							_v14 = _p5;
+						result = _v11;
+						n = _v12;
+						f = _v13;
+						list = _v14;
+						continue findMapManyHelp;
+					}
+				}
+			}
+		}
+	});
+var _user$project$TimeTravel_Internal_Util_Nel$findMapHelp = F2(
+	function (f, list) {
+		findMapHelp:
+		while (true) {
+			var _p6 = list;
+			if (_p6.ctor === '[]') {
+				return _elm_lang$core$Maybe$Nothing;
+			} else {
+				var _p7 = f(_p6._0);
+				if (_p7.ctor === 'Nothing') {
+					var _v17 = f,
+						_v18 = _p6._1;
+					f = _v17;
+					list = _v18;
+					continue findMapHelp;
+				} else {
+					return _p7;
+				}
+			}
+		}
+	});
 var _user$project$TimeTravel_Internal_Util_Nel$findHelp = F2(
 	function (f, list) {
 		findHelp:
 		while (true) {
-			var _p2 = list;
-			if (_p2.ctor === '[]') {
+			var _p8 = list;
+			if (_p8.ctor === '[]') {
 				return _elm_lang$core$Maybe$Nothing;
 			} else {
-				var _p3 = _p2._0;
-				if (f(_p3)) {
-					return _elm_lang$core$Maybe$Just(_p3);
+				var _p9 = _p8._0;
+				if (f(_p9)) {
+					return _elm_lang$core$Maybe$Just(_p9);
 				} else {
-					var _v2 = f,
-						_v3 = _p2._1;
-					f = _v2;
-					list = _v3;
+					var _v20 = f,
+						_v21 = _p8._1;
+					f = _v20;
+					list = _v21;
 					continue findHelp;
 				}
 			}
 		}
 	});
-var _user$project$TimeTravel_Internal_Util_Nel$toList = function (_p4) {
-	var _p5 = _p4;
-	return A2(_elm_lang$core$List_ops['::'], _p5._0, _p5._1);
+var _user$project$TimeTravel_Internal_Util_Nel$toList = function (_p10) {
+	var _p11 = _p10;
+	return A2(_elm_lang$core$List_ops['::'], _p11._0, _p11._1);
 };
 var _user$project$TimeTravel_Internal_Util_Nel$filter = F2(
 	function (match, nel) {
@@ -10964,43 +12070,71 @@ var _user$project$TimeTravel_Internal_Util_Nel$find = F2(
 			f,
 			_user$project$TimeTravel_Internal_Util_Nel$toList(nel));
 	});
+var _user$project$TimeTravel_Internal_Util_Nel$findMap = F2(
+	function (f, nel) {
+		return A2(
+			_user$project$TimeTravel_Internal_Util_Nel$findMapHelp,
+			f,
+			_user$project$TimeTravel_Internal_Util_Nel$toList(nel));
+	});
+var _user$project$TimeTravel_Internal_Util_Nel$findMapMany = F3(
+	function (n, f, nel) {
+		return _elm_lang$core$List$reverse(
+			A4(
+				_user$project$TimeTravel_Internal_Util_Nel$findMapManyHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				n,
+				f,
+				_user$project$TimeTravel_Internal_Util_Nel$toList(nel)));
+	});
+var _user$project$TimeTravel_Internal_Util_Nel$take = F2(
+	function (n, nel) {
+		return _elm_lang$core$List$reverse(
+			A3(
+				_user$project$TimeTravel_Internal_Util_Nel$takeHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				n,
+				_user$project$TimeTravel_Internal_Util_Nel$toList(nel)));
+	});
 var _user$project$TimeTravel_Internal_Util_Nel$Nel = F2(
 	function (a, b) {
 		return {ctor: 'Nel', _0: a, _1: b};
 	});
 var _user$project$TimeTravel_Internal_Util_Nel$map = F2(
-	function (f, _p6) {
-		var _p7 = _p6;
+	function (f, _p12) {
+		var _p13 = _p12;
 		return A2(
 			_user$project$TimeTravel_Internal_Util_Nel$Nel,
-			f(_p7._0),
-			A2(_elm_lang$core$List$map, f, _p7._1));
+			f(_p13._0),
+			A2(_elm_lang$core$List$map, f, _p13._1));
 	});
 var _user$project$TimeTravel_Internal_Util_Nel$concat = F2(
-	function (list, _p8) {
-		var _p9 = _p8;
-		var _p12 = _p9._1;
-		var _p11 = _p9._0;
-		var _p10 = list;
-		if (_p10.ctor === '::') {
+	function (list, _p14) {
+		var _p15 = _p14;
+		var _p18 = _p15._1;
+		var _p17 = _p15._0;
+		var _p16 = list;
+		if (_p16.ctor === '::') {
 			return A2(
 				_user$project$TimeTravel_Internal_Util_Nel$Nel,
-				_p10._0,
+				_p16._0,
 				A2(
 					_elm_lang$core$Basics_ops['++'],
-					_p10._1,
-					A2(_elm_lang$core$List_ops['::'], _p11, _p12)));
+					_p16._1,
+					A2(_elm_lang$core$List_ops['::'], _p17, _p18)));
 		} else {
-			return A2(_user$project$TimeTravel_Internal_Util_Nel$Nel, _p11, _p12);
+			return A2(_user$project$TimeTravel_Internal_Util_Nel$Nel, _p17, _p18);
 		}
 	});
 var _user$project$TimeTravel_Internal_Util_Nel$cons = F2(
-	function ($new, _p13) {
-		var _p14 = _p13;
+	function ($new, _p19) {
+		var _p20 = _p19;
 		return A2(
 			_user$project$TimeTravel_Internal_Util_Nel$Nel,
 			$new,
-			A2(_elm_lang$core$List_ops['::'], _p14._0, _p14._1));
+			A2(_elm_lang$core$List_ops['::'], _p20._0, _p20._1));
 	});
 var _user$project$TimeTravel_Internal_Parser_AST$Property = F2(
 	function (a, b) {
@@ -11119,11 +12253,11 @@ var _user$project$TimeTravel_Internal_Parser_AST$attachIdToList = F2(
 				}),
 			list);
 	});
-var _user$project$TimeTravel_Internal_Parser_Util$equal = _Dandandan$parser$Parser$symbol(
+var _user$project$TimeTravel_Internal_Parser_Util$equal = _Bogdanp$elm_combine$Combine_Char$char(
 	_elm_lang$core$Native_Utils.chr('='));
-var _user$project$TimeTravel_Internal_Parser_Util$comma = _Dandandan$parser$Parser$symbol(
+var _user$project$TimeTravel_Internal_Parser_Util$comma = _Bogdanp$elm_combine$Combine_Char$char(
 	_elm_lang$core$Native_Utils.chr(','));
-var _user$project$TimeTravel_Internal_Parser_Util$notEqual = _Dandandan$parser$Parser$satisfy(
+var _user$project$TimeTravel_Internal_Parser_Util$notEqual = _Bogdanp$elm_combine$Combine_Char$satisfy(
 	F2(
 		function (x, y) {
 			return !_elm_lang$core$Native_Utils.eq(x, y);
@@ -11131,22 +12265,22 @@ var _user$project$TimeTravel_Internal_Parser_Util$notEqual = _Dandandan$parser$P
 		_elm_lang$core$Native_Utils.chr('=')));
 var _user$project$TimeTravel_Internal_Parser_Util$manyChars = function ($char) {
 	return A2(
-		_Dandandan$parser$Parser$map,
+		_Bogdanp$elm_combine$Combine$map,
 		_elm_lang$core$String$fromList,
-		_Dandandan$parser$Parser$many($char));
+		_Bogdanp$elm_combine$Combine$many($char));
 };
 var _user$project$TimeTravel_Internal_Parser_Util$stringChars = _user$project$TimeTravel_Internal_Parser_Util$manyChars(
-	_Dandandan$parser$Parser$satisfy(
-		function (c) {
-			return !_elm_lang$core$Native_Utils.eq(
-				c,
-				_elm_lang$core$Native_Utils.chr('\"'));
-		}));
+	_Bogdanp$elm_combine$Combine_Char$satisfy(
+		F2(
+			function (x, y) {
+				return !_elm_lang$core$Native_Utils.eq(x, y);
+			})(
+			_elm_lang$core$Native_Utils.chr('\"'))));
 var _user$project$TimeTravel_Internal_Parser_Util$someChars = function ($char) {
 	return A2(
-		_Dandandan$parser$Parser$map,
+		_Bogdanp$elm_combine$Combine$map,
 		_elm_lang$core$String$fromList,
-		_Dandandan$parser$Parser$some($char));
+		_Bogdanp$elm_combine$Combine$many1($char));
 };
 var _user$project$TimeTravel_Internal_Parser_Util$isSpace = function (c) {
 	return _elm_lang$core$Native_Utils.eq(
@@ -11159,20 +12293,20 @@ var _user$project$TimeTravel_Internal_Parser_Util$isSpace = function (c) {
 		c,
 		_elm_lang$core$Native_Utils.chr(' '))));
 };
-var _user$project$TimeTravel_Internal_Parser_Util$noSpace = _Dandandan$parser$Parser$satisfy(
+var _user$project$TimeTravel_Internal_Parser_Util$noSpace = _Bogdanp$elm_combine$Combine_Char$satisfy(
 	function (_p0) {
 		return _elm_lang$core$Basics$not(
 			_user$project$TimeTravel_Internal_Parser_Util$isSpace(_p0));
 	});
-var _user$project$TimeTravel_Internal_Parser_Util$space = _Dandandan$parser$Parser$satisfy(_user$project$TimeTravel_Internal_Parser_Util$isSpace);
+var _user$project$TimeTravel_Internal_Parser_Util$space = _Bogdanp$elm_combine$Combine_Char$satisfy(_user$project$TimeTravel_Internal_Parser_Util$isSpace);
 var _user$project$TimeTravel_Internal_Parser_Util$spaces = _user$project$TimeTravel_Internal_Parser_Util$manyChars(_user$project$TimeTravel_Internal_Parser_Util$space);
 var _user$project$TimeTravel_Internal_Parser_Util$spaced = function (p) {
 	return A2(
-		_Dandandan$parser$Parser$and,
+		_Bogdanp$elm_combine$Combine$andMap,
 		A2(
-			_Dandandan$parser$Parser$and,
+			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
-				_Dandandan$parser$Parser$map,
+				_Bogdanp$elm_combine$Combine$map,
 				F3(
 					function (_p2, v, _p1) {
 						return v;
@@ -11181,10 +12315,10 @@ var _user$project$TimeTravel_Internal_Parser_Util$spaced = function (p) {
 			p),
 		_user$project$TimeTravel_Internal_Parser_Util$spaces);
 };
-var _user$project$TimeTravel_Internal_Parser_Parser$propertyKey = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$propertyKey = _Bogdanp$elm_combine$Combine$rec(
 	function (_p0) {
 		return _user$project$TimeTravel_Internal_Parser_Util$someChars(
-			_Dandandan$parser$Parser$satisfy(
+			_Bogdanp$elm_combine$Combine_Char$satisfy(
 				function (c) {
 					return _elm_lang$core$Basics$not(
 						_user$project$TimeTravel_Internal_Parser_Util$isSpace(c)) && (!_elm_lang$core$Native_Utils.eq(
@@ -11193,26 +12327,28 @@ var _user$project$TimeTravel_Internal_Parser_Parser$propertyKey = _Dandandan$par
 				}));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$tag = A2(
-	_Dandandan$parser$Parser$and,
+	_Bogdanp$elm_combine$Combine$andMap,
 	A2(
-		_Dandandan$parser$Parser$map,
+		_Bogdanp$elm_combine$Combine$map,
 		F2(
 			function (h, t) {
 				return _elm_lang$core$String$fromList(
 					A2(_elm_lang$core$List_ops['::'], h, t));
 			}),
-		_Dandandan$parser$Parser_Char$upper),
-	_Dandandan$parser$Parser$many(
-		_Dandandan$parser$Parser$satisfy(
+		_Bogdanp$elm_combine$Combine_Char$upper),
+	_Bogdanp$elm_combine$Combine$many(
+		_Bogdanp$elm_combine$Combine_Char$satisfy(
 			function (c) {
-				return _elm_lang$core$Char$isUpper(c) || (_elm_lang$core$Char$isLower(c) || (_elm_lang$core$Char$isDigit(c) || _elm_lang$core$Native_Utils.eq(
+				return _elm_lang$core$Char$isUpper(c) || (_elm_lang$core$Char$isLower(c) || (_elm_lang$core$Char$isDigit(c) || (_elm_lang$core$Native_Utils.eq(
 					c,
-					_elm_lang$core$Native_Utils.chr('.'))));
+					_elm_lang$core$Native_Utils.chr('_')) || _elm_lang$core$Native_Utils.eq(
+					c,
+					_elm_lang$core$Native_Utils.chr('.')))));
 			})));
-var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Bogdanp$elm_combine$Combine$rec(
 	function (_p1) {
 		return A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			function (tag) {
 				return A2(
 					_user$project$TimeTravel_Internal_Parser_AST$Union,
@@ -11223,123 +12359,123 @@ var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Dandandan$par
 			_user$project$TimeTravel_Internal_Parser_Parser$tag);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$function = A2(
-	_Dandandan$parser$Parser$and,
+	_Bogdanp$elm_combine$Combine$andMap,
 	A2(
-		_Dandandan$parser$Parser$and,
+		_Bogdanp$elm_combine$Combine$andMap,
 		A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			F3(
 				function (_p3, name, _p2) {
 					return _user$project$TimeTravel_Internal_Parser_AST$Value(name);
 				}),
-			_Dandandan$parser$Parser$token('<function')),
+			_Bogdanp$elm_combine$Combine$string('<function')),
 		_user$project$TimeTravel_Internal_Parser_Util$manyChars(
-			_Dandandan$parser$Parser$satisfy(
-				function (c) {
-					return !_elm_lang$core$Native_Utils.eq(
-						c,
-						_elm_lang$core$Native_Utils.chr('>'));
-				}))),
-	_Dandandan$parser$Parser$symbol(
+			_Bogdanp$elm_combine$Combine_Char$satisfy(
+				F2(
+					function (x, y) {
+						return !_elm_lang$core$Native_Utils.eq(x, y);
+					})(
+					_elm_lang$core$Native_Utils.chr('>'))))),
+	_Bogdanp$elm_combine$Combine_Char$char(
 		_elm_lang$core$Native_Utils.chr('>')));
 var _user$project$TimeTravel_Internal_Parser_Parser$floatLiteral = A2(
-	_Dandandan$parser$Parser$map,
+	_Bogdanp$elm_combine$Combine$map,
 	function (_p4) {
 		return _user$project$TimeTravel_Internal_Parser_AST$Value(
 			_elm_lang$core$Basics$toString(_p4));
 	},
-	_Dandandan$parser$Parser_Number$float);
+	_Bogdanp$elm_combine$Combine_Num$float);
 var _user$project$TimeTravel_Internal_Parser_Parser$intLiteral = A2(
-	_Dandandan$parser$Parser$map,
+	_Bogdanp$elm_combine$Combine$map,
 	function (_p5) {
 		return _user$project$TimeTravel_Internal_Parser_AST$Value(
 			_elm_lang$core$Basics$toString(_p5));
 	},
-	_Dandandan$parser$Parser_Number$integer);
+	_Bogdanp$elm_combine$Combine_Num$int);
 var _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
-	_Dandandan$parser$Parser$map,
+	_Bogdanp$elm_combine$Combine$map,
 	_user$project$TimeTravel_Internal_Parser_AST$StringLiteral,
 	A2(
-		_Dandandan$parser$Parser$and,
+		_Bogdanp$elm_combine$Combine$andMap,
 		A2(
-			_Dandandan$parser$Parser$and,
+			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
-				_Dandandan$parser$Parser$map,
+				_Bogdanp$elm_combine$Combine$map,
 				F3(
 					function (_p7, s, _p6) {
 						return s;
 					}),
-				_Dandandan$parser$Parser$symbol(
+				_Bogdanp$elm_combine$Combine_Char$char(
 					_elm_lang$core$Native_Utils.chr('\"'))),
-			_user$project$TimeTravel_Internal_Parser_Util$stringChars),
-		_Dandandan$parser$Parser$symbol(
+			_Bogdanp$elm_combine$Combine$regex('(\\\\\"|[^\"])*')),
+		_Bogdanp$elm_combine$Combine_Char$char(
 			_elm_lang$core$Native_Utils.chr('\"'))));
-var _user$project$TimeTravel_Internal_Parser_Parser$expression = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$expression = _Bogdanp$elm_combine$Combine$rec(
 	function (_p8) {
-		return A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$union, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
+		return A2(_Bogdanp$elm_combine$Combine$or, _user$project$TimeTravel_Internal_Parser_Parser$union, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Bogdanp$elm_combine$Combine$rec(
 	function (_p9) {
 		return A2(
-			_Dandandan$parser$Parser$or,
-			_user$project$TimeTravel_Internal_Parser_Parser$record,
+			_Bogdanp$elm_combine$Combine$or,
 			A2(
-				_Dandandan$parser$Parser$or,
-				_user$project$TimeTravel_Internal_Parser_Parser$listLiteral,
+				_Bogdanp$elm_combine$Combine$or,
 				A2(
-					_Dandandan$parser$Parser$or,
-					_user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral,
+					_Bogdanp$elm_combine$Combine$or,
 					A2(
-						_Dandandan$parser$Parser$or,
-						_user$project$TimeTravel_Internal_Parser_Parser$function,
+						_Bogdanp$elm_combine$Combine$or,
 						A2(
-							_Dandandan$parser$Parser$or,
-							_user$project$TimeTravel_Internal_Parser_Parser$floatLiteral,
-							A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$intLiteral, _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral))))));
+							_Bogdanp$elm_combine$Combine$or,
+							A2(_Bogdanp$elm_combine$Combine$or, _user$project$TimeTravel_Internal_Parser_Parser$record, _user$project$TimeTravel_Internal_Parser_Parser$listLiteral),
+							_user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral),
+						_user$project$TimeTravel_Internal_Parser_Parser$function),
+					_user$project$TimeTravel_Internal_Parser_Parser$floatLiteral),
+				_user$project$TimeTravel_Internal_Parser_Parser$intLiteral),
+			_user$project$TimeTravel_Internal_Parser_Parser$stringLiteral);
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$listLiteral = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$listLiteral = _Bogdanp$elm_combine$Combine$rec(
 	function (_p10) {
 		return A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$ListLiteral,
-			_Dandandan$parser$Parser_Char$bracketed(_user$project$TimeTravel_Internal_Parser_Parser$items));
+			_Bogdanp$elm_combine$Combine$brackets(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$items = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$items = _Bogdanp$elm_combine$Combine$rec(
 	function (_p11) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
 			A2(
-				_Dandandan$parser$Parser$separatedBy,
-				_user$project$TimeTravel_Internal_Parser_Util$spaced(_user$project$TimeTravel_Internal_Parser_Parser$expression),
-				_user$project$TimeTravel_Internal_Parser_Util$comma));
+				_Bogdanp$elm_combine$Combine$sepBy,
+				_user$project$TimeTravel_Internal_Parser_Util$comma,
+				_user$project$TimeTravel_Internal_Parser_Util$spaced(_user$project$TimeTravel_Internal_Parser_Parser$expression)));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$record = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$record = _Bogdanp$elm_combine$Combine$rec(
 	function (_p12) {
 		return A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$Record,
-			_Dandandan$parser$Parser_Char$braced(_user$project$TimeTravel_Internal_Parser_Parser$properties));
+			_Bogdanp$elm_combine$Combine$braces(_user$project$TimeTravel_Internal_Parser_Parser$properties));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$properties = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$properties = _Bogdanp$elm_combine$Combine$rec(
 	function (_p13) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
-			A2(_Dandandan$parser$Parser$separatedBy, _user$project$TimeTravel_Internal_Parser_Parser$property, _user$project$TimeTravel_Internal_Parser_Util$comma));
+			A2(_Bogdanp$elm_combine$Combine$sepBy, _user$project$TimeTravel_Internal_Parser_Util$comma, _user$project$TimeTravel_Internal_Parser_Parser$property));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$property = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$property = _Bogdanp$elm_combine$Combine$rec(
 	function (_p14) {
 		return A2(
-			_Dandandan$parser$Parser$and,
+			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
-				_Dandandan$parser$Parser$and,
+				_Bogdanp$elm_combine$Combine$andMap,
 				A2(
-					_Dandandan$parser$Parser$and,
+					_Bogdanp$elm_combine$Combine$andMap,
 					A2(
-						_Dandandan$parser$Parser$and,
+						_Bogdanp$elm_combine$Combine$andMap,
 						A2(
-							_Dandandan$parser$Parser$and,
+							_Bogdanp$elm_combine$Combine$andMap,
 							A2(
-								_Dandandan$parser$Parser$and,
+								_Bogdanp$elm_combine$Combine$andMap,
 								A2(
-									_Dandandan$parser$Parser$map,
+									_Bogdanp$elm_combine$Combine$map,
 									F7(
 										function (_p19, key, _p18, _p17, _p16, value, _p15) {
 											return A2(_user$project$TimeTravel_Internal_Parser_AST$Property, key, value);
@@ -11352,44 +12488,48 @@ var _user$project$TimeTravel_Internal_Parser_Parser$property = _Dandandan$parser
 				_user$project$TimeTravel_Internal_Parser_Parser$expression),
 			_user$project$TimeTravel_Internal_Parser_Util$spaces);
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral = _Bogdanp$elm_combine$Combine$rec(
 	function (_p20) {
 		return A2(
-			_Dandandan$parser$Parser$map,
+			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$TupleLiteral,
-			_Dandandan$parser$Parser_Char$parenthesized(_user$project$TimeTravel_Internal_Parser_Parser$items));
+			_Bogdanp$elm_combine$Combine$parens(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$union = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$union = _Bogdanp$elm_combine$Combine$rec(
 	function (_p21) {
 		return A2(
-			_Dandandan$parser$Parser$and,
+			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
-				_Dandandan$parser$Parser$map,
+				_Bogdanp$elm_combine$Combine$map,
 				F2(
 					function (tag, tail) {
 						return A2(_user$project$TimeTravel_Internal_Parser_AST$Union, tag, tail);
 					}),
 				_user$project$TimeTravel_Internal_Parser_Parser$tag),
-			_Dandandan$parser$Parser$many(_user$project$TimeTravel_Internal_Parser_Parser$unionParam));
+			_Bogdanp$elm_combine$Combine$many(_user$project$TimeTravel_Internal_Parser_Parser$unionParam));
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$unionParam = _Dandandan$parser$Parser$recursively(
+var _user$project$TimeTravel_Internal_Parser_Parser$unionParam = _Bogdanp$elm_combine$Combine$rec(
 	function (_p22) {
 		return A2(
-			_Dandandan$parser$Parser$and,
+			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
-				_Dandandan$parser$Parser$map,
+				_Bogdanp$elm_combine$Combine$map,
 				F2(
 					function (_p23, exp) {
 						return exp;
 					}),
 				_user$project$TimeTravel_Internal_Parser_Util$spaces),
-			A2(_Dandandan$parser$Parser$or, _user$project$TimeTravel_Internal_Parser_Parser$singleUnion, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion));
+			A2(_Bogdanp$elm_combine$Combine$or, _user$project$TimeTravel_Internal_Parser_Parser$singleUnion, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$parse = function (s) {
 	return A2(
-		_Dandandan$parser$Parser$parse,
-		_user$project$TimeTravel_Internal_Parser_Util$spaced(_user$project$TimeTravel_Internal_Parser_Parser$expression),
-		s);
+		_elm_lang$core$Result$formatError,
+		_elm_lang$core$String$join(','),
+		_elm_lang$core$Basics$fst(
+			A2(
+				_Bogdanp$elm_combine$Combine$parse,
+				_user$project$TimeTravel_Internal_Parser_Util$spaced(_user$project$TimeTravel_Internal_Parser_Parser$expression),
+				s)));
 };
 var _user$project$TimeTravel_Internal_Util_RTree$root = function (_p0) {
 	var _p1 = _p0;
@@ -11588,8 +12728,9 @@ var _user$project$TimeTravel_Internal_Model$selectedAndOldAst = function (model)
 	var _p7 = model.selectedMsg;
 	if (_p7.ctor === 'Just') {
 		var _p10 = _p7._0;
-		var newAndOld = A2(
-			_user$project$TimeTravel_Internal_Util_Nel$filterMap,
+		var newAndOld = A3(
+			_user$project$TimeTravel_Internal_Util_Nel$findMapMany,
+			2,
 			function (item) {
 				return (_elm_lang$core$Native_Utils.eq(item.id, _p10) || _elm_lang$core$Native_Utils.eq(item.id, _p10 - 1)) ? _elm_lang$core$Maybe$Just(item.lazyModelAst) : _elm_lang$core$Maybe$Nothing;
 			},
@@ -11623,12 +12764,12 @@ var _user$project$TimeTravel_Internal_Model$selectedMsgAst = function (model) {
 	var _p11 = model.selectedMsg;
 	if (_p11.ctor === 'Just') {
 		var _p12 = A2(
-			_user$project$TimeTravel_Internal_Util_Nel$filterMap,
+			_user$project$TimeTravel_Internal_Util_Nel$findMap,
 			function (item) {
 				return _elm_lang$core$Native_Utils.eq(item.id, _p11._0) ? _elm_lang$core$Maybe$Just(item.lazyMsgAst) : _elm_lang$core$Maybe$Nothing;
 			},
 			model.history);
-		if (((_p12.ctor === '::') && (_p12._0.ctor === 'Just')) && (_p12._0._0.ctor === 'Ok')) {
+		if (((_p12.ctor === 'Just') && (_p12._0.ctor === 'Just')) && (_p12._0._0.ctor === 'Ok')) {
 			return _elm_lang$core$Maybe$Just(_p12._0._0._0);
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
@@ -13194,55 +14335,6 @@ var _user$project$TimeTravel_Internal_DiffView$view = F2(
 			_user$project$TimeTravel_Internal_Parser_Formatter$formatAsString(
 				_user$project$TimeTravel_Internal_Parser_Formatter$makeModel(newAst)));
 	});
-var _user$project$TimeTravel_Internal_View$msgView = F3(
-	function (filterOptions, selectedMsg, _p0) {
-		var _p1 = _p0;
-		var _p7 = _p1.msg;
-		var _p6 = _p1.id;
-		var str = _user$project$TimeTravel_Internal_MsgLike$format(_p7);
-		var visible = _elm_lang$core$Native_Utils.eq(_p7, _user$project$TimeTravel_Internal_MsgLike$Init) || function () {
-			var _p2 = _elm_lang$core$String$words(str);
-			if (_p2.ctor === '::') {
-				return A2(
-					_elm_lang$core$List$any,
-					function (_p3) {
-						var _p4 = _p3;
-						return _elm_lang$core$Native_Utils.eq(_p2._0, _p4._0) && _p4._1;
-					},
-					filterOptions);
-			} else {
-				return false;
-			}
-		}();
-		var selected = function () {
-			var _p5 = selectedMsg;
-			if (_p5.ctor === 'Just') {
-				return _elm_lang$core$Native_Utils.eq(_p5._0, _p6);
-			} else {
-				return false;
-			}
-		}();
-		return visible ? _elm_lang$core$Maybe$Just(
-			A4(
-				_jinjor$elm_inline_hover$InlineHover$hover,
-				_user$project$TimeTravel_Internal_Styles$msgViewHover(selected),
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$style(
-						_user$project$TimeTravel_Internal_Styles$msgView(selected)),
-						_elm_lang$html$Html_Events$onClick(
-						_user$project$TimeTravel_Internal_Model$SelectMsg(_p6))
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p6),
-							A2(_elm_lang$core$Basics_ops['++'], ': ', str)))
-					]))) : _elm_lang$core$Maybe$Nothing;
-	});
 var _user$project$TimeTravel_Internal_View$detailTab = F3(
 	function (style$, msg, name) {
 		return A4(
@@ -13259,38 +14351,107 @@ var _user$project$TimeTravel_Internal_View$detailTab = F3(
 					_elm_lang$html$Html$text(name)
 				]));
 	});
-var _user$project$TimeTravel_Internal_View$filterMapUntilLimit = F3(
-	function (limit, f, list) {
-		filterMapUntilLimit:
+var _user$project$TimeTravel_Internal_View$filterMapUntilLimitHelp = F4(
+	function (result, limit, f, list) {
+		filterMapUntilLimitHelp:
 		while (true) {
 			if (_elm_lang$core$Native_Utils.cmp(limit, 0) < 1) {
-				return _elm_lang$core$Native_List.fromArray(
-					[]);
+				return result;
 			} else {
-				var _p8 = list;
-				if (_p8.ctor === '[]') {
-					return _elm_lang$core$Native_List.fromArray(
-						[]);
+				var _p0 = list;
+				if (_p0.ctor === '[]') {
+					return result;
 				} else {
-					var _p10 = _p8._1;
-					var _p9 = f(_p8._0);
-					if (_p9.ctor === 'Just') {
-						return A2(
-							_elm_lang$core$List_ops['::'],
-							_p9._0,
-							A3(_user$project$TimeTravel_Internal_View$filterMapUntilLimit, limit - 1, f, _p10));
+					var _p2 = _p0._1;
+					var _p1 = f(_p0._0);
+					if (_p1.ctor === 'Just') {
+						var _v2 = A2(_elm_lang$core$List_ops['::'], _p1._0, result),
+							_v3 = limit - 1,
+							_v4 = f,
+							_v5 = _p2;
+						result = _v2;
+						limit = _v3;
+						f = _v4;
+						list = _v5;
+						continue filterMapUntilLimitHelp;
 					} else {
-						var _v6 = limit,
-							_v7 = f,
-							_v8 = _p10;
-						limit = _v6;
-						f = _v7;
-						list = _v8;
-						continue filterMapUntilLimit;
+						var _v6 = result,
+							_v7 = limit,
+							_v8 = f,
+							_v9 = _p2;
+						result = _v6;
+						limit = _v7;
+						f = _v8;
+						list = _v9;
+						continue filterMapUntilLimitHelp;
 					}
 				}
 			}
 		}
+	});
+var _user$project$TimeTravel_Internal_View$filterMapUntilLimit = F3(
+	function (limit, f, list) {
+		return _elm_lang$core$List$reverse(
+			A4(
+				_user$project$TimeTravel_Internal_View$filterMapUntilLimitHelp,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				limit,
+				f,
+				list));
+	});
+var _user$project$TimeTravel_Internal_View$msgView = F3(
+	function (filterOptions, selectedMsg, _p3) {
+		var _p4 = _p3;
+		var _p10 = _p4.msg;
+		var _p9 = _p4.id;
+		var str = _user$project$TimeTravel_Internal_MsgLike$format(_p10);
+		var visible = _elm_lang$core$Native_Utils.eq(_p10, _user$project$TimeTravel_Internal_MsgLike$Init) || function () {
+			var _p5 = _elm_lang$core$String$words(str);
+			if (_p5.ctor === '::') {
+				return A2(
+					_elm_lang$core$List$any,
+					function (_p6) {
+						var _p7 = _p6;
+						return _elm_lang$core$Native_Utils.eq(_p5._0, _p7._0) && _p7._1;
+					},
+					filterOptions);
+			} else {
+				return false;
+			}
+		}();
+		var selected = function () {
+			var _p8 = selectedMsg;
+			if (_p8.ctor === 'Just') {
+				return _elm_lang$core$Native_Utils.eq(_p8._0, _p9);
+			} else {
+				return false;
+			}
+		}();
+		return visible ? _elm_lang$core$Maybe$Just(
+			{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toString(_p9),
+				_1: A4(
+					_jinjor$elm_inline_hover$InlineHover$hover,
+					_user$project$TimeTravel_Internal_Styles$msgViewHover(selected),
+					_elm_lang$html$Html$div,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html_Attributes$style(
+							_user$project$TimeTravel_Internal_Styles$msgView(selected)),
+							_elm_lang$html$Html_Events$onClick(
+							_user$project$TimeTravel_Internal_Model$SelectMsg(_p9))
+						]),
+					_elm_lang$core$Native_List.fromArray(
+						[
+							_elm_lang$html$Html$text(
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_elm_lang$core$Basics$toString(_p9),
+								A2(_elm_lang$core$Basics_ops['++'], ': ', str)))
+						]))
+			}) : _elm_lang$core$Maybe$Nothing;
 	});
 var _user$project$TimeTravel_Internal_View$msgListView = F4(
 	function (filterOptions, selectedMsg, items, detailView) {
@@ -13301,8 +14462,9 @@ var _user$project$TimeTravel_Internal_View$msgListView = F4(
 			_elm_lang$core$Native_List.fromArray(
 				[
 					detailView,
-					A2(
-					_elm_lang$html$Html$div,
+					A3(
+					_elm_lang$html$Html_Keyed$node,
+					'div',
 					_elm_lang$core$Native_List.fromArray(
 						[
 							_elm_lang$html$Html_Attributes$style(_user$project$TimeTravel_Internal_Styles$msgListView)
