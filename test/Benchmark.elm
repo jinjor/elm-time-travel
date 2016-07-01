@@ -1,7 +1,6 @@
 module Benchmark exposing (..)
 
 import String
-import Parser as RawParser exposing (..)
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Parser as Parser exposing (..)
 import TimeTravel.Internal.Parser.Formatter as Formatter exposing (..)
@@ -38,7 +37,7 @@ parseAndFormatManyTimes times s =
 tests : Test
 tests =
   suite "A Test Suite"
-    [ test "benchmark" (parseAndFormatManyTimes 10 complexString)
+    [ test "benchmark" (parseAndFormatManyTimes 100 complexString)
     ]
 
 complexString = """

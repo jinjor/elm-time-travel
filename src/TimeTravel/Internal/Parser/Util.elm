@@ -1,8 +1,8 @@
 module TimeTravel.Internal.Parser.Util exposing (..)
 
 import String
-import Parser exposing (..)
-import Parser.Char exposing (braced)
+import Combine exposing (..)
+import Combine.Char exposing (char, satisfy)
 -- import Parser.Number as PN
 
 -- spaced : Parser a -> Parser a
@@ -13,8 +13,8 @@ spaced : Parser a -> Parser a
 spaced p =
   (\_ v _ -> v)
   `map` spaces
-  `and` p
-  `and` spaces
+  `andMap` p
+  `andMap` spaces
 
 spaces : Parser String
 spaces = manyChars space
@@ -34,21 +34,21 @@ isSpace c =
 
 someChars : Parser Char -> Parser String
 someChars char =
-  Parser.map String.fromList (some char)
+  Combine.map String.fromList (many1 char)
 
 manyChars : Parser Char -> Parser String
 manyChars char =
-  Parser.map String.fromList (many char)
+  Combine.map String.fromList (many char)
 
 notEqual : Parser Char
 notEqual = satisfy ((/=) '=')
 
 stringChars : Parser String
 stringChars =
-  manyChars (satisfy (\c -> c /= '"'))
+  manyChars (satisfy ((/=) '"'))
 
 comma : Parser Char
-comma = symbol ','
+comma = char ','
 
 equal : Parser Char
-equal = symbol '='
+equal = char '='

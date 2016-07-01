@@ -1,7 +1,7 @@
 module Tests exposing (..)
 
 import String
-import Parser as RawParser exposing (..)
+import Combine as RawParser exposing (..)
 import TimeTravel.Internal.Parser.AST exposing(..)
 import TimeTravel.Internal.Parser.Parser as Parser exposing(..)
 import TimeTravel.Internal.Parser.Formatter as Formatter exposing(..)
@@ -18,28 +18,28 @@ testParse : String -> AST -> Assertion
 testParse s ast = assertEqual (Ok ast) (Parser.parse s)
 
 testParseStringLiteral : String -> AST -> Assertion
-testParseStringLiteral s ast = assertEqual (Ok ast) (RawParser.parse Parser.stringLiteral s)
+testParseStringLiteral s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.stringLiteral s)
 
 testParseExpression : String -> AST -> Assertion
-testParseExpression s ast = assertEqual (Ok ast) (RawParser.parse Parser.expression s)
+testParseExpression s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.expression s)
 
 testParseUnion : String -> AST -> Assertion
-testParseUnion s ast = assertEqual (Ok ast) (RawParser.parse Parser.union s)
+testParseUnion s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.union s)
 
 testParseRecord : String -> AST -> Assertion
-testParseRecord s ast = assertEqual (Ok ast) (RawParser.parse Parser.record s)
+testParseRecord s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.record s)
 
 testParseList : String -> AST -> Assertion
-testParseList s ast = assertEqual (Ok ast) (RawParser.parse Parser.listLiteral s)
+testParseList s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.listLiteral s)
 
 testParseTuple : String -> AST -> Assertion
-testParseTuple s ast = assertEqual (Ok ast) (RawParser.parse Parser.tupleLiteral s)
+testParseTuple s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.tupleLiteral s)
 
 testParseProperty : String -> AST -> Assertion
-testParseProperty s ast = assertEqual (Ok ast) (RawParser.parse Parser.property s)
+testParseProperty s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.property s)
 
 testParseProperties : String -> List AST -> Assertion
-testParseProperties s ast = assertEqual (Ok ast) (RawParser.parse Parser.properties s)
+testParseProperties s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.properties s)
 
 testParseComplex : String -> Assertion
 testParseComplex s =
@@ -58,9 +58,9 @@ tests =
     , test "number3" (testParseExpression "-1" (Value "-1"))
     , test "number4" (testParseExpression "-1.2" (Value "-1.2"))
     , test "function" (testParseExpression "<function:foo>" (Value ":foo"))
-    , test "stringLiteral1" (testParseStringLiteral (toString """f"oo""") (StringLiteral "f\"oo"))
-    , test "stringLiteral2" (testParseStringLiteral (toString """f"o"o""") (StringLiteral "f\"o\"o"))
-    , test "stringLiteral3" (testParseStringLiteral (toString """f"o"o"o"o"o"o"o"o"o""") (StringLiteral "f\"o\"o\"o\"o\"o\"o\"o\"o\"o"))
+    , test "stringLiteral1" (testParseStringLiteral (toString """f"oo""") (StringLiteral "f\\\"oo"))
+    , test "stringLiteral2" (testParseStringLiteral (toString """f"o"o""") (StringLiteral "f\\\"o\\\"o"))
+    , test "stringLiteral3" (testParseStringLiteral (toString """f"o"o"o"o"o"o"o"o"o""") (StringLiteral "f\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o"))
     , test "stringLiteral4" (testParseStringLiteral "\" str = { } \"" (StringLiteral " str = { } "))
     , test "union1" (testParseUnion "Tag" (Union "Tag" []))
     , test "union2" (testParseUnion "Tag 1" (Union "Tag" [Value "1"]))
