@@ -112,7 +112,7 @@ tag : Parser String
 tag =
   (\h t -> String.fromList (h :: t))
   `map` upper
-  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '.')) -- assume Dict.fromList
+  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '_' || c == '.')) -- assume Dict.fromList
 
 
 record : Parser AST
