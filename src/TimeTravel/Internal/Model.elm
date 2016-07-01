@@ -267,8 +267,8 @@ selectedMsgAst : Model model msg data -> Maybe ASTX
 selectedMsgAst model =
   case model.selectedMsg of
     Just id ->
-      case Nel.filterMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
-        Just (Ok ast) :: _ ->
+      case Nel.findMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
+        Just (Just (Ok ast)) ->
           Just ast
         _ ->
           Nothing
@@ -282,7 +282,7 @@ selectedAndOldAst model =
     Just id ->
       let
         newAndOld =
-          Nel.filterMap
+          Nel.findMapMany 2
             (\item ->
               if item.id == id || item.id == id - 1 then
                 Just item.lazyModelAst

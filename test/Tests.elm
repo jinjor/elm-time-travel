@@ -1,7 +1,7 @@
 module Tests exposing (..)
 
 import String
-import Parser as RawParser exposing (..)
+import Combine as RawParser exposing (..)
 import TimeTravel.Internal.Parser.AST exposing(..)
 import TimeTravel.Internal.Parser.Parser as Parser exposing(..)
 import TimeTravel.Internal.Parser.Formatter as Formatter exposing(..)
@@ -18,28 +18,28 @@ testParse : String -> AST -> Assertion
 testParse s ast = assertEqual (Ok ast) (Parser.parse s)
 
 testParseStringLiteral : String -> AST -> Assertion
-testParseStringLiteral s ast = assertEqual (Ok ast) (RawParser.parse Parser.stringLiteral s)
+testParseStringLiteral s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.stringLiteral s)
 
 testParseExpression : String -> AST -> Assertion
-testParseExpression s ast = assertEqual (Ok ast) (RawParser.parse Parser.expression s)
+testParseExpression s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.expression s)
 
 testParseUnion : String -> AST -> Assertion
-testParseUnion s ast = assertEqual (Ok ast) (RawParser.parse Parser.union s)
+testParseUnion s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.union s)
 
 testParseRecord : String -> AST -> Assertion
-testParseRecord s ast = assertEqual (Ok ast) (RawParser.parse Parser.record s)
+testParseRecord s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.record s)
 
 testParseList : String -> AST -> Assertion
-testParseList s ast = assertEqual (Ok ast) (RawParser.parse Parser.listLiteral s)
+testParseList s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.listLiteral s)
 
 testParseTuple : String -> AST -> Assertion
-testParseTuple s ast = assertEqual (Ok ast) (RawParser.parse Parser.tupleLiteral s)
+testParseTuple s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.tupleLiteral s)
 
 testParseProperty : String -> AST -> Assertion
-testParseProperty s ast = assertEqual (Ok ast) (RawParser.parse Parser.property s)
+testParseProperty s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.property s)
 
 testParseProperties : String -> List AST -> Assertion
-testParseProperties s ast = assertEqual (Ok ast) (RawParser.parse Parser.properties s)
+testParseProperties s ast = assertEqual (Ok ast) (fst <| RawParser.parse Parser.properties s)
 
 testParseComplex : String -> Assertion
 testParseComplex s =
@@ -58,13 +58,18 @@ tests =
     , test "number3" (testParseExpression "-1" (Value "-1"))
     , test "number4" (testParseExpression "-1.2" (Value "-1.2"))
     , test "function" (testParseExpression "<function:foo>" (Value ":foo"))
-    , test "stringLiteral" (testParseStringLiteral "\" str = { } \"" (StringLiteral " str = { } "))
+    , test "stringLiteral1" (testParseStringLiteral (toString """f"oo""") (StringLiteral "f\\\"oo"))
+    , test "stringLiteral2" (testParseStringLiteral (toString """f"o"o""") (StringLiteral "f\\\"o\\\"o"))
+    , test "stringLiteral3" (testParseStringLiteral (toString """f"o"o"o"o"o"o"o"o"o""") (StringLiteral "f\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o\\\"o"))
+    , test "stringLiteral4" (testParseStringLiteral "\" str = { } \"" (StringLiteral " str = { } "))
     , test "union1" (testParseUnion "Tag" (Union "Tag" []))
     , test "union2" (testParseUnion "Tag 1" (Union "Tag" [Value "1"]))
     , test "union3" (testParseUnion "Tag  1  \"a\"" (Union "Tag" [Value "1", StringLiteral "a"]))
     , test "union4" (testParseUnion "Tag { a = Inner }" (Union "Tag" [Record [Property "a" (Union "Inner" [])]]))
     , test "union5" (testParseUnion "Tag Nothing" (Union "Tag" [Union "Nothing" []]))
     , test "union6" (testParseUnion "Tag Nothing Nothing" (Union "Tag" [Union "Nothing" [], Union "Nothing" []]))
+    , test "union7" (testParseUnion "CamelCase" (Union "CamelCase" []))
+    , test "union8" (testParseUnion "Camel_Snake" (Union "Camel_Snake" []))
     , test "property" (testParseProperty "a=1" (Property "a" (Value "1")))
     , test "property" (testParseProperty "a = 1" (Property "a" (Value "1")))
     , test "properties" (testParseProperties "a=1" [Property "a" (Value "1")])
@@ -73,6 +78,7 @@ tests =
     , test "record1" (testParseRecord "{}" (Record []))
     , test "record2" (testParseRecord "{ }" (Record []))
     , test "record3" (testParseRecord "{a=1}" (Record [Property "a" (Value "1")]))
+    , test "record4" (testParseRecord "{a_b=1}" (Record [Property "a_b" (Value "1")]))
     , test "list1" (testParseList "[]" (ListLiteral []))
     , test "list2" (testParseList "[ ]" (ListLiteral []))
     , test "list3" (testParseList "[1,2]" (ListLiteral [Value "1", Value "2"]))

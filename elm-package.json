@@ -1,5 +1,5 @@
 {
-    "version": "1.0.9",
+    "version": "1.0.10",
     "summary": "A time travel debugger for Elm 0.17 (or above)",
     "repository": "https://github.com/jinjor/elm-time-travel.git",
     "license": "BSD3",
@@ -11,12 +11,12 @@
         "TimeTravel.Navigation"
     ],
     "dependencies": {
-        "Dandandan/parser": "6.2.5 <= v < 7.0.0",
+        "Bogdanp/elm-combine": "2.2.1 <= v < 3.0.0",
         "avh4/elm-diff": "1.0.7 <= v < 2.0.0",
         "elm-community/basics-extra": "1.0.1 <= v < 2.0.0",
         "elm-community/elm-material-icons": "2.0.0 <= v < 3.0.0",
         "elm-lang/core": "4.0.1 <= v < 5.0.0",
-        "elm-lang/html": "1.0.0 <= v < 2.0.0",
+        "elm-lang/html": "1.1.0 <= v < 2.0.0",
         "elm-lang/navigation": "1.0.0 <= v < 2.0.0",
         "elm-lang/svg": "1.0.0 <= v < 2.0.0",
         "jinjor/elm-inline-hover": "1.0.0 <= v < 2.0.0"

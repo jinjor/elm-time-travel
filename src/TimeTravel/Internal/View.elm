@@ -13,6 +13,7 @@ import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed as Keyed
 import Html.App as App
 
 import String
@@ -113,6 +114,7 @@ filterItemView (name, visible) =
         ]
     ]
 
+
 modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
 modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
   case lazyModelAst of
@@ -132,27 +134,64 @@ msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> 
 msgListView filterOptions selectedMsg items detailView =
   div []
   [ detailView
-  , div
+  , Keyed.node "div"
       [ style S.msgListView ]
-      -- ( List.take 60 <| List.filterMap (msgView filterOptions selectedMsg) items )
       ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
   ]
 
 
+msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (String, Html Msg)
+msgView filterOptions selectedMsg { id, msg, causedBy } =
+  let
+    selected =
+      case selectedMsg of
+        Just msgId -> msgId == id
+        Nothing -> False
+
+    str =
+      MsgLike.format msg
+
+    visible =
+      msg == Init ||
+        case String.words str of
+          tag :: _ ->
+            List.any (\(name, visible) -> tag == name && visible) filterOptions
+          _ ->
+            False
+  in
+    if visible then
+      Just (
+        toString id
+      , hover
+          (S.msgViewHover selected)
+          div
+          [ style (S.msgView selected)
+          , onClick (SelectMsg id)
+          ]
+          [ text (toString id ++ ": " ++ str) ]
+      )
+    else
+      Nothing
+
+
 filterMapUntilLimit : Int -> (a -> Maybe b) -> List a -> List b
 filterMapUntilLimit limit f list =
+  List.reverse (filterMapUntilLimitHelp [] limit f list)
+
+
+filterMapUntilLimitHelp : List b -> Int -> (a -> Maybe b) -> List a -> List b
+filterMapUntilLimitHelp result limit f list =
   if limit <= 0 then
-    []
+    result
   else
     case list of
-      [] -> []
+      [] -> result
       h :: t ->
         case f h of
           Just b ->
-            -- TODO tailrec
-            b :: filterMapUntilLimit (limit - 1) f t
+            filterMapUntilLimitHelp (b :: result) (limit - 1) f t
           Nothing ->
-            filterMapUntilLimit limit f t
+            filterMapUntilLimitHelp result limit f t
 
 
 detailView : Model model msg data -> Html Msg
@@ -220,38 +259,3 @@ detailView model =
 detailTab : List (String, String) -> msg -> String -> Html msg
 detailTab style' msg name =
   hover S.detailTabHover div [ style style', onClick msg ] [ text name ]
-
-
-
-
-msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (Html Msg)
-msgView filterOptions selectedMsg { id, msg, causedBy } =
-  let
-    selected =
-      case selectedMsg of
-        Just msgId -> msgId == id
-        Nothing -> False
-
-    str =
-      MsgLike.format msg
-
-    visible =
-      msg == Init ||
-        case String.words str of
-          tag :: _ ->
-            List.any (\(name, visible) -> tag == name && visible) filterOptions
-          _ ->
-            False
-  in
-    if visible then
-      Just (
-        hover
-          (S.msgViewHover selected)
-          div
-          [ style (S.msgView selected)
-          , onClick (SelectMsg id)
-          ]
-          [ text (toString id ++ ": " ++ str) ]
-      )
-    else
-      Nothing

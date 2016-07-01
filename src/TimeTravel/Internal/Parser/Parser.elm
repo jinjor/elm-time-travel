@@ -1,31 +1,31 @@
 module TimeTravel.Internal.Parser.Parser exposing (..)
 
 import String
-import Parser exposing (..)
+import Combine exposing (..)
 import Char
-import Parser.Char exposing (braced, upper, parenthesized, bracketed)
-import Parser.Number exposing (integer, float)
+import Combine.Char exposing (char, satisfy, upper)
+import Combine.Num exposing (int, float)
 
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Util exposing (..)
 
 
 parse : String -> Result String AST
-parse s = Parser.parse (spaced expression) s
+parse s = Result.formatError (String.join ",") (fst <| Combine.parse (spaced expression) s)
 
 
 ----
 
 expression : Parser AST
 expression =
-  recursively (\_ ->
+  rec (\_ ->
     union `or`
     expressionWithoutUnion
   )
 
 expressionWithoutUnion : Parser AST
 expressionWithoutUnion =
-  recursively (\_ ->
+  rec (\_ ->
     record `or`
     listLiteral `or`
     tupleLiteral `or`
@@ -36,18 +36,27 @@ expressionWithoutUnion =
   )
 
 
+-- stringLiteral : Parser AST
+-- stringLiteral =
+--   map StringLiteral <|
+--   (\_ s _ -> s)
+--   `map` char '"'
+--   `andMap` stringChars
+--   `andMap` char '"'
+
+
 stringLiteral : Parser AST
 stringLiteral =
   map StringLiteral <|
-  (\_ s _ -> s)
-  `map` symbol '"'
-  `and` stringChars
-  `and` symbol '"'
+    (\_ s _ -> s)
+    `map` char '"'
+    `andMap` regex "(\\\\\"|[^\"])*"
+    `andMap` char '"'
 
 
 intLiteral : Parser AST
 intLiteral =
-  map (Value << toString) integer
+  map (Value << toString) int
 
 floatLiteral : Parser AST
 floatLiteral =
@@ -57,54 +66,54 @@ floatLiteral =
 function : Parser AST
 function =
   (\_ name _ -> Value name)
-  `map` token "<function"
-  `and` manyChars (satisfy (\c -> c /= '>'))
-  `and` symbol '>'
+  `map` string "<function"
+  `andMap` manyChars (satisfy ((/=) '>'))
+  `andMap` char '>'
 
 
 tupleLiteral : Parser AST
 tupleLiteral =
-  recursively (\_ ->
-  map TupleLiteral <| parenthesized items
+  rec (\_ ->
+  map TupleLiteral <| parens items
   )
 
 
 listLiteral : Parser AST
 listLiteral =
-  recursively (\_ ->
-  map ListLiteral <| bracketed items
+  rec (\_ ->
+  map ListLiteral <| brackets items
   )
 
 
 items : Parser (List AST)
 items =
-  recursively (\_ ->
-  spaced (separatedBy (spaced expression) comma)
+  rec (\_ ->
+  spaced (sepBy comma (spaced expression))
   )
 
 
 union : Parser AST
 union =
-  recursively (\_ ->
+  rec (\_ ->
   (\tag tail -> Union tag tail)
   `map` tag
-  `and` many unionParam
+  `andMap` many unionParam
   )
 
 
 singleUnion : Parser AST
 singleUnion =
-  recursively (\_ ->
+  rec (\_ ->
     map (\tag -> Union tag []) tag
   )
 
 
 unionParam : Parser AST
 unionParam =
-  recursively (\_ ->
+  rec (\_ ->
   (\_ exp  -> exp)
   `map` spaces
-  `and` (singleUnion `or` expressionWithoutUnion)
+  `andMap` (singleUnion `or` expressionWithoutUnion)
   )
 
 
@@ -112,36 +121,36 @@ tag : Parser String
 tag =
   (\h t -> String.fromList (h :: t))
   `map` upper
-  `and` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '.')) -- assume Dict.fromList
+  `andMap` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '_' || c == '.')) -- assume Dict.fromList
 
 
 record : Parser AST
 record =
-  recursively (\_ ->
-  map Record <| braced properties
+  rec (\_ ->
+  map Record <| braces properties
   )
 
 properties : Parser (List AST)
 properties =
-  recursively (\_ ->
-  spaced (separatedBy property comma)
+  rec (\_ ->
+  spaced (sepBy comma property)
   )
 
 propertyKey : Parser String
 propertyKey =
-  recursively (\_ ->
+  rec (\_ ->
   someChars (satisfy (\c -> not (isSpace c) && c /= '='))
   )
 
 property : Parser AST
 property =
-  recursively (\_ ->
+  rec (\_ ->
   (\_ key _ _ _ value _ -> Property key value)
   `map` spaces
-  `and` propertyKey
-  `and` spaces
-  `and` equal
-  `and` spaces
-  `and` expression
-  `and` spaces
+  `andMap` propertyKey
+  `andMap` spaces
+  `andMap` equal
+  `andMap` spaces
+  `andMap` expression
+  `andMap` spaces
   )
