@@ -11870,100 +11870,16 @@ var _user$project$TimeTravel_Internal_Parser_AST$attachIdToList = F2(
 				}),
 			list);
 	});
-var _user$project$TimeTravel_Internal_Parser_Util$equal = _Bogdanp$elm_combine$Combine_Char$char(
-	_elm_lang$core$Native_Utils.chr('='));
-var _user$project$TimeTravel_Internal_Parser_Util$comma = _Bogdanp$elm_combine$Combine_Char$char(
-	_elm_lang$core$Native_Utils.chr(','));
-var _user$project$TimeTravel_Internal_Parser_Util$notEqual = _Bogdanp$elm_combine$Combine_Char$satisfy(
-	F2(
-		function (x, y) {
-			return !_elm_lang$core$Native_Utils.eq(x, y);
-		})(
-		_elm_lang$core$Native_Utils.chr('=')));
-var _user$project$TimeTravel_Internal_Parser_Util$manyChars = function ($char) {
-	return A2(
-		_Bogdanp$elm_combine$Combine$map,
-		_elm_lang$core$String$fromList,
-		_Bogdanp$elm_combine$Combine$many($char));
-};
-var _user$project$TimeTravel_Internal_Parser_Util$stringChars = _user$project$TimeTravel_Internal_Parser_Util$manyChars(
-	_Bogdanp$elm_combine$Combine_Char$satisfy(
-		F2(
-			function (x, y) {
-				return !_elm_lang$core$Native_Utils.eq(x, y);
-			})(
-			_elm_lang$core$Native_Utils.chr('\"'))));
-var _user$project$TimeTravel_Internal_Parser_Util$someChars = function ($char) {
-	return A2(
-		_Bogdanp$elm_combine$Combine$map,
-		_elm_lang$core$String$fromList,
-		_Bogdanp$elm_combine$Combine$many1($char));
-};
-var _user$project$TimeTravel_Internal_Parser_Util$isSpace = function (c) {
-	return _elm_lang$core$Native_Utils.eq(
-		c,
-		_elm_lang$core$Native_Utils.chr('\t')) || (_elm_lang$core$Native_Utils.eq(
-		c,
-		_elm_lang$core$Native_Utils.chr('\r')) || (_elm_lang$core$Native_Utils.eq(
-		c,
-		_elm_lang$core$Native_Utils.chr('\n')) || _elm_lang$core$Native_Utils.eq(
-		c,
-		_elm_lang$core$Native_Utils.chr(' '))));
-};
-var _user$project$TimeTravel_Internal_Parser_Util$noSpace = _Bogdanp$elm_combine$Combine_Char$satisfy(
-	function (_p0) {
-		return _elm_lang$core$Basics$not(
-			_user$project$TimeTravel_Internal_Parser_Util$isSpace(_p0));
-	});
-var _user$project$TimeTravel_Internal_Parser_Util$space = _Bogdanp$elm_combine$Combine_Char$satisfy(_user$project$TimeTravel_Internal_Parser_Util$isSpace);
-var _user$project$TimeTravel_Internal_Parser_Util$spaces = _user$project$TimeTravel_Internal_Parser_Util$manyChars(_user$project$TimeTravel_Internal_Parser_Util$space);
+var _user$project$TimeTravel_Internal_Parser_Util$equal = _Bogdanp$elm_combine$Combine$string('=');
+var _user$project$TimeTravel_Internal_Parser_Util$comma = _Bogdanp$elm_combine$Combine$string(',');
+var _user$project$TimeTravel_Internal_Parser_Util$spaces = _Bogdanp$elm_combine$Combine$regex('[ ]*');
 var _user$project$TimeTravel_Internal_Parser_Util$spaced = function (p) {
-	return A2(
-		_Bogdanp$elm_combine$Combine$andMap,
-		A2(
-			_Bogdanp$elm_combine$Combine$andMap,
-			A2(
-				_Bogdanp$elm_combine$Combine$map,
-				F3(
-					function (_p2, v, _p1) {
-						return v;
-					}),
-				_user$project$TimeTravel_Internal_Parser_Util$spaces),
-			p),
-		_user$project$TimeTravel_Internal_Parser_Util$spaces);
+	return A3(_Bogdanp$elm_combine$Combine$between, _user$project$TimeTravel_Internal_Parser_Util$spaces, _user$project$TimeTravel_Internal_Parser_Util$spaces, p);
 };
-var _user$project$TimeTravel_Internal_Parser_Parser$propertyKey = _Bogdanp$elm_combine$Combine$rec(
-	function (_p0) {
-		return _user$project$TimeTravel_Internal_Parser_Util$someChars(
-			_Bogdanp$elm_combine$Combine_Char$satisfy(
-				function (c) {
-					return _elm_lang$core$Basics$not(
-						_user$project$TimeTravel_Internal_Parser_Util$isSpace(c)) && (!_elm_lang$core$Native_Utils.eq(
-						c,
-						_elm_lang$core$Native_Utils.chr('=')));
-				}));
-	});
-var _user$project$TimeTravel_Internal_Parser_Parser$tag = A2(
-	_Bogdanp$elm_combine$Combine$andMap,
-	A2(
-		_Bogdanp$elm_combine$Combine$map,
-		F2(
-			function (h, t) {
-				return _elm_lang$core$String$fromList(
-					A2(_elm_lang$core$List_ops['::'], h, t));
-			}),
-		_Bogdanp$elm_combine$Combine_Char$upper),
-	_Bogdanp$elm_combine$Combine$many(
-		_Bogdanp$elm_combine$Combine_Char$satisfy(
-			function (c) {
-				return _elm_lang$core$Char$isUpper(c) || (_elm_lang$core$Char$isLower(c) || (_elm_lang$core$Char$isDigit(c) || (_elm_lang$core$Native_Utils.eq(
-					c,
-					_elm_lang$core$Native_Utils.chr('_')) || _elm_lang$core$Native_Utils.eq(
-					c,
-					_elm_lang$core$Native_Utils.chr('.')))));
-			})));
+var _user$project$TimeTravel_Internal_Parser_Parser$propertyKey = _Bogdanp$elm_combine$Combine$regex('[^ ]+');
+var _user$project$TimeTravel_Internal_Parser_Parser$tag = _Bogdanp$elm_combine$Combine$regex('[A-Z][a-zA-Z0-9_.]*');
 var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Bogdanp$elm_combine$Combine$rec(
-	function (_p1) {
+	function (_p0) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$map,
 			function (tag) {
@@ -11975,64 +11891,32 @@ var _user$project$TimeTravel_Internal_Parser_Parser$singleUnion = _Bogdanp$elm_c
 			},
 			_user$project$TimeTravel_Internal_Parser_Parser$tag);
 	});
-var _user$project$TimeTravel_Internal_Parser_Parser$function = A2(
-	_Bogdanp$elm_combine$Combine$andMap,
-	A2(
-		_Bogdanp$elm_combine$Combine$andMap,
-		A2(
-			_Bogdanp$elm_combine$Combine$map,
-			F3(
-				function (_p3, name, _p2) {
-					return _user$project$TimeTravel_Internal_Parser_AST$Value(name);
-				}),
-			_Bogdanp$elm_combine$Combine$string('<function')),
-		_user$project$TimeTravel_Internal_Parser_Util$manyChars(
-			_Bogdanp$elm_combine$Combine_Char$satisfy(
-				F2(
-					function (x, y) {
-						return !_elm_lang$core$Native_Utils.eq(x, y);
-					})(
-					_elm_lang$core$Native_Utils.chr('>'))))),
-	_Bogdanp$elm_combine$Combine_Char$char(
-		_elm_lang$core$Native_Utils.chr('>')));
-var _user$project$TimeTravel_Internal_Parser_Parser$floatLiteral = A2(
+var _user$project$TimeTravel_Internal_Parser_Parser$null = A2(
 	_Bogdanp$elm_combine$Combine$map,
-	function (_p4) {
-		return _user$project$TimeTravel_Internal_Parser_AST$Value(
-			_elm_lang$core$Basics$toString(_p4));
-	},
-	_Bogdanp$elm_combine$Combine_Num$float);
-var _user$project$TimeTravel_Internal_Parser_Parser$intLiteral = A2(
+	_user$project$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('[a-z]+'));
+var _user$project$TimeTravel_Internal_Parser_Parser$internalStructure = A2(
 	_Bogdanp$elm_combine$Combine$map,
-	function (_p5) {
-		return _user$project$TimeTravel_Internal_Parser_AST$Value(
-			_elm_lang$core$Basics$toString(_p5));
-	},
-	_Bogdanp$elm_combine$Combine_Num$int);
+	_user$project$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('<[^>]*>'));
+var _user$project$TimeTravel_Internal_Parser_Parser$numberLiteral = A2(
+	_Bogdanp$elm_combine$Combine$map,
+	_user$project$TimeTravel_Internal_Parser_AST$Value,
+	_Bogdanp$elm_combine$Combine$regex('(\\-)?[0-9][0-9.]*'));
 var _user$project$TimeTravel_Internal_Parser_Parser$stringLiteral = A2(
 	_Bogdanp$elm_combine$Combine$map,
 	_user$project$TimeTravel_Internal_Parser_AST$StringLiteral,
-	A2(
-		_Bogdanp$elm_combine$Combine$andMap,
-		A2(
-			_Bogdanp$elm_combine$Combine$andMap,
-			A2(
-				_Bogdanp$elm_combine$Combine$map,
-				F3(
-					function (_p7, s, _p6) {
-						return s;
-					}),
-				_Bogdanp$elm_combine$Combine_Char$char(
-					_elm_lang$core$Native_Utils.chr('\"'))),
-			_Bogdanp$elm_combine$Combine$regex('(\\\\\"|[^\"])*')),
-		_Bogdanp$elm_combine$Combine_Char$char(
-			_elm_lang$core$Native_Utils.chr('\"'))));
+	A3(
+		_Bogdanp$elm_combine$Combine$between,
+		_Bogdanp$elm_combine$Combine$string('\"'),
+		_Bogdanp$elm_combine$Combine$string('\"'),
+		_Bogdanp$elm_combine$Combine$regex('(\\\\\"|[^\"])*')));
 var _user$project$TimeTravel_Internal_Parser_Parser$expression = _Bogdanp$elm_combine$Combine$rec(
-	function (_p8) {
+	function (_p1) {
 		return A2(_Bogdanp$elm_combine$Combine$or, _user$project$TimeTravel_Internal_Parser_Parser$union, _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Bogdanp$elm_combine$Combine$rec(
-	function (_p9) {
+	function (_p2) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$or,
 			A2(
@@ -12045,20 +11929,20 @@ var _user$project$TimeTravel_Internal_Parser_Parser$expressionWithoutUnion = _Bo
 							_Bogdanp$elm_combine$Combine$or,
 							A2(_Bogdanp$elm_combine$Combine$or, _user$project$TimeTravel_Internal_Parser_Parser$record, _user$project$TimeTravel_Internal_Parser_Parser$listLiteral),
 							_user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral),
-						_user$project$TimeTravel_Internal_Parser_Parser$function),
-					_user$project$TimeTravel_Internal_Parser_Parser$floatLiteral),
-				_user$project$TimeTravel_Internal_Parser_Parser$intLiteral),
-			_user$project$TimeTravel_Internal_Parser_Parser$stringLiteral);
+						_user$project$TimeTravel_Internal_Parser_Parser$internalStructure),
+					_user$project$TimeTravel_Internal_Parser_Parser$stringLiteral),
+				_user$project$TimeTravel_Internal_Parser_Parser$numberLiteral),
+			_user$project$TimeTravel_Internal_Parser_Parser$null);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$listLiteral = _Bogdanp$elm_combine$Combine$rec(
-	function (_p10) {
+	function (_p3) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$ListLiteral,
 			_Bogdanp$elm_combine$Combine$brackets(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$items = _Bogdanp$elm_combine$Combine$rec(
-	function (_p11) {
+	function (_p4) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
 			A2(
 				_Bogdanp$elm_combine$Combine$sepBy,
@@ -12066,19 +11950,19 @@ var _user$project$TimeTravel_Internal_Parser_Parser$items = _Bogdanp$elm_combine
 				_user$project$TimeTravel_Internal_Parser_Util$spaced(_user$project$TimeTravel_Internal_Parser_Parser$expression)));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$record = _Bogdanp$elm_combine$Combine$rec(
-	function (_p12) {
+	function (_p5) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$Record,
 			_Bogdanp$elm_combine$Combine$braces(_user$project$TimeTravel_Internal_Parser_Parser$properties));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$properties = _Bogdanp$elm_combine$Combine$rec(
-	function (_p13) {
+	function (_p6) {
 		return _user$project$TimeTravel_Internal_Parser_Util$spaced(
 			A2(_Bogdanp$elm_combine$Combine$sepBy, _user$project$TimeTravel_Internal_Parser_Util$comma, _user$project$TimeTravel_Internal_Parser_Parser$property));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$property = _Bogdanp$elm_combine$Combine$rec(
-	function (_p14) {
+	function (_p7) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
@@ -12094,7 +11978,7 @@ var _user$project$TimeTravel_Internal_Parser_Parser$property = _Bogdanp$elm_comb
 								A2(
 									_Bogdanp$elm_combine$Combine$map,
 									F7(
-										function (_p19, key, _p18, _p17, _p16, value, _p15) {
+										function (_p12, key, _p11, _p10, _p9, value, _p8) {
 											return A2(_user$project$TimeTravel_Internal_Parser_AST$Property, key, value);
 										}),
 									_user$project$TimeTravel_Internal_Parser_Util$spaces),
@@ -12106,14 +11990,14 @@ var _user$project$TimeTravel_Internal_Parser_Parser$property = _Bogdanp$elm_comb
 			_user$project$TimeTravel_Internal_Parser_Util$spaces);
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$tupleLiteral = _Bogdanp$elm_combine$Combine$rec(
-	function (_p20) {
+	function (_p13) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$map,
 			_user$project$TimeTravel_Internal_Parser_AST$TupleLiteral,
 			_Bogdanp$elm_combine$Combine$parens(_user$project$TimeTravel_Internal_Parser_Parser$items));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$union = _Bogdanp$elm_combine$Combine$rec(
-	function (_p21) {
+	function (_p14) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
@@ -12126,13 +12010,13 @@ var _user$project$TimeTravel_Internal_Parser_Parser$union = _Bogdanp$elm_combine
 			_Bogdanp$elm_combine$Combine$many(_user$project$TimeTravel_Internal_Parser_Parser$unionParam));
 	});
 var _user$project$TimeTravel_Internal_Parser_Parser$unionParam = _Bogdanp$elm_combine$Combine$rec(
-	function (_p22) {
+	function (_p15) {
 		return A2(
 			_Bogdanp$elm_combine$Combine$andMap,
 			A2(
 				_Bogdanp$elm_combine$Combine$map,
 				F2(
-					function (_p23, exp) {
+					function (_p16, exp) {
 						return exp;
 					}),
 				_user$project$TimeTravel_Internal_Parser_Util$spaces),
