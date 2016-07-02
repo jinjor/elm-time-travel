@@ -12,8 +12,10 @@ isOk r =
     Ok _ -> True
     _ -> False
 
+
 testParse : String -> AST -> Assertion
 testParse s ast = assertEqual (Ok ast) (Parser.parse s)
+
 
 parseAndFormatManyTimes : Int -> String -> Assertion
 parseAndFormatManyTimes times s =
@@ -40,7 +42,7 @@ tests =
     [ test "benchmark" (parseAndFormatManyTimes 1000 complexString)
     ]
 
-complexString = """
+complexString = String.join " " <| String.lines """
 { seed =
     Seed
       (Seed

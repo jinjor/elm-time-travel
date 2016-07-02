@@ -22,6 +22,7 @@ expression =
     expressionWithoutUnion
   )
 
+
 expressionWithoutUnion : Parser AST
 expressionWithoutUnion =
   rec (\_ ->
@@ -29,30 +30,21 @@ expressionWithoutUnion =
     listLiteral `or`
     tupleLiteral `or`
     internalStructure `or`
-    null `or`
-    floatLiteral `or`
-    intLiteral `or`
-    stringLiteral
+    stringLiteral `or`
+    numberLiteral `or`
+    null
   )
-
 
 
 stringLiteral : Parser AST
 stringLiteral =
   map StringLiteral <|
-    (\_ s _ -> s)
-    `map` string "\""
-    `andMap` regex "(\\\\\"|[^\"])*"
-    `andMap` string "\""
+    between (string "\"") (string "\"") (regex """(\\\\"|[^"])*""")
 
 
-intLiteral : Parser AST
-intLiteral =
-  map (Value << toString) int
-
-floatLiteral : Parser AST
-floatLiteral =
-  map (Value << toString) float
+numberLiteral : Parser AST
+numberLiteral =
+  map Value (regex "(\\-)?[0-9][0-9.]*")
 
 
 internalStructure : Parser AST
@@ -62,7 +54,7 @@ internalStructure =
 
 null : Parser AST
 null =
-  map Value (string "null")
+  map Value (regex "[a-z]+")
 
 
 tupleLiteral : Parser AST
@@ -95,6 +87,20 @@ union =
   )
 
 
+-- assuming things like `True 1` never come (effective, but unsafe)
+-- union : Parser AST
+-- union =
+--   rec (\_ ->
+--     tag `andThen` \s ->
+--       if s == "True" || s == "False" || s == "Nothing" then
+--         succeed (Union s [])
+--       else if s == "Just" || s == "Ok" || s == "Err" then
+--         (\param -> Union s [param]) `map` unionParam
+--       else
+--         (\tail -> Union s tail) `map` many unionParam
+--   )
+
+
 singleUnion : Parser AST
 singleUnion =
   rec (\_ ->
@@ -122,15 +128,18 @@ record =
   map Record <| braces properties
   )
 
+
 properties : Parser (List AST)
 properties =
   rec (\_ ->
   spaced (sepBy comma property)
   )
 
+
 propertyKey : Parser String
 propertyKey =
-  regex "[^ \r\t\n=]+"
+  regex "[^ ]+"
+
 
 property : Parser AST
 property =

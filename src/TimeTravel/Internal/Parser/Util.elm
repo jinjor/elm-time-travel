@@ -7,7 +7,7 @@ spaced p =
   between spaces spaces p
 
 spaces : Parser String
-spaces = regex "[ \r\t\n]*"
+spaces = regex "[ ]*"
 
 comma : Parser String
 comma = string ","
