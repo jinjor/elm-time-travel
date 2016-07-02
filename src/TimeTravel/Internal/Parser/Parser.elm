@@ -28,7 +28,8 @@ expressionWithoutUnion =
     record `or`
     listLiteral `or`
     tupleLiteral `or`
-    function `or`
+    internalStructure `or`
+    null `or`
     floatLiteral `or`
     intLiteral `or`
     stringLiteral
@@ -54,12 +55,14 @@ floatLiteral =
   map (Value << toString) float
 
 
-function : Parser AST
-function =
-  (\_ name _ -> Value name)
-  `map` string "<function"
-  `andMap` regex "[^>]*"
-  `andMap` string ">"
+internalStructure : Parser AST
+internalStructure =
+  map Value (regex "<[^>]*>")
+
+
+null : Parser AST
+null =
+  map Value (string "null")
 
 
 tupleLiteral : Parser AST
