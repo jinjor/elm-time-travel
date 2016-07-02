@@ -1,11 +1,10 @@
 module TimeTravel.Internal.Parser.Parser exposing (..)
 
-import String
-import Combine exposing (..)
-import Char
-import Combine.Char exposing (char, satisfy, upper)
-import Combine.Num exposing (int, float)
 
+import Char
+import Combine exposing (..)
+import Combine.Num exposing (int, float)
+import String
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Util exposing (..)
 
@@ -36,22 +35,14 @@ expressionWithoutUnion =
   )
 
 
--- stringLiteral : Parser AST
--- stringLiteral =
---   map StringLiteral <|
---   (\_ s _ -> s)
---   `map` char '"'
---   `andMap` stringChars
---   `andMap` char '"'
-
 
 stringLiteral : Parser AST
 stringLiteral =
   map StringLiteral <|
     (\_ s _ -> s)
-    `map` char '"'
+    `map` string "\""
     `andMap` regex "(\\\\\"|[^\"])*"
-    `andMap` char '"'
+    `andMap` string "\""
 
 
 intLiteral : Parser AST
@@ -67,8 +58,8 @@ function : Parser AST
 function =
   (\_ name _ -> Value name)
   `map` string "<function"
-  `andMap` manyChars (satisfy ((/=) '>'))
-  `andMap` char '>'
+  `andMap` regex "[^>]*"
+  `andMap` string ">"
 
 
 tupleLiteral : Parser AST
@@ -119,9 +110,7 @@ unionParam =
 
 tag : Parser String
 tag =
-  (\h t -> String.fromList (h :: t))
-  `map` upper
-  `andMap` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '_' || c == '.')) -- assume Dict.fromList
+  regex "[A-Z][a-zA-Z0-9_.]*"
 
 
 record : Parser AST
@@ -138,9 +127,7 @@ properties =
 
 propertyKey : Parser String
 propertyKey =
-  rec (\_ ->
-  someChars (satisfy (\c -> not (isSpace c) && c /= '='))
-  )
+  regex "[^ \r\t\n=]+"
 
 property : Parser AST
 property =
