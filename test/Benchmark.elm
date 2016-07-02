@@ -1,10 +1,10 @@
 module Benchmark exposing (..)
 
+import ElmTest exposing (..)
 import String
 import TimeTravel.Internal.Parser.AST exposing (..)
-import TimeTravel.Internal.Parser.Parser as Parser exposing (..)
 import TimeTravel.Internal.Parser.Formatter as Formatter exposing (..)
-import ElmTest exposing (..)
+import TimeTravel.Internal.Parser.Parser as Parser exposing (..)
 
 isOk : Result a b -> Bool
 isOk r =
@@ -12,8 +12,10 @@ isOk r =
     Ok _ -> True
     _ -> False
 
+
 testParse : String -> AST -> Assertion
 testParse s ast = assertEqual (Ok ast) (Parser.parse s)
+
 
 parseAndFormatManyTimes : Int -> String -> Assertion
 parseAndFormatManyTimes times s =
@@ -37,10 +39,10 @@ parseAndFormatManyTimes times s =
 tests : Test
 tests =
   suite "A Test Suite"
-    [ test "benchmark" (parseAndFormatManyTimes 100 complexString)
+    [ test "benchmark" (parseAndFormatManyTimes 1000 complexString)
     ]
 
-complexString = """
+complexString = String.join " " <| String.lines """
 { seed =
     Seed
       (Seed

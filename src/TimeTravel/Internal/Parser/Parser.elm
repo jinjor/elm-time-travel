@@ -1,11 +1,10 @@
 module TimeTravel.Internal.Parser.Parser exposing (..)
 
-import String
-import Combine exposing (..)
-import Char
-import Combine.Char exposing (char, satisfy, upper)
-import Combine.Num exposing (int, float)
 
+import Char
+import Combine exposing (..)
+import Combine.Num exposing (int, float)
+import String
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Util exposing (..)
 
@@ -23,52 +22,39 @@ expression =
     expressionWithoutUnion
   )
 
+
 expressionWithoutUnion : Parser AST
 expressionWithoutUnion =
   rec (\_ ->
     record `or`
     listLiteral `or`
     tupleLiteral `or`
-    function `or`
-    floatLiteral `or`
-    intLiteral `or`
-    stringLiteral
+    internalStructure `or`
+    stringLiteral `or`
+    numberLiteral `or`
+    null
   )
-
-
--- stringLiteral : Parser AST
--- stringLiteral =
---   map StringLiteral <|
---   (\_ s _ -> s)
---   `map` char '"'
---   `andMap` stringChars
---   `andMap` char '"'
 
 
 stringLiteral : Parser AST
 stringLiteral =
   map StringLiteral <|
-    (\_ s _ -> s)
-    `map` char '"'
-    `andMap` regex "(\\\\\"|[^\"])*"
-    `andMap` char '"'
+    between (string "\"") (string "\"") (regex """(\\\\"|[^"])*""")
 
 
-intLiteral : Parser AST
-intLiteral =
-  map (Value << toString) int
-
-floatLiteral : Parser AST
-floatLiteral =
-  map (Value << toString) float
+numberLiteral : Parser AST
+numberLiteral =
+  map Value (regex "(\\-)?[0-9][0-9.]*")
 
 
-function : Parser AST
-function =
-  (\_ name _ -> Value name)
-  `map` string "<function"
-  `andMap` manyChars (satisfy ((/=) '>'))
-  `andMap` char '>'
+internalStructure : Parser AST
+internalStructure =
+  map Value (regex "<[^>]*>")
+
+
+null : Parser AST
+null =
+  map Value (regex "[a-z]+")
 
 
 tupleLiteral : Parser AST
@@ -101,6 +87,20 @@ union =
   )
 
 
+-- assuming things like `True 1` never come (effective, but unsafe)
+-- union : Parser AST
+-- union =
+--   rec (\_ ->
+--     tag `andThen` \s ->
+--       if s == "True" || s == "False" || s == "Nothing" then
+--         succeed (Union s [])
+--       else if s == "Just" || s == "Ok" || s == "Err" then
+--         (\param -> Union s [param]) `map` unionParam
+--       else
+--         (\tail -> Union s tail) `map` many unionParam
+--   )
+
+
 singleUnion : Parser AST
 singleUnion =
   rec (\_ ->
@@ -119,9 +119,7 @@ unionParam =
 
 tag : Parser String
 tag =
-  (\h t -> String.fromList (h :: t))
-  `map` upper
-  `andMap` many (satisfy (\c -> Char.isUpper c || Char.isLower c || Char.isDigit c || c == '_' || c == '.')) -- assume Dict.fromList
+  regex "[A-Z][a-zA-Z0-9_.]*"
 
 
 record : Parser AST
@@ -130,17 +128,18 @@ record =
   map Record <| braces properties
   )
 
+
 properties : Parser (List AST)
 properties =
   rec (\_ ->
   spaced (sepBy comma property)
   )
 
+
 propertyKey : Parser String
 propertyKey =
-  rec (\_ ->
-  someChars (satisfy (\c -> not (isSpace c) && c /= '='))
-  )
+  regex "[^ ]+"
+
 
 property : Parser AST
 property =
