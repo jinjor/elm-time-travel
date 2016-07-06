@@ -37,6 +37,7 @@ Possible feature to be implemented in the future is:
 
 * <strike>format model (e.g. indent, syntax highlight)</strike> done :)
 * <strike>show diff between before and after msg</strike> done :)
-* watch certain property and stop when it is changed
 * <strike>form a message tree where the root is user action and has chained messages</strike> done :)
 * <strike>enable to show panel in other place (Currently it is fixed to right)</strike> done :)
+* watch certain property (or filter part of model) and stop when it is changed
+* show in Chrome DevTools
