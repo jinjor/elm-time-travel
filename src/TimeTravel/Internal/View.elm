@@ -206,9 +206,13 @@ detailView model =
             text ""
 
       diffView =
-        case selectedAndOldAst model of
-          Just (oldAst, newAst) ->
-            DiffView.view oldAst newAst
+        case selectedItem model of
+          Just item ->
+            case item.lazyDiff of
+              Just changes ->
+                DiffView.view changes
+              Nothing ->
+                text ""
           Nothing ->
             text ""
 

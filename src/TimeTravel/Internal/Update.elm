@@ -64,7 +64,7 @@ update save message model =
           { model |
             selectedMsg = Just id
           , sync = False
-          } |> updateLazyAst
+          } |> updateLazyAst |> updateLazyDiff
       in
         newModel ! []
 
@@ -88,18 +88,11 @@ update save message model =
         newModel ! [ saveSetting save newModel ]
 
     ToggleModelDetail showModelDetail ->
-      if model.sync then
         ( { model |
             showModelDetail = showModelDetail
-          , sync = False
           }
-          |> selectFirstIfSync
-          |> futureToHistory
+          |> updateLazyDiff
         ) ! []
-      else
-        { model |
-          showModelDetail = showModelDetail
-        } ! []
 
     ToggleModelTree id ->
       { model | expandedTree = toggleSet id model.expandedTree } ! []

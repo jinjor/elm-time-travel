@@ -2,23 +2,13 @@ module TimeTravel.Internal.DiffView exposing (view)
 
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Parser.AST exposing (ASTX)
-import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Diff exposing (..)
-
 import String
-
-
-view : ASTX -> ASTX -> Html msg
-view oldAst newAst =
-  viewDiff
-    (Formatter.formatAsString (Formatter.makeModel oldAst))
-    (Formatter.formatAsString (Formatter.makeModel newAst))
-
 
 type Line = Normal String | Delete String | Add String | Omit
 
@@ -27,12 +17,10 @@ lines : String -> List String
 lines s =
   List.filter ((/=) "") <| String.lines s
 
-viewDiff : String -> String -> Html msg
-viewDiff old new =
-  let
-    changes =
-      diffLines old new
 
+view : List Change -> Html msg
+view changes =
+  let
     list =
       List.concatMap (\change ->
         case change of
