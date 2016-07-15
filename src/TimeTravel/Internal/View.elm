@@ -231,7 +231,6 @@ detailView model =
           [ style S.detailViewHead ]
           [ detailTab (S.detailTabModel model.fixedToLeft model.showModelDetail) (ToggleModelDetail True) "Model"
           , detailTab (S.detailTabDiff model.fixedToLeft (not model.showModelDetail)) (ToggleModelDetail False) "Messages and Diff"
-          -- buttonView ToggleModelDetail False [ I.toggleModelDetail ]
           ]
 
       body =

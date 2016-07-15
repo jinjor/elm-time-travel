@@ -116,7 +116,13 @@ modelDetailView fixedToLeft =
   [ ("width", "320px")
   , ("z-index", zIndex.modelDetailView)
   , ("box-sizing", "border-box")
-  ] ++ panel True
+  , ("height", "100%")
+  , ("overflow-y", "scroll")
+  ] ++ --panel True
+  [ ("padding", "20px")
+  , ("overflow-x", "hidden")
+  , ("overflow-y", "scroll")
+  ]
 
 
 modelDetailFlagment : List (String, String)
@@ -199,6 +205,7 @@ detailView fixedToLeft opened =
   , ("width", "320px")
   , (if fixedToLeft then "right" else "left", "-320px")
   , ("box-sizing", "border-box")
+  , ("height", "calc(100% - 87px)")
   ] ++ subPain fixedToLeft ++ debugViewTheme
 
 
