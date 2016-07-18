@@ -21,17 +21,6 @@ lines s =
 view : List (Change String) -> Html msg
 view changes =
   let
-    list =
-      List.concatMap (\change ->
-        case change of
-          NoChange s ->
-            List.map Normal (lines s)
-          Added new ->
-            List.map Add (lines new)
-          Removed old ->
-            List.map Delete (lines old)
-        ) changes
-
     linesView =
       List.map (\line ->
         case line of
@@ -43,27 +32,26 @@ view changes =
             addedLine s
           Omit ->
             omittedLine
-        ) (reduceLines list)
+        ) (reduceLines changes)
   in
     div
       [ style S.diffView ]
       linesView
 
 
-reduceLines : List Line -> List Line
+reduceLines : List (Change String) -> List Line
 reduceLines list =
   let
     additionalLines = 2
     (tmp, result) =
       List.foldr (\line (tmp, result) ->
         case line of
-          Normal s ->
+          NoChange s ->
             ((Normal s) :: tmp, result)
-          Delete s ->
+          Removed s ->
             tmpToResult additionalLines (Delete s) tmp result
-          Add s ->
+          Added s ->
             tmpToResult additionalLines (Add s) tmp result
-          _ -> (tmp, result)
         ) ([], []) list
   in
     if result == [] then
