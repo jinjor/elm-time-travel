@@ -18,7 +18,7 @@ lines s =
   List.filter ((/=) "") <| String.lines s
 
 
-view : List Change -> Html msg
+view : List (Change String) -> Html msg
 view changes =
   let
     list =
@@ -26,9 +26,6 @@ view changes =
         case change of
           NoChange s ->
             List.map Normal (lines s)
-          Changed old new ->
-            List.map Delete (lines old) ++
-            List.map Add (lines new)
           Added new ->
             List.map Add (lines new)
           Removed old ->

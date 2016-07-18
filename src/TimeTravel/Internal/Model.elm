@@ -24,7 +24,7 @@ type alias HistoryItem model msg data =
   , model : model
   , lazyMsgAst : Maybe (Result String ASTX)
   , lazyModelAst : Maybe (Result String ASTX)
-  , lazyDiff : Maybe (List Change)
+  , lazyDiff : Maybe (List (Change String))
   }
 
 type alias Model model msg data =
@@ -299,7 +299,7 @@ updateLazyDiffHelp model item =
     { item | lazyDiff = newDiff }
 
 
-makeChanges : ASTX -> ASTX -> List Change
+makeChanges : ASTX -> ASTX -> List (Change String)
 makeChanges oldAst newAst =
   if oldAst == newAst then -- strangily, its faster if they are equal
     []
