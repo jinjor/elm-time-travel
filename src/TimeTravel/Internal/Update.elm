@@ -13,7 +13,7 @@ update save message model =
           Ok { fixedToLeft, filter } ->
             { model | fixedToLeft = fixedToLeft, filter = filter } ! []
           Err _ ->
-            model ! [] |> Debug.log "err decoing"
+            model ! [] |> Debug.log "err decoding"
       else
         model ! []
 
@@ -73,7 +73,6 @@ update save message model =
         newModel =
           { model |
             sync = True
-          , showModelDetail = False
           } |> selectFirstIfSync |> futureToHistory
       in
         newModel ! []
