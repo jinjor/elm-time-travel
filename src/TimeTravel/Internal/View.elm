@@ -115,15 +115,32 @@ filterItemView (name, visible) =
     ]
 
 
-modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
-modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
+modelDetailView : Bool -> String -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
+modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
   case lazyModelAst of
     Just (Ok ast) ->
       let
-        html =
-          Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+        modelFilterView =
+          input
+            [ style S.modelFilterInput
+            , placeholder ""
+            , value modelFilter
+            , onInput InputModelFilter
+            ]
+            []
+
+        filtered =
+          AST.filterById modelFilter ast
+
+        each ast =
+          div
+            [ style S.modelDetailTreeEach ]
+            (Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast))
+
+        trees =
+          List.map each filtered
       in
-        div [ style <| S.modelDetailView fixedToLeft ] html
+        div [ style (S.modelDetailView fixedToLeft) ] (modelFilterView :: trees)
 
     _ ->
       div [ style S.modelView ] [ text (toString userModel) ]
@@ -239,6 +256,7 @@ detailView model =
             Just item ->
               modelDetailView
                 model.fixedToLeft
+                model.modelFilter
                 model.expandedTree
                 item.lazyModelAst
                 item.model

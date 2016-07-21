@@ -40,6 +40,7 @@ type alias Model model msg data =
   , fixedToLeft : Bool
   , expandedTree : Set AST.ASTId
   , minimized : Bool
+  , modelFilter : String
   }
 
 type alias Id = Int
@@ -74,6 +75,7 @@ type Msg
   | ToggleModelDetail Bool
   | ToggleModelTree AST.ASTId
   | ToggleMinimize
+  | InputModelFilter String
 
 
 init : model -> Model model msg data
@@ -90,6 +92,7 @@ init model =
   , fixedToLeft = False
   , expandedTree = Set.empty
   , minimized = False
+  , modelFilter = ""
   }
 
 

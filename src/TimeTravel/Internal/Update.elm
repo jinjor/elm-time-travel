@@ -105,6 +105,9 @@ update save message model =
         |> futureToHistory
       ) ! []
 
+    InputModelFilter s ->
+      { model | modelFilter = s } ! []
+
 
 toggleSet : comparable -> Set comparable -> Set comparable
 toggleSet a set =

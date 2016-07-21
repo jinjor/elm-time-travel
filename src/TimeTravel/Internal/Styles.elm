@@ -96,8 +96,6 @@ minimizedButton fixedToLeft =
   ] ++ iconButton ++ debugViewTheme
 
 
-
-
 modelViewContainer : List (String, String)
 modelViewContainer =
   []
@@ -110,6 +108,25 @@ modelView =
   ]
   ++ panelBorder ++ panel True
 
+
+modelFilterInput : List (String, String)
+modelFilterInput =
+  [ ("display", "block")
+  , ("width", "100%")
+  , ("padding", "5px 10px")
+  , ("background-color", "rgba(0,0,0,0.2)")
+  , ("margin-bottom", "10px")
+  , ("border", "none")
+  , ("box-shadow", "2px 1px 7px 0px rgba(0,0,0,0.4) inset")
+  , ("color", "#eee")
+  , ("font-size", "14px")
+  , ("width", "100%")
+  , ("box-sizing", "border-box")
+  ]
+
+modelDetailTreeEach : List (String, String)
+modelDetailTreeEach =
+  [ ("margin-bottom", "20px") ]
 
 modelDetailView : Bool -> List (String, String)
 modelDetailView fixedToLeft =
