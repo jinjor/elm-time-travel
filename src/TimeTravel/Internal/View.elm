@@ -120,43 +120,52 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
   case lazyModelAst of
     Just (Ok ast) ->
       let
-        modelFilterView =
-          input
-            [ style S.modelFilterInput
-            , placeholder "Filter by property"
-            , value modelFilter
-            , onInput InputModelFilter
-            ]
-            []
-
-        filtered =
-          AST.filterById modelFilter ast
-
-        each (id, ast) =
-          div
-            [ style S.modelDetailTreeEach ]
-            ( ( if modelFilter == "" then
-                  text ""
-                else
-                  hover
-                    S.modelDetailTreeEachIdHover
-                    div
-                    [ style S.modelDetailTreeEachId
-                    , onClick (SelectModelFilter id)
-                    ]
-                    [ text ("@" ++ id) ]
-              ) ::
-              Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
-            )
+        filterInput =
+          modelFilterInput modelFilter
 
         trees =
-          List.map each filtered
+          List.map
+            (modelDetailTreeEach expandedTree modelFilter)
+            (AST.filterById modelFilter ast)
       in
-        div [ style (S.modelDetailView fixedToLeft) ] (modelFilterView :: trees)
+        div [ style (S.modelDetailView fixedToLeft) ] (filterInput :: trees)
 
     _ ->
       div [ style S.modelView ] [ text (toString userModel) ]
 
+
+modelFilterInput : String -> Html Msg
+modelFilterInput modelFilter =
+  input
+    [ style S.modelFilterInput
+    , placeholder "Filter by property"
+    , value modelFilter
+    , onInput InputModelFilter
+    ]
+    []
+
+
+modelDetailTreeEach : Set AST.ASTId -> String -> (String, ASTX) -> Html Msg
+modelDetailTreeEach expandedTree modelFilter (id, ast) =
+  div
+    [ style S.modelDetailTreeEach ]
+    ( modelDetailTreeEachId modelFilter id ::
+      Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+    )
+
+
+modelDetailTreeEachId : String -> String -> Html Msg
+modelDetailTreeEachId modelFilter id =
+  if modelFilter == "" then
+    text ""
+  else
+    hover
+      S.modelDetailTreeEachIdHover
+      div
+      [ style S.modelDetailTreeEachId
+      , onClick (SelectModelFilter id)
+      ]
+      [ text ("@" ++ id) ]
 
 
 msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
