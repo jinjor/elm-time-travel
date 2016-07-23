@@ -124,9 +124,23 @@ modelFilterInput =
   , ("box-sizing", "border-box")
   ]
 
+
+modelDetailTreeEachId : List (String, String)
+modelDetailTreeEachId =
+  [ ("color", "#999")
+  , ("cursor", "pointer")
+  ]
+
+
+modelDetailTreeEachIdHover : List (String, String)
+modelDetailTreeEachIdHover =
+  [ ("text-decoration", "underline") ]
+
+
 modelDetailTreeEach : List (String, String)
 modelDetailTreeEach =
   [ ("margin-bottom", "20px") ]
+
 
 modelDetailView : Bool -> List (String, String)
 modelDetailView fixedToLeft =

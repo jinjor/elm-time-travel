@@ -123,7 +123,7 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
         modelFilterView =
           input
             [ style S.modelFilterInput
-            , placeholder ""
+            , placeholder "Filter by property"
             , value modelFilter
             , onInput InputModelFilter
             ]
@@ -132,10 +132,22 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
         filtered =
           AST.filterById modelFilter ast
 
-        each ast =
+        each (id, ast) =
           div
             [ style S.modelDetailTreeEach ]
-            (Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast))
+            ( ( if modelFilter == "" then
+                  text ""
+                else
+                  hover
+                    S.modelDetailTreeEachIdHover
+                    div
+                    [ style S.modelDetailTreeEachId
+                    , onClick (SelectModelFilter id)
+                    ]
+                    [ text ("@" ++ id) ]
+              ) ::
+              Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+            )
 
         trees =
           List.map each filtered

@@ -27,6 +27,7 @@ type alias HistoryItem model msg data =
   , lazyDiff : Maybe (List (Change String))
   }
 
+
 type alias Model model msg data =
   { future : List (HistoryItem model msg data)
   , history : Nel (HistoryItem model msg data)
@@ -76,6 +77,7 @@ type Msg
   | ToggleModelTree AST.ASTId
   | ToggleMinimize
   | InputModelFilter String
+  | SelectModelFilter String
 
 
 init : model -> Model model msg data

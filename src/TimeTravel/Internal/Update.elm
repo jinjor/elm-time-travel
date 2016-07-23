@@ -108,6 +108,9 @@ update save message model =
     InputModelFilter s ->
       { model | modelFilter = s } ! []
 
+    SelectModelFilter s ->
+      { model | modelFilter = s } ! []
+
 
 toggleSet : comparable -> Set comparable -> Set comparable
 toggleSet a set =
