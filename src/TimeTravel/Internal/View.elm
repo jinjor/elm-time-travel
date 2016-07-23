@@ -96,7 +96,7 @@ filterView : Bool -> FilterOptions -> Html Msg
 filterView visible filterOptions =
   div
     [ style (S.filterView visible) ]
-    (List.map filterItemView filterOptions)
+    (List.map filterItemView (List.sortBy fst filterOptions))
 
 
 filterItemView : (String, Bool) -> Html Msg
