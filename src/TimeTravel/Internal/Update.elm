@@ -13,7 +13,7 @@ update save message model =
           Ok { fixedToLeft, filter } ->
             { model | fixedToLeft = fixedToLeft, filter = filter } ! []
           Err _ ->
-            model ! [] |> Debug.log "err decoing"
+            model ! [] |> Debug.log "err decoding"
       else
         model ! []
 
@@ -64,7 +64,7 @@ update save message model =
           { model |
             selectedMsg = Just id
           , sync = False
-          } |> updateLazyAst
+          } |> updateLazyAst |> updateLazyDiff
       in
         newModel ! []
 
@@ -73,7 +73,6 @@ update save message model =
         newModel =
           { model |
             sync = True
-          , showModelDetail = False
           } |> selectFirstIfSync |> futureToHistory
       in
         newModel ! []
@@ -88,18 +87,11 @@ update save message model =
         newModel ! [ saveSetting save newModel ]
 
     ToggleModelDetail showModelDetail ->
-      if model.sync then
         ( { model |
             showModelDetail = showModelDetail
-          , sync = False
           }
-          |> selectFirstIfSync
-          |> futureToHistory
+          |> updateLazyDiff
         ) ! []
-      else
-        { model |
-          showModelDetail = showModelDetail
-        } ! []
 
     ToggleModelTree id ->
       { model | expandedTree = toggleSet id model.expandedTree } ! []
@@ -112,6 +104,12 @@ update save message model =
         |> selectFirstIfSync
         |> futureToHistory
       ) ! []
+
+    InputModelFilter s ->
+      { model | modelFilter = s } ! []
+
+    SelectModelFilter s ->
+      { model | modelFilter = s } ! []
 
 
 toggleSet : comparable -> Set comparable -> Set comparable

@@ -2,23 +2,13 @@ module TimeTravel.Internal.DiffView exposing (view)
 
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Parser.AST exposing (ASTX)
-import TimeTravel.Internal.Parser.Formatter as Formatter
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Diff exposing (..)
-
 import String
-
-
-view : ASTX -> ASTX -> Html msg
-view oldAst newAst =
-  viewDiff
-    (Formatter.formatAsString (Formatter.makeModel oldAst))
-    (Formatter.formatAsString (Formatter.makeModel newAst))
-
 
 type Line = Normal String | Delete String | Add String | Omit
 
@@ -27,26 +17,10 @@ lines : String -> List String
 lines s =
   List.filter ((/=) "") <| String.lines s
 
-viewDiff : String -> String -> Html msg
-viewDiff old new =
+
+view : List (Change String) -> Html msg
+view changes =
   let
-    changes =
-      diffLines old new
-
-    list =
-      List.concatMap (\change ->
-        case change of
-          NoChange s ->
-            List.map Normal (lines s)
-          Changed old new ->
-            List.map Delete (lines old) ++
-            List.map Add (lines new)
-          Added new ->
-            List.map Add (lines new)
-          Removed old ->
-            List.map Delete (lines old)
-        ) changes
-
     linesView =
       List.map (\line ->
         case line of
@@ -58,27 +32,26 @@ viewDiff old new =
             addedLine s
           Omit ->
             omittedLine
-        ) (reduceLines list)
+        ) (reduceLines changes)
   in
     div
       [ style S.diffView ]
       linesView
 
 
-reduceLines : List Line -> List Line
+reduceLines : List (Change String) -> List Line
 reduceLines list =
   let
     additionalLines = 2
     (tmp, result) =
       List.foldr (\line (tmp, result) ->
         case line of
-          Normal s ->
+          NoChange s ->
             ((Normal s) :: tmp, result)
-          Delete s ->
+          Removed s ->
             tmpToResult additionalLines (Delete s) tmp result
-          Add s ->
+          Added s ->
             tmpToResult additionalLines (Add s) tmp result
-          _ -> (tmp, result)
         ) ([], []) list
   in
     if result == [] then

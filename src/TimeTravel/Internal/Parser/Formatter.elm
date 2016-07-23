@@ -43,7 +43,7 @@ makeModelWithContext c ast =
             else [s]
           )
     StringLiteralX id s ->
-      Plain <|"\"" ++ s ++ "\"" -- TODO replace quote
+      Plain <|"\"" ++ s ++ "\""
     ValueX id s ->
       Plain s
     UnionX id tag tail ->
@@ -121,7 +121,7 @@ formatAsString model =
 formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> FormatModel -> List (Html msg)
 formatAsHtml transformMsg expandedTree model =
   formatHelp
-    (\s -> [span [ style S.modelDetailFlagment ] [ text s ]])
+    formatPlainAsHtml
     (\list -> List.concatMap (formatAsHtml transformMsg expandedTree) list)
     (\id alt children ->
       if Set.member id expandedTree then
@@ -139,6 +139,14 @@ formatAsHtml transformMsg expandedTree model =
             [ text alt ]
         ]
     ) model
+
+
+formatPlainAsHtml : String -> List (Html msg)
+formatPlainAsHtml s =
+   [ span
+     ([ style S.modelDetailFlagment ] ++ if String.startsWith "\"" s then [title s] else [])
+     [ text s ]
+   ]
 
 
 formatHelp : (String -> a) -> (List FormatModel -> a) -> (AST.ASTId -> String -> List FormatModel -> a) -> FormatModel -> a

@@ -115,15 +115,44 @@ filterItemView (name, visible) =
     ]
 
 
-modelDetailView : Bool -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
-modelDetailView fixedToLeft expandedTree lazyModelAst userModel =
+modelDetailView : Bool -> String -> Set AST.ASTId -> Maybe (Result String ASTX) -> model -> Html Msg
+modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
   case lazyModelAst of
     Just (Ok ast) ->
       let
-        html =
-          Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+        modelFilterView =
+          input
+            [ style S.modelFilterInput
+            , placeholder "Filter by property"
+            , value modelFilter
+            , onInput InputModelFilter
+            ]
+            []
+
+        filtered =
+          AST.filterById modelFilter ast
+
+        each (id, ast) =
+          div
+            [ style S.modelDetailTreeEach ]
+            ( ( if modelFilter == "" then
+                  text ""
+                else
+                  hover
+                    S.modelDetailTreeEachIdHover
+                    div
+                    [ style S.modelDetailTreeEachId
+                    , onClick (SelectModelFilter id)
+                    ]
+                    [ text ("@" ++ id) ]
+              ) ::
+              Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+            )
+
+        trees =
+          List.map each filtered
       in
-        div [ style <| S.modelDetailView fixedToLeft ] html
+        div [ style (S.modelDetailView fixedToLeft) ] (modelFilterView :: trees)
 
     _ ->
       div [ style S.modelView ] [ text (toString userModel) ]
@@ -167,6 +196,7 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
           div
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
+          , title (toString id ++ ": " ++ str)
           ]
           [ text (toString id ++ ": " ++ str) ]
       )
@@ -206,9 +236,13 @@ detailView model =
             text ""
 
       diffView =
-        case selectedAndOldAst model of
-          Just (oldAst, newAst) ->
-            DiffView.view oldAst newAst
+        case selectedItem model of
+          Just item ->
+            case item.lazyDiff of
+              Just changes ->
+                DiffView.view changes
+              Nothing ->
+                text ""
           Nothing ->
             text ""
 
@@ -227,7 +261,6 @@ detailView model =
           [ style S.detailViewHead ]
           [ detailTab (S.detailTabModel model.fixedToLeft model.showModelDetail) (ToggleModelDetail True) "Model"
           , detailTab (S.detailTabDiff model.fixedToLeft (not model.showModelDetail)) (ToggleModelDetail False) "Messages and Diff"
-          -- buttonView ToggleModelDetail False [ I.toggleModelDetail ]
           ]
 
       body =
@@ -236,6 +269,7 @@ detailView model =
             Just item ->
               modelDetailView
                 model.fixedToLeft
+                model.modelFilter
                 model.expandedTree
                 item.lazyModelAst
                 item.model

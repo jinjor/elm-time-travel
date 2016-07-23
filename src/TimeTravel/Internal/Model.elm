@@ -6,6 +6,7 @@ import Set exposing (Set)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import TimeTravel.Internal.Parser.AST as AST exposing (ASTX)
 import TimeTravel.Internal.Parser.Parser as Parser
+import TimeTravel.Internal.Parser.Formatter as Formatter
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
 
@@ -14,6 +15,8 @@ import Basics.Extra exposing (never)
 import Json.Decode as Decode exposing ((:=), Decoder)
 import Json.Encode as Encode
 
+import Diff exposing (Change, diffLines)
+
 type alias HistoryItem model msg data =
   { id : Id
   , msg : MsgLike msg data
@@ -21,7 +24,9 @@ type alias HistoryItem model msg data =
   , model : model
   , lazyMsgAst : Maybe (Result String ASTX)
   , lazyModelAst : Maybe (Result String ASTX)
+  , lazyDiff : Maybe (List (Change String))
   }
+
 
 type alias Model model msg data =
   { future : List (HistoryItem model msg data)
@@ -36,6 +41,7 @@ type alias Model model msg data =
   , fixedToLeft : Bool
   , expandedTree : Set AST.ASTId
   , minimized : Bool
+  , modelFilter : String
   }
 
 type alias Id = Int
@@ -70,6 +76,8 @@ type Msg
   | ToggleModelDetail Bool
   | ToggleModelTree AST.ASTId
   | ToggleMinimize
+  | InputModelFilter String
+  | SelectModelFilter String
 
 
 init : model -> Model model msg data
@@ -78,7 +86,7 @@ init model =
   , history = Nel (initItem model) []
   , filter = []
   , sync = True
-  , showModelDetail = False
+  , showModelDetail = True
   , expand = False
   , msgId = 1
   , selectedMsg = Nothing
@@ -86,18 +94,12 @@ init model =
   , fixedToLeft = False
   , expandedTree = Set.empty
   , minimized = False
+  , modelFilter = ""
   }
 
 
 initItem : model -> HistoryItem model msg data
-initItem model =
-  { id = 0
-  , msg = Init
-  , causedBy = Nothing
-  , model = model
-  , lazyMsgAst = Nothing
-  , lazyModelAst = Nothing
-  }
+initItem model = newItem 0 Init Nothing model
 
 
 newItem : Id -> MsgLike msg data -> Maybe Id -> model -> HistoryItem model msg data
@@ -108,6 +110,7 @@ newItem id msg causedBy model =
   , model = model
   , lazyMsgAst = Nothing
   , lazyModelAst = Nothing
+  , lazyDiff = Nothing
   }
 
 
@@ -215,6 +218,8 @@ futureToHistory model =
   , history = Nel.concat model.future model.history
   }
 
+
+-- TODO better not use for performance
 mapHistory :
      (HistoryItem model msg data -> HistoryItem model msg data)
   -> Model model msg data
@@ -261,6 +266,52 @@ updateLazyAstHelp item =
       else
         item.lazyModelAst
   }
+
+
+updateLazyDiff : Model model msg data -> Model model msg data
+updateLazyDiff model =
+  if model.showModelDetail then
+    model
+  else
+    case model.selectedMsg of
+      Just id ->
+        mapHistory
+          (\item ->
+            if item.id == id then
+              updateLazyDiffHelp model item
+            else
+              item
+          )
+          model
+      _ ->
+        model
+
+
+updateLazyDiffHelp : Model model msg data -> HistoryItem model msg data -> HistoryItem model msg data
+updateLazyDiffHelp model item =
+  let
+    newDiff =
+      case item.lazyDiff of
+        Just changes ->
+          Just changes
+        Nothing ->
+          case selectedAndOldAst model of
+            Just (oldAst, newAst) ->
+              Just (makeChanges oldAst newAst)
+            Nothing ->
+              Nothing
+  in
+    { item | lazyDiff = newDiff }
+
+
+makeChanges : ASTX -> ASTX -> List (Change String)
+makeChanges oldAst newAst =
+  if oldAst == newAst then -- strangily, its faster if they are equal
+    []
+  else
+    diffLines
+      (Formatter.formatAsString (Formatter.makeModel oldAst))
+      (Formatter.formatAsString (Formatter.makeModel newAst))
 
 
 selectedMsgAst : Model model msg data -> Maybe ASTX
