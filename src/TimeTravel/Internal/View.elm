@@ -184,6 +184,7 @@ msgView filterOptions selectedMsg { id, msg, causedBy } =
           div
           [ style (S.msgView selected)
           , onClick (SelectMsg id)
+          , title (toString id ++ ": " ++ str)
           ]
           [ text (toString id ++ ": " ++ str) ]
       )
