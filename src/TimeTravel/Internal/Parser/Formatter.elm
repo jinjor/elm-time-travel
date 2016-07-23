@@ -9,6 +9,8 @@ import Html.Events exposing (..)
 import TimeTravel.Internal.Styles as S
 import TimeTravel.Internal.Parser.AST as AST exposing (..)
 
+import InlineHover exposing (hover)
+
 
 type alias Context =
   { nest : Int
@@ -17,8 +19,11 @@ type alias Context =
   }
 
 
-type FormatModel =
-  Plain String | Listed (List FormatModel) | Long AST.ASTId String (List FormatModel)
+type FormatModel
+  = Plain String
+  | Link AST.ASTId String
+  | Listed (List FormatModel)
+  | Long AST.ASTId String (List FormatModel)
 
 
 makeModel : ASTX -> FormatModel
@@ -37,7 +42,8 @@ makeModelWithContext c ast =
         str = formatAsString s
       in
         Listed <|
-        Plain (key ++ " = ") ::
+          (Link id key) ::
+          Plain " = " ::
           ( if String.contains "\n" str || String.length (key ++ " = " ++ str) > c.wordsLimit then -- TODO not correct
               [ Plain ("\n" ++ indent { c | nest = c.nest + 1 }), s ]
             else [s]
@@ -113,28 +119,30 @@ formatAsString : FormatModel -> String
 formatAsString model =
   formatHelp
     identity
+    (\_ s -> s)
     (String.join "" << List.map formatAsString)
     (\_ _ children -> String.join "" <| List.map formatAsString children)
     model
 
 
-formatAsHtml : (AST.ASTId -> msg) -> Set AST.ASTId -> FormatModel -> List (Html msg)
-formatAsHtml transformMsg expandedTree model =
+formatAsHtml : (AST.ASTId -> msg) -> (AST.ASTId -> msg) -> Set AST.ASTId -> FormatModel -> List (Html msg)
+formatAsHtml selectFilterMsg toggleMsg expandedTree model =
   formatHelp
     formatPlainAsHtml
-    (\list -> List.concatMap (formatAsHtml transformMsg expandedTree) list)
+    (formatLinkAsHtml selectFilterMsg)
+    (\list -> List.concatMap (formatAsHtml selectFilterMsg toggleMsg expandedTree) list)
     (\id alt children ->
       if Set.member id expandedTree then
         span
           [ style S.modelDetailFlagmentToggleExpand
-          , onClick (transformMsg id)
+          , onClick (toggleMsg id)
           ]
           [ text " - " ]
-        :: List.concatMap (formatAsHtml transformMsg expandedTree) children
+        :: List.concatMap (formatAsHtml selectFilterMsg toggleMsg expandedTree) children
       else
         [ span
             [ style S.modelDetailFlagmentToggle
-            , onClick (transformMsg id)
+            , onClick (toggleMsg id)
             ]
             [ text alt ]
         ]
@@ -144,16 +152,37 @@ formatAsHtml transformMsg expandedTree model =
 formatPlainAsHtml : String -> List (Html msg)
 formatPlainAsHtml s =
    [ span
-     ([ style S.modelDetailFlagment ] ++ if String.startsWith "\"" s then [title s] else [])
+     ( [ style S.modelDetailFlagment ] ++
+       if String.startsWith "\"" s then [ title s ] else []
+      )
      [ text s ]
    ]
 
 
-formatHelp : (String -> a) -> (List FormatModel -> a) -> (AST.ASTId -> String -> List FormatModel -> a) -> FormatModel -> a
-formatHelp formatPlain formatListed formatLong model =
+formatLinkAsHtml : (AST.ASTId -> msg) -> AST.ASTId -> String -> List (Html msg)
+formatLinkAsHtml selectFilterMsg id s =
+   [ hover
+       S.modelDetailFlagmentLinkHover
+       span
+       [ style S.modelDetailFlagmentLink
+       , onClick (selectFilterMsg id)
+       ]
+       [ text s ]
+   ]
+
+
+formatHelp
+   : (String -> a)
+  -> (AST.ASTId -> String -> a)
+  -> (List FormatModel -> a)
+  -> (AST.ASTId -> String -> List FormatModel -> a)
+  -> FormatModel -> a
+formatHelp formatPlain formatLink formatListed formatLong model =
   case model of
     Plain s ->
       formatPlain s
+    Link id s ->
+      formatLink id s
     Listed list ->
       formatListed list
     Long id alt s ->

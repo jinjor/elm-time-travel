@@ -4,6 +4,11 @@ module TimeTravel.Internal.Styles exposing (..)
 zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
 
 
+textLinkHover : List (String, String)
+textLinkHover =
+  [ ("text-decoration", "underline") ]
+
+
 button : List (String, String)
 button =
   [ ("padding", "10px")
@@ -134,7 +139,7 @@ modelDetailTreeEachId =
 
 modelDetailTreeEachIdHover : List (String, String)
 modelDetailTreeEachIdHover =
-  [ ("text-decoration", "underline") ]
+  textLinkHover
 
 
 modelDetailTreeEach : List (String, String)
@@ -161,6 +166,16 @@ modelDetailFlagment =
   [ ("white-space", "pre")
   , ("display", "inline")
   ]
+
+
+modelDetailFlagmentLink : List (String, String)
+modelDetailFlagmentLink =
+  [("cursor", "pointer")] ++ modelDetailFlagment
+
+
+modelDetailFlagmentLinkHover : List (String, String)
+modelDetailFlagmentLinkHover =
+  textLinkHover
 
 
 modelDetailFlagmentToggle : List (String, String)

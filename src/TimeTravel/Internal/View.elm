@@ -150,7 +150,7 @@ modelDetailTreeEach expandedTree modelFilter (id, ast) =
   div
     [ style S.modelDetailTreeEach ]
     ( modelDetailTreeEachId modelFilter id ::
-      Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
+      Formatter.formatAsHtml SelectModelFilter ToggleModelTree expandedTree (Formatter.makeModel ast)
     )
 
 
