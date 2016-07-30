@@ -79,6 +79,7 @@ type Msg
   | InputModelFilter String
   | SelectModelFilter AST.ASTId
   | SelectModelFilterWatch AST.ASTId
+  | StopWatching
 
 
 init : model -> Model model msg data
@@ -271,9 +272,9 @@ updateLazyMsgAst item =
       if item.lazyMsgAst == Nothing then
         case item.msg of
           Message msg ->
-            Just (Result.map (AST.attachId "") <| Parser.parse (toString msg))
+            Just (Result.map (AST.attachId "@") <| Parser.parse (toString msg))
           UrlData data ->
-            Just (Result.map (AST.attachId "") <| Parser.parse (toString data))
+            Just (Result.map (AST.attachId "@") <| Parser.parse (toString data))
           _ ->
             Just (Err "")
       else
@@ -286,7 +287,7 @@ updateLazyModelAst item =
   { item |
     lazyModelAst =
       if item.lazyModelAst == Nothing then
-        Just (Result.map (AST.attachId "") <| Parser.parse (toString item.model))
+        Just (Result.map (AST.attachId "@") <| Parser.parse (toString item.model))
       else
         item.lazyModelAst
   }

@@ -4,6 +4,9 @@ module TimeTravel.Internal.Styles exposing (..)
 zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
 
 
+darkTextColor = "#999"
+
+
 textLinkHover : List (String, String)
 textLinkHover =
   [ ("text-decoration", "underline") ]
@@ -132,7 +135,7 @@ modelFilterInput =
 
 modelDetailTreeEachId : List (String, String)
 modelDetailTreeEachId =
-  [ ("color", "#999")
+  [ ("color", darkTextColor)
   , ("cursor", "pointer")
   ]
 
@@ -207,7 +210,28 @@ modelDetailFlagmentToggleExpand =
 
 watchView : List (String, String)
 watchView =
-  panel True ++ panelBorder
+  [ ("position", "relative")
+  ] ++ panel True ++ panelBorder
+
+
+watchViewHeader : List (String, String)
+watchViewHeader =
+  [ ("color", darkTextColor)
+  ]
+
+
+stopWatchingButton : List (String, String)
+stopWatchingButton =
+  [ ("position", "absolute")
+  , ("right", "20px")
+  , ("top", "20px")
+  , ("cursor", "pointer")
+  ]
+
+
+stopWatchingButtonHover : List (String, String)
+stopWatchingButtonHover =
+  [ ("opacity", "0.5") ]
 
 
 msgListView : List (String, String)

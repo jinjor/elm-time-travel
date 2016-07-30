@@ -119,6 +119,11 @@ update save message model =
         |> updateLazyAstForWatch
       ) ! []
 
+    StopWatching ->
+      { model |
+        watch = Nothing
+      } ! []
+
 
 toggleSet : comparable -> Set comparable -> Set comparable
 toggleSet a set =

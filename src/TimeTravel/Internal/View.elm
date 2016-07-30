@@ -124,6 +124,14 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
         filterInput =
           modelFilterInput modelFilter
 
+        filteredAst =
+          if String.startsWith "@" modelFilter then
+            case AST.filterByExactId modelFilter ast of
+              Just x -> [(modelFilter, x)]
+              Nothing -> []
+          else
+            AST.filterById modelFilter ast
+
         trees =
           List.map
             (\(id, ast) ->
@@ -132,7 +140,8 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
                   (if modelFilter /= "" then Just id else Nothing)
                   ast
             )
-            (AST.filterById modelFilter ast)
+            filteredAst
+
       in
         div [ style (S.modelDetailView fixedToLeft) ] (filterInput :: trees)
 
@@ -183,7 +192,7 @@ modelDetailTreeEachId id =
         [ style S.modelDetailTreeEachId
         , onClick (SelectModelFilter id)
         ]
-        [ text ("@" ++ id)
+        [ text id
         ]
 
     watchLink =
@@ -229,11 +238,21 @@ watchView model =
 
             Nothing ->
               text ""
+
+        stopWatchingButton =
+          hover
+            S.stopWatchingButtonHover
+            div
+            [ style S.stopWatchingButton
+            , onClick StopWatching
+            ]
+            [ I.stopWatching ]
       in
         div
           [ style S.watchView ]
-          [ div [] [ text ("Watching " ++ id) ]
+          [ div [ style S.watchViewHeader ] [ text ("Watching " ++ id) ]
           , treeView
+          , stopWatchingButton
           ]
 
     _ ->

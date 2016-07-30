@@ -1,12 +1,13 @@
 module TimeTravel.Internal.Icons exposing (..)
 
 import Material.Icons.Content exposing (filter_list, content_copy, remove, add)
-import Material.Icons.Navigation exposing (arrow_drop_down, arrow_drop_up)
+import Material.Icons.Navigation exposing (arrow_drop_down, arrow_drop_up, close)
 import Material.Icons.Av exposing (play_arrow, pause)
 import Material.Icons.Action exposing (swap_horiz)
 
 import Svg exposing (Svg)
 import Color
+
 
 sync : Bool -> Svg msg
 sync synchronized =
@@ -36,3 +37,8 @@ toggleModelDetail =
 minimize : Bool -> Svg msg
 minimize minimized =
   (if minimized then add else remove) Color.white 24
+
+
+stopWatching : Svg msg
+stopWatching =
+  close Color.gray 14
