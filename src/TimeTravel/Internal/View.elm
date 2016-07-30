@@ -56,6 +56,7 @@ normalDebugView model =
             model.filter
             model.selectedMsg
             (Nel.toList model.history)
+            (watchView model)
             (detailView model)
         ]
     ]
@@ -125,7 +126,12 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
 
         trees =
           List.map
-            (modelDetailTreeEach expandedTree modelFilter)
+            (\(id, ast) ->
+                modelDetailTreeEach
+                  expandedTree
+                  (if modelFilter /= "" then Just id else Nothing)
+                  ast
+            )
             (AST.filterById modelFilter ast)
       in
         div [ style (S.modelDetailView fixedToLeft) ] (filterInput :: trees)
@@ -145,37 +151,93 @@ modelFilterInput modelFilter =
     []
 
 
-modelDetailTreeEach : Set AST.ASTId -> String -> (String, ASTX) -> Html Msg
-modelDetailTreeEach expandedTree modelFilter (id, ast) =
-  div
-    [ style S.modelDetailTreeEach ]
-    ( modelDetailTreeEachId modelFilter id ::
-      Formatter.formatAsHtml SelectModelFilter ToggleModelTree expandedTree (Formatter.makeModel ast)
-    )
+modelDetailTreeEach : Set AST.ASTId -> Maybe String -> ASTX -> Html Msg
+modelDetailTreeEach expandedTree maybeId ast =
+  let
+    idView =
+      case maybeId of
+        Just id ->
+          modelDetailTreeEachId id
+
+        _ ->
+          text ""
+  in
+    div
+      [ style S.modelDetailTreeEach ]
+      ( idView ::
+        Formatter.formatAsHtml
+          SelectModelFilter
+          ToggleModelTree
+          expandedTree
+          (Formatter.makeModel ast)
+      )
 
 
-modelDetailTreeEachId : String -> String -> Html Msg
-modelDetailTreeEachId modelFilter id =
-  if modelFilter == "" then
-    text ""
-  else
-    hover
-      S.modelDetailTreeEachIdHover
-      div
-      [ style S.modelDetailTreeEachId
-      , onClick (SelectModelFilter id)
+modelDetailTreeEachId : String -> Html Msg
+modelDetailTreeEachId id =
+  let
+    filterLink =
+      hover
+        S.modelDetailTreeEachIdHover
+        span
+        [ style S.modelDetailTreeEachId
+        , onClick (SelectModelFilter id)
+        ]
+        [ text ("@" ++ id)
+        ]
+
+    watchLink =
+      hover
+        S.modelDetailTreeEachIdWatchHover
+        span
+        [ style S.modelDetailTreeEachIdWatch
+        , onClick (SelectModelFilterWatch id)
+        ]
+        [ text "watch"
+        ]
+  in
+    div
+      []
+      [ filterLink
+      , span [ style S.modelDetailTreeEachIdWatch ] [ text " (" ]
+      , watchLink
+      , span [ style S.modelDetailTreeEachIdWatch ] [ text ")" ]
       ]
-      [ text ("@" ++ id) ]
 
 
-msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
-msgListView filterOptions selectedMsg items detailView =
-  div []
-  [ detailView
-  , Keyed.node "div"
-      [ style S.msgListView ]
-      ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
-  ]
+msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg -> Html Msg
+msgListView filterOptions selectedMsg items detailView watchView =
+  div
+    []
+    [ detailView
+    , watchView
+    , Keyed.node "div"
+        [ style S.msgListView ]
+        ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
+    ]
+
+
+watchView : Model model msg data -> Html Msg
+watchView model =
+  case (model.watch, (Nel.head model.history).lazyModelAst) of
+    (Just id, Just (Ok ast)) ->
+      let
+        treeView =
+          case AST.filterByExactId id ast of
+            Just ast ->
+              modelDetailTreeEach model.expandedTree Nothing ast
+
+            Nothing ->
+              text ""
+      in
+        div
+          [ style S.watchView ]
+          [ div [] [ text ("Watching " ++ id) ]
+          , treeView
+          ]
+
+    _ ->
+      text ""
 
 
 msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (String, Html Msg)

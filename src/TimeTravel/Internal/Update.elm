@@ -108,8 +108,16 @@ update save message model =
     InputModelFilter s ->
       { model | modelFilter = s } ! []
 
-    SelectModelFilter s ->
-      { model | modelFilter = s } ! []
+    SelectModelFilter id ->
+      { model | modelFilter = id } ! []
+
+    SelectModelFilterWatch id ->
+      ( { model |
+          modelFilter = id
+        , watch = Just id
+        }
+        |> updateLazyAstForWatch
+      ) ! []
 
 
 toggleSet : comparable -> Set comparable -> Set comparable

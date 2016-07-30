@@ -142,6 +142,16 @@ modelDetailTreeEachIdHover =
   textLinkHover
 
 
+modelDetailTreeEachIdWatch : List (String, String)
+modelDetailTreeEachIdWatch =
+  modelDetailTreeEachId
+
+
+modelDetailTreeEachIdWatchHover : List (String, String)
+modelDetailTreeEachIdWatchHover =
+  modelDetailTreeEachIdHover
+
+
 modelDetailTreeEach : List (String, String)
 modelDetailTreeEach =
   [ ("margin-bottom", "20px") ]
@@ -193,6 +203,11 @@ modelDetailFlagmentToggleExpand =
   , ("left", "-16px")
   , ("margin-right", "-14px")
   ] ++ modelDetailFlagmentToggle
+
+
+watchView : List (String, String)
+watchView =
+  panel True ++ panelBorder
 
 
 msgListView : List (String, String)

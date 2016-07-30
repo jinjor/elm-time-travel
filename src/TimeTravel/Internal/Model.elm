@@ -42,13 +42,13 @@ type alias Model model msg data =
   , expandedTree : Set AST.ASTId
   , minimized : Bool
   , modelFilter : String
+  , watch : Maybe AST.ASTId
   }
 
 type alias Id = Int
 
 type alias FilterOptions =
   List (String, Bool)
-
 
 type alias Settings =
   { fixedToLeft : Bool
@@ -77,7 +77,8 @@ type Msg
   | ToggleModelTree AST.ASTId
   | ToggleMinimize
   | InputModelFilter String
-  | SelectModelFilter String
+  | SelectModelFilter AST.ASTId
+  | SelectModelFilterWatch AST.ASTId
 
 
 init : model -> Model model msg data
@@ -95,6 +96,7 @@ init model =
   , expandedTree = Set.empty
   , minimized = False
   , modelFilter = ""
+  , watch = Nothing
   }
 
 
@@ -151,7 +153,7 @@ updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
             Nel.cons nextItem model.history
           else
             model.history
-      } |> selectFirstIfSync
+      } |> selectFirstIfSync |> updateLazyAstForWatch
     )
     ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd)
       ]
@@ -237,7 +239,7 @@ updateLazyAst model =
       mapHistory
         (\item ->
           if item.id == id || item.id == id - 1 then
-            updateLazyAstHelp item
+            (updateLazyMsgAst << updateLazyModelAst) item
           else
             item
         )
@@ -246,8 +248,24 @@ updateLazyAst model =
       model
 
 
-updateLazyAstHelp : HistoryItem model msg data -> HistoryItem model msg data
-updateLazyAstHelp item =
+updateLazyAstForWatch : Model model msg data -> Model model msg data
+updateLazyAstForWatch model =
+  case (model.watch, (Nel.head model.history).id) of
+    (Just _, id) ->
+      mapHistory
+        (\item ->
+          if item.id == id then
+            updateLazyModelAst item
+          else
+            item
+        )
+        model
+    _ ->
+      model
+
+
+updateLazyMsgAst : HistoryItem model msg data -> HistoryItem model msg data
+updateLazyMsgAst item =
   { item |
     lazyMsgAst =
       if item.lazyMsgAst == Nothing then
@@ -260,7 +278,13 @@ updateLazyAstHelp item =
             Just (Err "")
       else
         item.lazyMsgAst
-  , lazyModelAst =
+  }
+
+
+updateLazyModelAst : HistoryItem model msg data -> HistoryItem model msg data
+updateLazyModelAst item =
+  { item |
+    lazyModelAst =
       if item.lazyModelAst == Nothing then
         Just (Result.map (AST.attachId "") <| Parser.parse (toString item.model))
       else

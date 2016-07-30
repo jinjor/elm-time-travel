@@ -120,3 +120,74 @@ filterById s ast =
 match : String -> String -> Bool
 match s id =
   String.contains (String.toLower s) (String.toLower id)
+
+
+filterByExactId : String -> ASTX -> Maybe ASTX
+filterByExactId s ast =
+  case ast of
+    RecordX id children ->
+      if s == id then
+        Just ast
+      else if String.length s < String.length id then
+        Nothing
+      else
+        filterByExactIdForList s children
+
+    StringLiteralX id v ->
+      if s == id then
+        Just ast
+      else
+        Nothing
+
+    ListLiteralX id children ->
+      if s == id then
+        Just ast
+      else if String.length s < String.length id then
+        Nothing
+      else
+        filterByExactIdForList s children
+
+    TupleLiteralX id children ->
+      if s == id then
+        Just ast
+      else if String.length s < String.length id then
+        Nothing
+      else
+        filterByExactIdForList s children
+
+    ValueX id v ->
+      if s == id then
+        Just ast
+      else
+        Nothing
+
+    UnionX id tag children ->
+      if s == id then
+        Just ast
+      else if String.length s < String.length id then
+        Nothing
+      else
+        filterByExactIdForList s children
+
+    PropertyX id key value ->
+      if s == id then
+        Just ast
+      else if String.length s < String.length id then
+        Nothing
+      else
+        filterByExactId s value
+
+
+filterByExactIdForList : String -> List ASTX -> Maybe ASTX
+filterByExactIdForList s list =
+  case list of
+    [] ->
+      Nothing
+
+    ast :: tail ->
+      case filterByExactId s ast of
+        Nothing ->
+          filterByExactIdForList s tail
+
+        found ->
+          found
