@@ -215,7 +215,7 @@ modelDetailTreeEachId id =
 
 
 msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg -> Html Msg
-msgListView filterOptions selectedMsg items detailView watchView =
+msgListView filterOptions selectedMsg items watchView detailView =
   div
     []
     [ detailView
