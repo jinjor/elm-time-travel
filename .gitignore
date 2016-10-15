@@ -10,3 +10,5 @@ test/tests.js
 test/perf.js
 
 dep-check.html
+
+node_modules

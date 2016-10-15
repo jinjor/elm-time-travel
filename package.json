@@ -1,0 +1,26 @@
+{
+  "name": "elm-time-travel",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://travis-ci.org/jinjor/elm-time-travel.svg)](https://travis-ci.org/jinjor/elm-time-travel)",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jinjor/elm-time-travel.git"
+  },
+  "author": "Yosuke Torii <jinjorweb@gmail.com> (https://github.com/jinjor)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jinjor/elm-time-travel/issues"
+  },
+  "homepage": "https://github.com/jinjor/elm-time-travel",
+  "dependencies": {
+    "argv": "0.0.2",
+    "fs-extra": "^0.30.0"
+  }
+}
