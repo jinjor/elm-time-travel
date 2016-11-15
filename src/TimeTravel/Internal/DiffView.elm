@@ -8,7 +8,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Diff exposing (..)
-import String
+
 
 type Line = Normal String | Delete String | Add String | Omit
 
@@ -26,10 +26,13 @@ view changes =
         case line of
           Normal s ->
             normalLine s
+
           Delete s ->
             deletedLine s
+
           Add s ->
             addedLine s
+
           Omit ->
             omittedLine
         ) (reduceLines changes)
@@ -43,13 +46,16 @@ reduceLines : List (Change String) -> List Line
 reduceLines list =
   let
     additionalLines = 2
+
     (tmp, result) =
       List.foldr (\line (tmp, result) ->
         case line of
           NoChange s ->
             ((Normal s) :: tmp, result)
+
           Removed s ->
             tmpToResult additionalLines (Delete s) tmp result
+
           Added s ->
             tmpToResult additionalLines (Add s) tmp result
         ) ([], []) list

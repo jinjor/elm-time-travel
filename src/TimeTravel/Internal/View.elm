@@ -14,9 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Keyed as Keyed
-import Html.App as App
 
-import String
 import Set exposing (Set)
 import InlineHover exposing (hover)
 

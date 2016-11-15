@@ -23,13 +23,13 @@ addChildAt : (a -> Bool) -> a -> RTree a -> RTree a
 addChildAt f new tree =
   let
     (Node a list) = tree
-    (Node a' list') =
+    (Node a_ list_) =
       if f a then
         addChild new tree
       else
         tree
   in
-    Node a' (List.map (addChildAt f new) list')
+    Node a_ (List.map (addChildAt f new) list_)
 
 
 sortEachBranchBy : (a -> comparable) -> RTree a -> RTree a

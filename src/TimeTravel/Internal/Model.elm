@@ -1,6 +1,5 @@
 module TimeTravel.Internal.Model exposing (..)
 
-import String
 import Set exposing (Set)
 
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
@@ -9,8 +8,6 @@ import TimeTravel.Internal.Parser.Parser as Parser
 import TimeTravel.Internal.Parser.Formatter as Formatter
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
-
-import Basics.Extra exposing (never)
 
 import Json.Decode as Decode exposing ((:=), Decoder)
 import Json.Encode as Encode
@@ -273,8 +270,10 @@ updateLazyMsgAst item =
         case item.msg of
           Message msg ->
             Just (Result.map (AST.attachId "@") <| Parser.parse (toString msg))
+
           UrlData data ->
             Just (Result.map (AST.attachId "@") <| Parser.parse (toString data))
+
           _ ->
             Just (Err "")
       else
@@ -308,6 +307,7 @@ updateLazyDiff model =
               item
           )
           model
+
       _ ->
         model
 
@@ -319,10 +319,12 @@ updateLazyDiffHelp model item =
       case item.lazyDiff of
         Just changes ->
           Just changes
+
         Nothing ->
           case selectedAndOldAst model of
             Just (oldAst, newAst) ->
               Just (makeChanges oldAst newAst)
+
             Nothing ->
               Nothing
   in
@@ -346,8 +348,10 @@ selectedMsgAst model =
       case Nel.findMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
         Just (Just (Ok ast)) ->
           Just ast
+
         _ ->
           Nothing
+
     _ ->
       Nothing
 
@@ -419,6 +423,7 @@ msgRootOf id history =
       case item.causedBy of
         Just id -> msgRootOf id history
         Nothing -> Just item
+
     Nothing ->
       Nothing
 
@@ -447,7 +452,13 @@ encodeSetting settings =
 
 saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
 saveSetting save model =
-  Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+  Cmd.map
+    never
+    ( save <|
+        { type_ = "save"
+        , settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter }
+        }
+    )
 
 
 decodeSettings : String -> Result String Settings

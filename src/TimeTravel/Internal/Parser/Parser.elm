@@ -4,86 +4,91 @@ module TimeTravel.Internal.Parser.Parser exposing (..)
 import Char
 import Combine exposing (..)
 import Combine.Num exposing (int, float)
-import String
 import TimeTravel.Internal.Parser.AST exposing (..)
 import TimeTravel.Internal.Parser.Util exposing (..)
 
 
 parse : String -> Result String AST
-parse s = Result.formatError (String.join ",") (fst <| Combine.parse (spaced expression) s)
+parse s =
+  case Combine.parse (spaced expression) s of
+    Ok (_, _, ast) ->
+      Ok ast
+
+    Err (_, _, errors) ->
+      Err (String.join "," errors)
 
 
 ----
 
-expression : Parser AST
+expression : Parser s AST
 expression =
-  rec (\_ ->
-    union `or`
+  lazy (\_ ->
+    union <|>
     expressionWithoutUnion
   )
 
 
-expressionWithoutUnion : Parser AST
+expressionWithoutUnion : Parser s AST
 expressionWithoutUnion =
-  rec (\_ ->
-    record `or`
-    listLiteral `or`
-    tupleLiteral `or`
-    internalStructure `or`
-    stringLiteral `or`
-    numberLiteral `or`
+  lazy (\_ ->
+    record <|>
+    listLiteral <|>
+    tupleLiteral <|>
+    internalStructure <|>
+    stringLiteral <|>
+    numberLiteral <|>
     null
   )
 
 
-stringLiteral : Parser AST
+stringLiteral : Parser s AST
 stringLiteral =
   map StringLiteral <|
     between (string "\"") (string "\"") (regex """(\\\\"|[^"])*""")
 
 
-numberLiteral : Parser AST
+numberLiteral : Parser s AST
 numberLiteral =
   map Value (regex "(\\-)?[0-9][0-9.]*")
 
 
-internalStructure : Parser AST
+internalStructure : Parser s AST
 internalStructure =
   map Value (regex "<[^>]*>")
 
 
-null : Parser AST
+null : Parser s AST
 null =
   map Value (regex "[a-z]+")
 
 
-tupleLiteral : Parser AST
+tupleLiteral : Parser s AST
 tupleLiteral =
-  rec (\_ ->
+  lazy (\_ ->
   map TupleLiteral <| parens items
   )
 
 
-listLiteral : Parser AST
+listLiteral : Parser s AST
 listLiteral =
-  rec (\_ ->
+  lazy (\_ ->
   map ListLiteral <| brackets items
   )
 
 
-items : Parser (List AST)
+items : Parser s (List AST)
 items =
-  rec (\_ ->
+  lazy (\_ ->
   spaced (sepBy comma (spaced expression))
   )
 
 
-union : Parser AST
+union : Parser s AST
 union =
-  rec (\_ ->
+  lazy (\_ ->
   (\tag tail -> Union tag tail)
-  `map` tag
-  `andMap` many unionParam
+  <$> tag
+  <*> many unionParam
   )
 
 
@@ -101,55 +106,55 @@ union =
 --   )
 
 
-singleUnion : Parser AST
+singleUnion : Parser s AST
 singleUnion =
-  rec (\_ ->
+  lazy (\_ ->
     map (\tag -> Union tag []) tag
   )
 
 
-unionParam : Parser AST
+unionParam : Parser s AST
 unionParam =
-  rec (\_ ->
+  lazy (\_ ->
   (\_ exp  -> exp)
-  `map` spaces
-  `andMap` (singleUnion `or` expressionWithoutUnion)
+  <$> spaces
+  <*> (singleUnion <|> expressionWithoutUnion)
   )
 
 
-tag : Parser String
+tag : Parser s String
 tag =
   regex "[A-Z][a-zA-Z0-9_.]*"
 
 
-record : Parser AST
+record : Parser s AST
 record =
-  rec (\_ ->
+  lazy (\_ ->
   map Record <| braces properties
   )
 
 
-properties : Parser (List AST)
+properties : Parser s (List AST)
 properties =
-  rec (\_ ->
+  lazy (\_ ->
   spaced (sepBy comma property)
   )
 
 
-propertyKey : Parser String
+propertyKey : Parser s String
 propertyKey =
   regex "[^ ]+"
 
 
-property : Parser AST
+property : Parser s AST
 property =
-  rec (\_ ->
+  lazy (\_ ->
   (\_ key _ _ _ value _ -> Property key value)
-  `map` spaces
-  `andMap` propertyKey
-  `andMap` spaces
-  `andMap` equal
-  `andMap` spaces
-  `andMap` expression
-  `andMap` spaces
+  <$> spaces
+  <*> propertyKey
+  <*> spaces
+  <*> equal
+  <*> spaces
+  <*> expression
+  <*> spaces
   )

@@ -11,7 +11,6 @@ import Html.Events exposing (..)
 
 import Diff exposing (..)
 
-import String
 import InlineHover exposing (hover)
 
 

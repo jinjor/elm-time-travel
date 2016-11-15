@@ -41,7 +41,7 @@ program :
      , view : model -> Html msg
      , subscriptions : model -> Sub msg
      }
-  -> Program Never
+  -> Program Never (Model model msg data) (Msg msg)
 program parser { init, view, update, subscriptions, urlUpdate } =
   programWithFlags parser
     { init = \flags data -> init data
@@ -62,7 +62,7 @@ programWithFlags :
      , view : model -> Html msg
      , subscriptions : model -> Sub msg
      }
-  -> Program flags
+  -> Program flags (Model model msg data) (Msg msg)
 programWithFlags parser options =
   Navigation.programWithFlags parser (wrap options)
 
@@ -73,34 +73,39 @@ wrap { init, view, update, subscriptions, urlUpdate } =
     -- TODO save settings and refactor
     outgoingMsg = always Cmd.none
 
-    init' flags data =
+    init_ flags data =
       let
         (model, cmd) = init flags data
       in
         Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
-    update' msg model =
+
+    update_ msg model =
       case msg of
         UserMsg msgWithId ->
           updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
+
         DebuggerMsg msg ->
           let
             (m, c) =
               Update.update outgoingMsg msg model
           in
             m ! [ Cmd.map DebuggerMsg c ]
-    urlUpdate' data model =
+
+    urlUpdate_ data model =
       urlUpdateOnIncomingData (\(id, msg) -> UserMsg (Just id, msg)) urlUpdate data model
-    view' model =
+
+    view_ model =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
-    subscriptions' model =
+
+    subscriptions_ model =
       let
         item = Nel.head model.history
       in
         Sub.map (\c -> UserMsg (Nothing, c)) (subscriptions item.model)
   in
-    { init = init'
-    , update = update'
-    , view = view'
-    , subscriptions = subscriptions'
-    , urlUpdate = urlUpdate'
+    { init = init_
+    , update = update_
+    , view = view_
+    , subscriptions = subscriptions_
+    , urlUpdate = urlUpdate_
     }

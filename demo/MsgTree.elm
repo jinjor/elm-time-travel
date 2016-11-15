@@ -1,14 +1,13 @@
 port module Main exposing (..)
 
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import Json.Decode as Json
 import Task
 
-import TimeTravel.Html.App as TimeTravel
+import TimeTravel.Html as TimeTravel
 
 import Dict exposing (Dict)
 import Process
@@ -163,6 +162,7 @@ memberItemView : String -> Html Msg
 memberItemView name =
   div [] [ text name ]
 
+
 memberDetailView : Model -> Html Msg
 memberDetailView model =
   case model.selectedMember of
@@ -175,8 +175,10 @@ memberDetailView model =
             , div [] [ text member.tel ]
             , div [] [ text member.mail ]
             ]
+
         Nothing ->
           text ""
+
     Nothing ->
       text ""
 
@@ -194,9 +196,9 @@ subscriptions model =
 
 dummyHttp : Int -> Msg -> Cmd Msg
 dummyHttp sleepTime msg =
-  Task.perform (always <| Error "UnExpected Error") identity <|
-    Process.sleep (toFloat sleepTime) `Task.andThen` \_ ->
-    Task.succeed msg
+  Task.perform
+    (\_ -> msg)
+    (Process.sleep (toFloat sleepTime))
 
 
 getUser : Cmd Msg

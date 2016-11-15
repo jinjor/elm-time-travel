@@ -1,6 +1,5 @@
 module TimeTravel.Internal.Parser.AST exposing (..)
 
-import String
 
 type AST
   = Record (List AST)
@@ -11,7 +10,9 @@ type AST
   | Union String (List AST)
   | Property String AST
 
+
 type alias ASTId = String
+
 
 type ASTX
   = RecordX ASTId (List ASTX)
@@ -48,15 +49,15 @@ attachId id ast =
 
     Union tag children ->
       let
-        id' = id ++ "." ++ tag
+        id_ = id ++ "." ++ tag
       in
-        UnionX id' tag (attachIdToListWithIndex id' children)
+        UnionX id_ tag (attachIdToListWithIndex id_ children)
 
     Property key value ->
       let
-        id' = id ++ "." ++ key
+        id_ = id ++ "." ++ key
       in
-        PropertyX id' key (attachId id' value)
+        PropertyX id_ key (attachId id_ value)
 
 
 attachIdToList : String -> List AST -> List ASTX

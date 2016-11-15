@@ -1,4 +1,4 @@
-module TimeTravel.Html.App exposing
+module TimeTravel.Html exposing
   ( beginnerProgram
   , program
   -- , programWithOptions
@@ -23,9 +23,6 @@ import TimeTravel.Internal.View as View
 import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
-import Html.App as App
-
-import String
 
 
 type Msg msg
@@ -52,7 +49,7 @@ beginnerProgram :
   , view : model -> Html msg
   , update : msg -> model -> model
   }
-  -> Program Never
+  -> Program Never (Model model msg data) (Msg msg)
 beginnerProgram { model, view, update } =
   programWithFlags
     { init = always (model, Cmd.none)
@@ -70,7 +67,7 @@ program :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never
+  -> Program Never (Model model msg data) (Msg msg)
 program { init, view, update, subscriptions } =
   programWithFlags
     { init = always init
@@ -90,7 +87,7 @@ programWithOptions :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never
+  -> Program Never (Model model msg data) (Msg msg)
 programWithOptions options { init, view, update, subscriptions } =
   programWithFlagsWithOptions options
     { init = always init
@@ -108,9 +105,13 @@ programWithFlags :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program flags
+  -> Program flags (Model model msg data) (Msg msg)
 programWithFlags stuff =
-  programWithFlagsWithOptions { outgoingMsg = always Cmd.none, incomingMsg = always Sub.none } stuff
+  programWithFlagsWithOptions
+    { outgoingMsg = always Cmd.none
+    , incomingMsg = always Sub.none
+    }
+    stuff
 
 
 programWithFlagsWithOptions :
@@ -125,7 +126,7 @@ programWithFlagsWithOptions :
     }
   -> Program flags
 programWithFlagsWithOptions options stuff =
-    App.programWithFlags (wrap options stuff)
+    Html.programWithFlags (wrap options stuff)
 
 
 wrap :
@@ -136,30 +137,35 @@ wrap :
   -> OptionsWithFlags flags (Model model msg data) (Msg msg)
 wrap { outgoingMsg, incomingMsg } { init, view, update, subscriptions } =
   let
-    init' flags =
+    init_ flags =
       let
         (model, cmd) = init flags
       in
         Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
-    update' msg model =
+
+    update_ msg model =
       case msg of
         UserMsg msgWithId ->
           let
             (m, c1) =
               updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
-            (m', c2) =
+
+            (m_, c2) =
               Update.updateAfterUserMsg outgoingMsg m
           in
-            m' ! [ c1, Cmd.map DebuggerMsg c2 ]
+            m_ ! [ c1, Cmd.map DebuggerMsg c2 ]
+
         DebuggerMsg msg ->
           let
             (m, c) =
               Update.update outgoingMsg msg model
           in
             m ! [ Cmd.map DebuggerMsg c ]
-    view' model =
+
+    view_ model =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
-    subscriptions' model =
+
+    subscriptions_ model =
       let
         item = Nel.head model.history
       in
@@ -169,8 +175,8 @@ wrap { outgoingMsg, incomingMsg } { init, view, update, subscriptions } =
           ]
 
   in
-    { init = init'
-    , update = update'
-    , view = view'
-    , subscriptions = subscriptions'
+    { init = init_
+    , update = update_
+    , view = view_
+    , subscriptions = subscriptions_
     }

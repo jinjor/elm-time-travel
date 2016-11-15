@@ -2,15 +2,19 @@ module TimeTravel.Internal.Parser.Util exposing (..)
 
 import Combine exposing (Parser, between, regex, string)
 
-spaced : Parser a -> Parser a
+
+spaced : Parser s a -> Parser s a
 spaced p =
   between spaces spaces p
 
-spaces : Parser String
+
+spaces : Parser s String
 spaces = regex "[ ]*"
 
-comma : Parser String
+
+comma : Parser s String
 comma = string ","
 
-equal : Parser String
+
+equal : Parser s String
 equal = string "="

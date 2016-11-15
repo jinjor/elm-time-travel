@@ -1,7 +1,6 @@
 import Html exposing (..)
 import Html.Events exposing (..)
 import Navigation
-import String
 
 import TimeTravel.Navigation as TimeTravel
 

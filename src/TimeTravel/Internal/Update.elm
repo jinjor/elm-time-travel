@@ -12,6 +12,7 @@ update save message model =
         case decodeSettings incomingMsg.settings of
           Ok { fixedToLeft, filter } ->
             { model | fixedToLeft = fixedToLeft, filter = filter } ! []
+            
           Err _ ->
             model ! [] |> Debug.log "err decoding"
       else

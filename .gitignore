@@ -4,9 +4,5 @@ elm-stuff/
 repl-temp-*
 
 index.html
-test/Benchmark2.elm
-test/Benchmark3.elm
-test/tests.js
-test/perf.js
 
 dep-check.html

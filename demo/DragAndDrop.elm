@@ -4,7 +4,7 @@ import Html.Events exposing (on)
 import Json.Decode as Json exposing ((:=))
 import Mouse exposing (Position)
 
-import TimeTravel.Html.App as TimeTravel
+import TimeTravel.Html as TimeTravel
 
 
 main =

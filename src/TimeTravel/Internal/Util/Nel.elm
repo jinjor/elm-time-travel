@@ -71,6 +71,7 @@ findMapManyHelp result n f list =
         case f h of
           Just b ->
             findMapManyHelp (b :: result) (n - 1) f t
+
           Nothing ->
             findMapManyHelp result n f t
 
