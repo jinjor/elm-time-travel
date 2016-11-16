@@ -4,7 +4,7 @@ import TimeTravel.Internal.Model exposing (..)
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
 import Set exposing (Set)
 
-update : (OutgoingMsg -> Cmd Never) -> Msg -> Model model msg data -> (Model model msg data, Cmd Msg)
+update : (OutgoingMsg -> Cmd Never) -> Msg -> Model model msg -> (Model model msg, Cmd Msg)
 update save message model =
   case message of
     Receive incomingMsg ->
@@ -12,7 +12,7 @@ update save message model =
         case decodeSettings incomingMsg.settings of
           Ok { fixedToLeft, filter } ->
             { model | fixedToLeft = fixedToLeft, filter = filter } ! []
-            
+
           Err _ ->
             model ! [] |> Debug.log "err decoding"
       else
@@ -49,10 +49,11 @@ update save message model =
           { model |
             filter =
               List.map
-                (\(name', visible) ->
-                  if name == name' then
-                    (name', not visible)
-                  else (name', visible)
+                (\(name_, visible) ->
+                  if name == name_ then
+                    (name_, not visible)
+                  else
+                    (name_, visible)
                 )
               model.filter
           }
@@ -131,6 +132,6 @@ toggleSet a set =
   (if Set.member a set then Set.remove else Set.insert) a set
 
 
-updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg data -> (Model model msg data, Cmd Msg)
+updateAfterUserMsg : (OutgoingMsg -> Cmd Never) -> Model model msg -> (Model model msg, Cmd Msg)
 updateAfterUserMsg save model =
   model ! [ saveSetting save model ]

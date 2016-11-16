@@ -5,4 +5,4 @@ before_script:
   - npm install -g elm
   - npm install -g elm-test
   - elm-package install -y
-script: elm-test
+script: elm-test --seed 345779894

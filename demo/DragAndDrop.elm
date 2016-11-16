@@ -1,7 +1,7 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on)
-import Json.Decode as Json exposing ((:=))
+import Json.Decode as Json exposing (field)
 import Mouse exposing (Position)
 
 import TimeTravel.Html as TimeTravel

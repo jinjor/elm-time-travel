@@ -1,14 +1,14 @@
 module Tests exposing (..)
 
 import Test exposing (..)
-import Expect
+import Expect exposing (Expectation)
 import Fuzz exposing (list, int, tuple, string)
 
 import Combine as RawParser exposing (..)
 import TimeTravel.Internal.Parser.AST exposing(..)
 import TimeTravel.Internal.Parser.Parser as Parser exposing(..)
 import TimeTravel.Internal.Parser.Formatter as Formatter exposing(..)
-import ElmTest exposing (..)
+
 
 isOk : Result a b -> Bool
 isOk r =
@@ -20,29 +20,46 @@ isOk r =
 testParse : String -> AST -> Expectation
 testParse s ast = Expect.equal (Ok ast) (Parser.parse s)
 
+
+mapResult : Result (ParseErr state) (ParseOk state x) -> Result String x
+mapResult result =
+  case result of
+    Ok (_, _, x) -> Ok x
+    Err _ -> Err ""
+
+
+
 testParseStringLiteral : String -> AST -> Expectation
-testParseStringLiteral s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.stringLiteral s)
+testParseStringLiteral s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.stringLiteral s)
+
 
 testParseExpression : String -> AST -> Expectation
-testParseExpression s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.expression s)
+testParseExpression s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.expression s)
+
 
 testParseUnion : String -> AST -> Expectation
-testParseUnion s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.union s)
+testParseUnion s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.union s)
+
 
 testParseRecord : String -> AST -> Expectation
-testParseRecord s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.record s)
+testParseRecord s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.record s)
+
 
 testParseList : String -> AST -> Expectation
-testParseList s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.listLiteral s)
+testParseList s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.listLiteral s)
+
 
 testParseTuple : String -> AST -> Expectation
-testParseTuple s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.tupleLiteral s)
+testParseTuple s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.tupleLiteral s)
+
 
 testParseProperty : String -> AST -> Expectation
-testParseProperty s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.property s)
+testParseProperty s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.property s)
+
 
 testParseProperties : String -> List AST -> Expectation
-testParseProperties s ast = Expect.equal (Ok ast) (Tuple.first <| RawParser.parse Parser.properties s)
+testParseProperties s ast = Expect.equal (Ok ast) (mapResult <| RawParser.parse Parser.properties s)
+
 
 testParseComplex : String -> Expectation
 testParseComplex s =

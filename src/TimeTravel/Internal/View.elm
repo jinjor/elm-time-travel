@@ -19,30 +19,31 @@ import Set exposing (Set)
 import InlineHover exposing (hover)
 
 
-view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
+view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg -> Html a
 view transformUserMsg transformDebuggerMsg userViewFunc model =
   div
     []
-    [ App.map transformUserMsg (userView userViewFunc model)
-    , App.map transformDebuggerMsg (debugView model)
+    [ Html.map transformUserMsg (userView userViewFunc model)
+    , Html.map transformDebuggerMsg (debugView model)
     ]
 
 
-userView : (model -> Html msg) -> Model model msg data -> Html msg
+userView : (model -> Html msg) -> Model model msg -> Html msg
 userView userView model =
   case selectedItem model of
     Just item ->
       userView item.model
+
     Nothing ->
       text "Error: Unable to render"
 
 
-debugView : Model model msg data -> Html Msg
+debugView : Model model msg -> Html Msg
 debugView model =
   (if model.minimized then minimizedDebugView else normalDebugView) model
 
 
-normalDebugView : Model model msg data -> Html Msg
+normalDebugView : Model model msg -> Html Msg
 normalDebugView model =
   div
     []
@@ -60,7 +61,7 @@ normalDebugView model =
     ]
 
 
-minimizedDebugView : Model model msg data -> Html Msg
+minimizedDebugView : Model model msg -> Html Msg
 minimizedDebugView model =
   buttonView ToggleMinimize (S.minimizedButton model.fixedToLeft) [ I.minimize True ]
 
@@ -95,7 +96,7 @@ filterView : Bool -> FilterOptions -> Html Msg
 filterView visible filterOptions =
   div
     [ style (S.filterView visible) ]
-    (List.map filterItemView (List.sortBy fst filterOptions))
+    (List.map filterItemView (List.sortBy Tuple.first filterOptions))
 
 
 filterItemView : (String, Bool) -> Html Msg
@@ -104,7 +105,7 @@ filterItemView (name, visible) =
     [ label
         []
         [ input
-            [ type' "checkbox"
+            [ type_ "checkbox"
             , checked visible
             , onClick (ToggleFilter name)
             ]
@@ -212,7 +213,7 @@ modelDetailTreeEachId id =
       ]
 
 
-msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg -> Html Msg
+msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg) -> Html Msg -> Html Msg -> Html Msg
 msgListView filterOptions selectedMsg items watchView detailView =
   div
     []
@@ -224,7 +225,7 @@ msgListView filterOptions selectedMsg items watchView detailView =
     ]
 
 
-watchView : Model model msg data -> Html Msg
+watchView : Model model msg -> Html Msg
 watchView model =
   case (model.watch, (Nel.head model.history).lazyModelAst) of
     (Just id, Just (Ok ast)) ->
@@ -257,7 +258,7 @@ watchView model =
       text ""
 
 
-msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (String, Html Msg)
+msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg) -> Maybe (String, Html Msg)
 msgView filterOptions selectedMsg { id, msg, causedBy } =
   let
     selected =
@@ -312,7 +313,7 @@ filterMapUntilLimitHelp result limit f list =
             filterMapUntilLimitHelp result limit f t
 
 
-detailView : Model model msg data -> Html Msg
+detailView : Model model msg -> Html Msg
 detailView model =
   if not model.sync then
     let
@@ -379,5 +380,5 @@ detailView model =
 
 
 detailTab : List (String, String) -> msg -> String -> Html msg
-detailTab style' msg name =
-  hover S.detailTabHover div [ style style', onClick msg ] [ text name ]
+detailTab styles msg name =
+  hover S.detailTabHover div [ style styles, onClick msg ] [ text name ]

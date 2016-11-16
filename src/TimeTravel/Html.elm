@@ -9,7 +9,7 @@ module TimeTravel.Html exposing
   )
 
 
-{-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)
+{-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/latest/Html)
 
 # Start your Program
 @docs beginnerProgram, program, programWithFlags
@@ -42,14 +42,14 @@ type alias OutgoingMsg = Model.OutgoingMsg
 type alias IncomingMsg = Model.IncomingMsg
 
 
-{-| See [Html.App.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram)
+{-| See [Html.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#beginnerProgram)
 -}
 beginnerProgram :
   { model : model
   , view : model -> Html msg
   , update : msg -> model -> model
   }
-  -> Program Never (Model model msg data) (Msg msg)
+  -> Program Never (Model model msg) (Msg msg)
 beginnerProgram { model, view, update } =
   programWithFlags
     { init = always (model, Cmd.none)
@@ -59,7 +59,7 @@ beginnerProgram { model, view, update } =
     }
 
 
-{-| See [Html.App.program](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#program)
+{-| See [Html.program](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#program)
 -}
 program :
   { init : (model, Cmd msg)
@@ -67,7 +67,7 @@ program :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never (Model model msg data) (Msg msg)
+  -> Program Never (Model model msg) (Msg msg)
 program { init, view, update, subscriptions } =
   programWithFlags
     { init = always init
@@ -87,7 +87,7 @@ programWithOptions :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never (Model model msg data) (Msg msg)
+  -> Program Never (Model model msg) (Msg msg)
 programWithOptions options { init, view, update, subscriptions } =
   programWithFlagsWithOptions options
     { init = always init
@@ -97,7 +97,7 @@ programWithOptions options { init, view, update, subscriptions } =
     }
 
 
-{-| See [Html.App.programWithFlags](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#programWithFlags)
+{-| See [Html.programWithFlags](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#programWithFlags)
 -}
 programWithFlags :
   { init : flags -> (model, Cmd msg)
@@ -105,7 +105,7 @@ programWithFlags :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program flags (Model model msg data) (Msg msg)
+  -> Program flags (Model model msg) (Msg msg)
 programWithFlags stuff =
   programWithFlagsWithOptions
     { outgoingMsg = always Cmd.none
@@ -124,7 +124,7 @@ programWithFlagsWithOptions :
     , update : msg -> model -> (model, Cmd msg)
     , subscriptions : model -> Sub msg
     }
-  -> Program flags
+  -> Program flags (Model model msg) (Msg msg)
 programWithFlagsWithOptions options stuff =
     Html.programWithFlags (wrap options stuff)
 
@@ -134,7 +134,7 @@ wrap :
   , incomingMsg : (IncomingMsg -> (Msg msg)) -> Sub (Msg msg)
   }
   -> OptionsWithFlags flags model msg
-  -> OptionsWithFlags flags (Model model msg data) (Msg msg)
+  -> OptionsWithFlags flags (Model model msg) (Msg msg)
 wrap { outgoingMsg, incomingMsg } { init, view, update, subscriptions } =
   let
     init_ flags =

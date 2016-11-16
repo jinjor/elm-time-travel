@@ -1,6 +1,6 @@
 module TimeTravel.Navigation exposing (program, programWithFlags)
 
-{-| Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation)
+{-| Each functions in this module has the same interface as [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/latest/Navigation)
 
 # Create a Program
 @docs program, programWithFlags
@@ -13,7 +13,7 @@ import TimeTravel.Internal.View as View
 import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
-import Navigation exposing (Parser)
+import Navigation exposing (Location)
 
 
 type Msg msg
@@ -22,60 +22,56 @@ type Msg msg
 
 
 {- Alias for internal use -}
-type alias OptionsWithFlags flags data model msg =
-  { init : flags -> data -> (model, Cmd msg)
+type alias OptionsWithFlags flags model msg =
+  { init : flags -> Location -> (model, Cmd msg)
   , update : msg -> model -> (model, Cmd msg)
-  , urlUpdate : data -> model -> (model, Cmd msg)
   , view : model -> Html msg
   , subscriptions : model -> Sub msg
   }
 
 
-{-| See [Navigation.program](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#program)
+{-| See [Navigation.program](http://package.elm-lang.org/packages/elm-lang/navigation/latest/Navigation#program)
 -}
 program :
-  Parser data
-  -> { init : data -> (model, Cmd msg)
+  (Location -> msg)
+  -> { init : Location -> (model, Cmd msg)
      , update : msg -> model -> (model, Cmd msg)
-     , urlUpdate : data -> model -> (model, Cmd msg)
      , view : model -> Html msg
      , subscriptions : model -> Sub msg
      }
-  -> Program Never (Model model msg data) (Msg msg)
-program parser { init, view, update, subscriptions, urlUpdate } =
+  -> Program Never (Model model msg) (Msg msg)
+program parser { init, view, update, subscriptions } =
   programWithFlags parser
-    { init = \flags data -> init data
+    { init = \flags location -> init location
     , view = view
     , update = update
     , subscriptions = subscriptions
-    , urlUpdate = urlUpdate
     }
 
 
-{-| See [Navigation.programWithFlags](http://package.elm-lang.org/packages/elm-lang/navigation/1.0.0/Navigation#programWithFlags)
+{-| See [Navigation.programWithFlags](http://package.elm-lang.org/packages/elm-lang/navigation/latest/Navigation#programWithFlags)
 -}
 programWithFlags :
-  Parser data
-  -> { init : flags -> data -> (model, Cmd msg)
+  (Location -> msg)
+  -> { init : flags -> Location -> (model, Cmd msg)
      , update : msg -> model -> (model, Cmd msg)
-     , urlUpdate : data -> model -> (model, Cmd msg)
      , view : model -> Html msg
      , subscriptions : model -> Sub msg
      }
-  -> Program flags (Model model msg data) (Msg msg)
+  -> Program flags (Model model msg) (Msg msg)
 programWithFlags parser options =
-  Navigation.programWithFlags parser (wrap options)
+  Navigation.programWithFlags (\location -> UserMsg (Nothing, parser location)) (wrap options)
 
 
-wrap : OptionsWithFlags flags data model msg -> OptionsWithFlags flags data (Model model msg data) (Msg msg)
-wrap { init, view, update, subscriptions, urlUpdate } =
+wrap : OptionsWithFlags flags model msg -> OptionsWithFlags flags (Model model msg) (Msg msg)
+wrap { init, view, update, subscriptions } =
   let
     -- TODO save settings and refactor
     outgoingMsg = always Cmd.none
 
-    init_ flags data =
+    init_ flags location =
       let
-        (model, cmd) = init flags data
+        (model, cmd) = init flags location
       in
         Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
 
@@ -91,9 +87,6 @@ wrap { init, view, update, subscriptions, urlUpdate } =
           in
             m ! [ Cmd.map DebuggerMsg c ]
 
-    urlUpdate_ data model =
-      urlUpdateOnIncomingData (\(id, msg) -> UserMsg (Just id, msg)) urlUpdate data model
-
     view_ model =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
 
@@ -107,5 +100,4 @@ wrap { init, view, update, subscriptions, urlUpdate } =
     , update = update_
     , view = view_
     , subscriptions = subscriptions_
-    , urlUpdate = urlUpdate_
     }

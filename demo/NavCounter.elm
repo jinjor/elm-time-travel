@@ -1,4 +1,5 @@
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Navigation
 
@@ -6,94 +7,71 @@ import TimeTravel.Navigation as TimeTravel
 
 
 main =
-  TimeTravel.program urlParser
+  TimeTravel.program UrlChange
     { init = init
     , view = view
     , update = update
-    , urlUpdate = urlUpdate
-    , subscriptions = subscriptions
+    , subscriptions = (\_ -> Sub.none)
     }
-
-
-
--- URL PARSERS
-
-
-toUrl : Int -> String
-toUrl count =
-  "#/" ++ toString count
-
-
-fromUrl : String -> Result String Int
-fromUrl url =
-  String.toInt (String.dropLeft 2 url)
-
-
-urlParser : Navigation.Parser (Result String Int)
-urlParser =
-  Navigation.makeParser (fromUrl << .hash)
 
 
 
 -- MODEL
 
 
-type alias Model = Int
+type alias Model =
+  { history : List Navigation.Location
+  }
 
 
-init : Result String Int -> (Model, Cmd Msg)
-init result =
-  urlUpdate result 0
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+  ( Model [ location ]
+  , Cmd.none
+  )
 
 
 
 -- UPDATE
 
 
-type Msg = Increment | Decrement
+type Msg
+  = UrlChange Navigation.Location
 
 
+{- We are just storing the location in our history in this example, but
+normally, you would use a package like evancz/url-parser to parse the path
+or hash into nicely structured Elm values.
+    <http://package.elm-lang.org/packages/evancz/url-parser/latest>
+-}
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  let
-    newModel =
-      case msg of
-        Increment ->
-          model + 1
-
-        Decrement ->
-          model - 1
-  in
-    (newModel, Navigation.newUrl (toUrl newModel))
-
-
-urlUpdate : Result String Int -> Model -> (Model, Cmd Msg)
-urlUpdate result model =
-  case result of
-    Ok newCount ->
-      (newCount, Cmd.none)
-
-    Err _ ->
-      (model, Navigation.modifyUrl (toUrl model))
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-  Sub.none
+  case msg of
+    UrlChange location ->
+      ( { model | history = location :: model.history }
+      , Cmd.none
+      )
 
 
 
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Html msg
 view model =
   div []
-    [ button [ onClick Decrement ] [ text "-" ]
-    , div [] [ text (toString model) ]
-    , button [ onClick Increment ] [ text "+" ]
+    [ h1 [] [ text "Pages" ]
+    , ul [] (List.map viewLink [ "bears", "cats", "dogs", "elephants", "fish" ])
+    , h1 [] [ text "History" ]
+    , ul [] (List.map viewLocation model.history)
     ]
+
+
+viewLink : String -> Html msg
+viewLink name =
+  li [] [ a [ href ("#" ++ name) ] [ text name ] ]
+
+
+viewLocation : Navigation.Location -> Html msg
+viewLocation location =
+  li [] [ text (location.pathname ++ location.hash) ]

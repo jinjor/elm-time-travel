@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/jinjor/elm-time-travel.svg)](https://travis-ci.org/jinjor/elm-time-travel)
 
-An experimental debugger for Elm >= 0.17. See [DEMO](http://jinjor.github.io/elm-time-travel/)
+An experimental debugger for Elm. See [DEMO](http://jinjor.github.io/elm-time-travel/)
 
 ## How to use
 
@@ -25,7 +25,7 @@ That's it!
 
 ## What is this library for?
 
-Elm has [a great official debugger](http://elm-lang.org/blog/the-perfect-bug-report) from 0.18, but this debugger was born at 0.17! These two is focusing on slightly different things. The official one focuses on reproducing state and communicating between dev and QA people. This one, on the other hand, is more focusing on digging into problems that happen in runtime.
+Elm has [a great official debugger](http://elm-lang.org/blog/the-perfect-bug-report) from 0.18, but this debugger was born at 0.17! These two are focusing on slightly different things. The official one focuses on reproducing state and communicating between dev and QA people. This one, on the other hand, is more focusing on digging into problems that happen in runtime.
 
 This library implements following features:
 
