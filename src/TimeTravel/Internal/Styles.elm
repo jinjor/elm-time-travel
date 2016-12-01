@@ -4,6 +4,14 @@ module TimeTravel.Internal.Styles exposing (..)
 zIndex = { modelDetailView = "2147483646", debugView = "2147483646", resyncView = "2147483645" }
 
 
+darkTextColor = "#999"
+
+
+textLinkHover : List (String, String)
+textLinkHover =
+  [ ("text-decoration", "underline") ]
+
+
 button : List (String, String)
 button =
   [ ("padding", "10px")
@@ -127,14 +135,24 @@ modelFilterInput =
 
 modelDetailTreeEachId : List (String, String)
 modelDetailTreeEachId =
-  [ ("color", "#999")
+  [ ("color", darkTextColor)
   , ("cursor", "pointer")
   ]
 
 
 modelDetailTreeEachIdHover : List (String, String)
 modelDetailTreeEachIdHover =
-  [ ("text-decoration", "underline") ]
+  textLinkHover
+
+
+modelDetailTreeEachIdWatch : List (String, String)
+modelDetailTreeEachIdWatch =
+  modelDetailTreeEachId
+
+
+modelDetailTreeEachIdWatchHover : List (String, String)
+modelDetailTreeEachIdWatchHover =
+  modelDetailTreeEachIdHover
 
 
 modelDetailTreeEach : List (String, String)
@@ -163,6 +181,16 @@ modelDetailFlagment =
   ]
 
 
+modelDetailFlagmentLink : List (String, String)
+modelDetailFlagmentLink =
+  [("cursor", "pointer")] ++ modelDetailFlagment
+
+
+modelDetailFlagmentLinkHover : List (String, String)
+modelDetailFlagmentLinkHover =
+  textLinkHover
+
+
 modelDetailFlagmentToggle : List (String, String)
 modelDetailFlagmentToggle =
   [ ("white-space", "pre")
@@ -178,6 +206,32 @@ modelDetailFlagmentToggleExpand =
   , ("left", "-16px")
   , ("margin-right", "-14px")
   ] ++ modelDetailFlagmentToggle
+
+
+watchView : List (String, String)
+watchView =
+  [ ("position", "relative")
+  ] ++ panel True ++ panelBorder
+
+
+watchViewHeader : List (String, String)
+watchViewHeader =
+  [ ("color", darkTextColor)
+  ]
+
+
+stopWatchingButton : List (String, String)
+stopWatchingButton =
+  [ ("position", "absolute")
+  , ("right", "20px")
+  , ("top", "20px")
+  , ("cursor", "pointer")
+  ]
+
+
+stopWatchingButtonHover : List (String, String)
+stopWatchingButtonHover =
+  [ ("opacity", "0.5") ]
 
 
 msgListView : List (String, String)

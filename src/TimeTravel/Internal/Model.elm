@@ -1,6 +1,5 @@
 module TimeTravel.Internal.Model exposing (..)
 
-import String
 import Set exposing (Set)
 
 import TimeTravel.Internal.Util.Nel as Nel exposing (..)
@@ -10,16 +9,14 @@ import TimeTravel.Internal.Parser.Formatter as Formatter
 import TimeTravel.Internal.Util.RTree as RTree exposing (RTree)
 import TimeTravel.Internal.MsgLike exposing (MsgLike(..))
 
-import Basics.Extra exposing (never)
-
-import Json.Decode as Decode exposing ((:=), Decoder)
+import Json.Decode as Decode exposing (field, Decoder)
 import Json.Encode as Encode
 
 import Diff exposing (Change, diffLines)
 
-type alias HistoryItem model msg data =
+type alias HistoryItem model msg =
   { id : Id
-  , msg : MsgLike msg data
+  , msg : MsgLike msg
   , causedBy : Maybe Id
   , model : model
   , lazyMsgAst : Maybe (Result String ASTX)
@@ -28,9 +25,9 @@ type alias HistoryItem model msg data =
   }
 
 
-type alias Model model msg data =
-  { future : List (HistoryItem model msg data)
-  , history : Nel (HistoryItem model msg data)
+type alias Model model msg =
+  { future : List (HistoryItem model msg)
+  , history : Nel (HistoryItem model msg)
   , filter : FilterOptions
   , sync : Bool
   , showModelDetail : Bool
@@ -42,13 +39,13 @@ type alias Model model msg data =
   , expandedTree : Set AST.ASTId
   , minimized : Bool
   , modelFilter : String
+  , watch : Maybe AST.ASTId
   }
 
 type alias Id = Int
 
 type alias FilterOptions =
   List (String, Bool)
-
 
 type alias Settings =
   { fixedToLeft : Bool
@@ -77,10 +74,12 @@ type Msg
   | ToggleModelTree AST.ASTId
   | ToggleMinimize
   | InputModelFilter String
-  | SelectModelFilter String
+  | SelectModelFilter AST.ASTId
+  | SelectModelFilterWatch AST.ASTId
+  | StopWatching
 
 
-init : model -> Model model msg data
+init : model -> Model model msg
 init model =
   { future = []
   , history = Nel (initItem model) []
@@ -95,14 +94,15 @@ init model =
   , expandedTree = Set.empty
   , minimized = False
   , modelFilter = ""
+  , watch = Nothing
   }
 
 
-initItem : model -> HistoryItem model msg data
+initItem : model -> HistoryItem model msg
 initItem model = newItem 0 Init Nothing model
 
 
-newItem : Id -> MsgLike msg data -> Maybe Id -> model -> HistoryItem model msg data
+newItem : Id -> MsgLike msg -> Maybe Id -> model -> HistoryItem model msg
 newItem id msg causedBy model =
   { id = id
   , msg = msg
@@ -114,13 +114,15 @@ newItem id msg causedBy model =
   }
 
 
-selectedItem : Model model msg data -> Maybe (HistoryItem model msg data)
+selectedItem : Model model msg -> Maybe (HistoryItem model msg)
 selectedItem model =
   case (model.sync, model.selectedMsg) of
     (True, _) ->
       Just <| Nel.head model.history
+
     (False, Nothing) ->
       Just <| Nel.head model.history
+
     (False, Just msgId) ->
       (Nel.find (\item -> item.id == msgId) model.history)
 
@@ -129,13 +131,16 @@ updateOnIncomingUserMsg :
      ((Id, msg) -> parentMsg)
   -> (msg -> model -> (model, Cmd msg))
   -> (Maybe Id, msg)
-  -> Model model msg data
-  -> (Model model msg data, Cmd parentMsg)
+  -> Model model msg
+  -> (Model model msg, Cmd parentMsg)
 updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
   let
     (Nel last past) = model.history
+
     (newRawUserModel, userCmd) = update msg last.model
+
     megLike = Message msg
+
     nextItem = newItem model.msgId megLike causedBy newRawUserModel
   in
     ( { model |
@@ -151,50 +156,18 @@ updateOnIncomingUserMsg transformMsg update (causedBy, msg) model =
             Nel.cons nextItem model.history
           else
             model.history
-      } |> selectFirstIfSync
+      } |> selectFirstIfSync |> updateLazyAstForWatch
     )
     ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd)
       ]
 
 
-urlUpdateOnIncomingData :
-     ((Id, msg) -> parentMsg)
-  -> (data -> model -> (model, Cmd msg))
-  -> data
-  -> Model model msg data
-  -> (Model model msg data, Cmd parentMsg)
-urlUpdateOnIncomingData transformMsg urlUpdate data model =
-  let
-    (Nel last past) = model.history
-    (newRawUserModel, userCmd) = urlUpdate data last.model
-    msgLike = UrlData data
-    nextItem = newItem model.msgId msgLike Nothing newRawUserModel
-  in
-    ( { model |
-          filter = updateFilter msgLike model.filter
-        , msgId = model.msgId + 1
-        , future =
-            if not model.sync then
-              nextItem :: model.future
-            else
-              model.future
-        , history =
-            if model.sync then
-              Nel.cons nextItem model.history
-            else
-              model.history
-      } |> selectFirstIfSync
-    ) ! [ Cmd.map transformMsg (Cmd.map ((,) model.msgId) userCmd) ]
-
-
-
-updateFilter : MsgLike msg data -> FilterOptions -> FilterOptions
+updateFilter : MsgLike msg -> FilterOptions -> FilterOptions
 updateFilter msgLike filterOptions =
   let
     str =
       case msgLike of
         Message msg -> toString msg
-        UrlData data -> "[Nav] "-- ++ toString data
         Init -> "" -- doesn't count as a filter
   in
     case String.words str of
@@ -211,7 +184,7 @@ updateFilter msgLike filterOptions =
         filterOptions
 
 
-futureToHistory : Model model msg data -> Model model msg data
+futureToHistory : Model model msg -> Model model msg
 futureToHistory model =
   { model |
     future = []
@@ -221,23 +194,23 @@ futureToHistory model =
 
 -- TODO better not use for performance
 mapHistory :
-     (HistoryItem model msg data -> HistoryItem model msg data)
-  -> Model model msg data
-  -> Model model msg data
+     (HistoryItem model msg -> HistoryItem model msg)
+  -> Model model msg
+  -> Model model msg
 mapHistory f model =
   { model |
     history = Nel.map f model.history
   }
 
 
-updateLazyAst : Model model msg data -> Model model msg data
+updateLazyAst : Model model msg -> Model model msg
 updateLazyAst model =
   case model.selectedMsg of
     Just id ->
       mapHistory
         (\item ->
           if item.id == id || item.id == id - 1 then
-            updateLazyAstHelp item
+            (updateLazyMsgAst << updateLazyModelAst) item
           else
             item
         )
@@ -246,29 +219,50 @@ updateLazyAst model =
       model
 
 
-updateLazyAstHelp : HistoryItem model msg data -> HistoryItem model msg data
-updateLazyAstHelp item =
+updateLazyAstForWatch : Model model msg -> Model model msg
+updateLazyAstForWatch model =
+  case (model.watch, (Nel.head model.history).id) of
+    (Just _, id) ->
+      mapHistory
+        (\item ->
+          if item.id == id then
+            updateLazyModelAst item
+          else
+            item
+        )
+        model
+    _ ->
+      model
+
+
+updateLazyMsgAst : HistoryItem model msg -> HistoryItem model msg
+updateLazyMsgAst item =
   { item |
     lazyMsgAst =
       if item.lazyMsgAst == Nothing then
         case item.msg of
           Message msg ->
-            Just (Result.map (AST.attachId "") <| Parser.parse (toString msg))
-          UrlData data ->
-            Just (Result.map (AST.attachId "") <| Parser.parse (toString data))
+            Just (Result.map (AST.attachId "@") <| Parser.parse (toString msg))
+
           _ ->
             Just (Err "")
       else
         item.lazyMsgAst
-  , lazyModelAst =
+  }
+
+
+updateLazyModelAst : HistoryItem model msg -> HistoryItem model msg
+updateLazyModelAst item =
+  { item |
+    lazyModelAst =
       if item.lazyModelAst == Nothing then
-        Just (Result.map (AST.attachId "") <| Parser.parse (toString item.model))
+        Just (Result.map (AST.attachId "@") <| Parser.parse (toString item.model))
       else
         item.lazyModelAst
   }
 
 
-updateLazyDiff : Model model msg data -> Model model msg data
+updateLazyDiff : Model model msg -> Model model msg
 updateLazyDiff model =
   if model.showModelDetail then
     model
@@ -283,21 +277,24 @@ updateLazyDiff model =
               item
           )
           model
+
       _ ->
         model
 
 
-updateLazyDiffHelp : Model model msg data -> HistoryItem model msg data -> HistoryItem model msg data
+updateLazyDiffHelp : Model model msg -> HistoryItem model msg -> HistoryItem model msg
 updateLazyDiffHelp model item =
   let
     newDiff =
       case item.lazyDiff of
         Just changes ->
           Just changes
+
         Nothing ->
           case selectedAndOldAst model of
             Just (oldAst, newAst) ->
               Just (makeChanges oldAst newAst)
+
             Nothing ->
               Nothing
   in
@@ -314,20 +311,22 @@ makeChanges oldAst newAst =
       (Formatter.formatAsString (Formatter.makeModel newAst))
 
 
-selectedMsgAst : Model model msg data -> Maybe ASTX
+selectedMsgAst : Model model msg -> Maybe ASTX
 selectedMsgAst model =
   case model.selectedMsg of
     Just id ->
       case Nel.findMap (\item -> if item.id == id then Just item.lazyMsgAst else Nothing ) model.history of
         Just (Just (Ok ast)) ->
           Just ast
+
         _ ->
           Nothing
+
     _ ->
       Nothing
 
 
-selectedAndOldAst : Model model msg data -> Maybe (ASTX, ASTX)
+selectedAndOldAst : Model model msg -> Maybe (ASTX, ASTX)
 selectedAndOldAst model =
   case model.selectedMsg of
     Just id ->
@@ -356,7 +355,7 @@ selectedAndOldAst model =
       Nothing
 
 
-selectFirstIfSync : Model model msg data -> Model model msg data
+selectFirstIfSync : Model model msg -> Model model msg
 selectFirstIfSync model =
   if model.sync then
     { model |
@@ -366,7 +365,7 @@ selectFirstIfSync model =
     model
 
 
-selectedMsgTree : Model model msg data -> Maybe (RTree (HistoryItem model msg data))
+selectedMsgTree : Model model msg -> Maybe (RTree (HistoryItem model msg))
 selectedMsgTree model =
   case model.selectedMsg of
     Just id ->
@@ -387,23 +386,24 @@ selectedMsgTree model =
       Nothing
 
 
-msgRootOf : Id -> Nel (HistoryItem model msg data) -> Maybe (HistoryItem model msg data)
+msgRootOf : Id -> Nel (HistoryItem model msg) -> Maybe (HistoryItem model msg)
 msgRootOf id history =
   case Nel.find (\item -> item.id == id) history of
     Just item ->
       case item.causedBy of
         Just id -> msgRootOf id history
         Nothing -> Just item
+
     Nothing ->
       Nothing
 
 
 settingsDecoder : Decoder Settings
 settingsDecoder =
-  Decode.object2
+  Decode.map2
     Settings
-    ("fixedToLeft" := Decode.bool)
-    ("filter" := Decode.list (Decode.tuple2 (,) Decode.string Decode.bool))
+    (field "fixedToLeft" Decode.bool)
+    (field "filter" <| Decode.list (Decode.map2 (,) (Decode.index 0 Decode.string) (Decode.index 1 Decode.bool)))
 
 
 encodeSetting : Settings -> String
@@ -420,9 +420,15 @@ encodeSetting settings =
       ]
 
 
-saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg data -> Cmd Msg
+saveSetting : (OutgoingMsg -> Cmd Never) -> Model model msg -> Cmd Msg
 saveSetting save model =
-  Cmd.map never (save <| { type_ = "save", settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter } } )
+  Cmd.map
+    never
+    ( save <|
+        { type_ = "save"
+        , settings = encodeSetting { fixedToLeft = model.fixedToLeft, filter = model.filter }
+        }
+    )
 
 
 decodeSettings : String -> Result String Settings

@@ -1,7 +1,7 @@
 import Html exposing (div, button, text)
 import Html.Events exposing (onClick)
 
-import TimeTravel.Html.App as TimeTravel
+import TimeTravel.Html as TimeTravel
 
 
 main =

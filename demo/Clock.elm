@@ -3,7 +3,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Time exposing (Time, second)
 
-import TimeTravel.Html.App as TimeTravel
+import TimeTravel.Html as TimeTravel
 
 
 main =
@@ -36,8 +36,8 @@ type Msg
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update action model =
-  case action of
+update msg model =
+  case msg of
     Tick newTime ->
       (newTime, Cmd.none)
 

@@ -14,37 +14,36 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Keyed as Keyed
-import Html.App as App
 
-import String
 import Set exposing (Set)
 import InlineHover exposing (hover)
 
 
-view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg data -> Html a
+view : (msg -> a) -> (Msg -> a) -> (model -> Html msg) -> Model model msg -> Html a
 view transformUserMsg transformDebuggerMsg userViewFunc model =
   div
     []
-    [ App.map transformUserMsg (userView userViewFunc model)
-    , App.map transformDebuggerMsg (debugView model)
+    [ Html.map transformUserMsg (userView userViewFunc model)
+    , Html.map transformDebuggerMsg (debugView model)
     ]
 
 
-userView : (model -> Html msg) -> Model model msg data -> Html msg
+userView : (model -> Html msg) -> Model model msg -> Html msg
 userView userView model =
   case selectedItem model of
     Just item ->
       userView item.model
+
     Nothing ->
       text "Error: Unable to render"
 
 
-debugView : Model model msg data -> Html Msg
+debugView : Model model msg -> Html Msg
 debugView model =
   (if model.minimized then minimizedDebugView else normalDebugView) model
 
 
-normalDebugView : Model model msg data -> Html Msg
+normalDebugView : Model model msg -> Html Msg
 normalDebugView model =
   div
     []
@@ -56,12 +55,13 @@ normalDebugView model =
             model.filter
             model.selectedMsg
             (Nel.toList model.history)
+            (watchView model)
             (detailView model)
         ]
     ]
 
 
-minimizedDebugView : Model model msg data -> Html Msg
+minimizedDebugView : Model model msg -> Html Msg
 minimizedDebugView model =
   buttonView ToggleMinimize (S.minimizedButton model.fixedToLeft) [ I.minimize True ]
 
@@ -96,7 +96,7 @@ filterView : Bool -> FilterOptions -> Html Msg
 filterView visible filterOptions =
   div
     [ style (S.filterView visible) ]
-    (List.map filterItemView filterOptions)
+    (List.map filterItemView (List.sortBy Tuple.first filterOptions))
 
 
 filterItemView : (String, Bool) -> Html Msg
@@ -105,7 +105,7 @@ filterItemView (name, visible) =
     [ label
         []
         [ input
-            [ type' "checkbox"
+            [ type_ "checkbox"
             , checked visible
             , onClick (ToggleFilter name)
             ]
@@ -120,56 +120,145 @@ modelDetailView fixedToLeft modelFilter expandedTree lazyModelAst userModel =
   case lazyModelAst of
     Just (Ok ast) ->
       let
-        modelFilterView =
-          input
-            [ style S.modelFilterInput
-            , placeholder "Filter by property"
-            , value modelFilter
-            , onInput InputModelFilter
-            ]
-            []
+        filterInput =
+          modelFilterInput modelFilter
 
-        filtered =
-          AST.filterById modelFilter ast
-
-        each (id, ast) =
-          div
-            [ style S.modelDetailTreeEach ]
-            ( ( if modelFilter == "" then
-                  text ""
-                else
-                  hover
-                    S.modelDetailTreeEachIdHover
-                    div
-                    [ style S.modelDetailTreeEachId
-                    , onClick (SelectModelFilter id)
-                    ]
-                    [ text ("@" ++ id) ]
-              ) ::
-              Formatter.formatAsHtml ToggleModelTree expandedTree (Formatter.makeModel ast)
-            )
+        filteredAst =
+          if String.startsWith "@" modelFilter then
+            case AST.filterByExactId modelFilter ast of
+              Just x -> [(modelFilter, x)]
+              Nothing -> []
+          else
+            AST.filterById modelFilter ast
 
         trees =
-          List.map each filtered
+          List.map
+            (\(id, ast) ->
+                modelDetailTreeEach
+                  expandedTree
+                  (if modelFilter /= "" then Just id else Nothing)
+                  ast
+            )
+            filteredAst
+
       in
-        div [ style (S.modelDetailView fixedToLeft) ] (modelFilterView :: trees)
+        div [ style (S.modelDetailView fixedToLeft) ] (filterInput :: trees)
 
     _ ->
       div [ style S.modelView ] [ text (toString userModel) ]
 
 
+modelFilterInput : String -> Html Msg
+modelFilterInput modelFilter =
+  input
+    [ style S.modelFilterInput
+    , placeholder "Filter by property"
+    , value modelFilter
+    , onInput InputModelFilter
+    ]
+    []
 
-msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg data) -> Html Msg -> Html Msg
-msgListView filterOptions selectedMsg items detailView =
-  div []
-  [ detailView
-  , Keyed.node "div"
-      [ style S.msgListView ]
-      ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
-  ]
+
+modelDetailTreeEach : Set AST.ASTId -> Maybe String -> ASTX -> Html Msg
+modelDetailTreeEach expandedTree maybeId ast =
+  let
+    idView =
+      case maybeId of
+        Just id ->
+          modelDetailTreeEachId id
+
+        _ ->
+          text ""
+  in
+    div
+      [ style S.modelDetailTreeEach ]
+      ( idView ::
+        Formatter.formatAsHtml
+          SelectModelFilter
+          ToggleModelTree
+          expandedTree
+          (Formatter.makeModel ast)
+      )
 
 
-msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg data) -> Maybe (String, Html Msg)
+modelDetailTreeEachId : String -> Html Msg
+modelDetailTreeEachId id =
+  let
+    filterLink =
+      hover
+        S.modelDetailTreeEachIdHover
+        span
+        [ style S.modelDetailTreeEachId
+        , onClick (SelectModelFilter id)
+        ]
+        [ text id
+        ]
+
+    watchLink =
+      hover
+        S.modelDetailTreeEachIdWatchHover
+        span
+        [ style S.modelDetailTreeEachIdWatch
+        , onClick (SelectModelFilterWatch id)
+        ]
+        [ text "watch"
+        ]
+  in
+    div
+      []
+      [ filterLink
+      , span [ style S.modelDetailTreeEachIdWatch ] [ text " (" ]
+      , watchLink
+      , span [ style S.modelDetailTreeEachIdWatch ] [ text ")" ]
+      ]
+
+
+msgListView : FilterOptions -> Maybe Id -> List (HistoryItem model msg) -> Html Msg -> Html Msg -> Html Msg
+msgListView filterOptions selectedMsg items watchView detailView =
+  div
+    []
+    [ detailView
+    , watchView
+    , Keyed.node "div"
+        [ style S.msgListView ]
+        ( filterMapUntilLimit 60 (msgView filterOptions selectedMsg) items )
+    ]
+
+
+watchView : Model model msg -> Html Msg
+watchView model =
+  case (model.watch, (Nel.head model.history).lazyModelAst) of
+    (Just id, Just (Ok ast)) ->
+      let
+        treeView =
+          case AST.filterByExactId id ast of
+            Just ast ->
+              modelDetailTreeEach model.expandedTree Nothing ast
+
+            Nothing ->
+              text ""
+
+        stopWatchingButton =
+          hover
+            S.stopWatchingButtonHover
+            div
+            [ style S.stopWatchingButton
+            , onClick StopWatching
+            ]
+            [ I.stopWatching ]
+      in
+        div
+          [ style S.watchView ]
+          [ div [ style S.watchViewHeader ] [ text ("Watching " ++ id) ]
+          , treeView
+          , stopWatchingButton
+          ]
+
+    _ ->
+      text ""
+
+
+msgView : FilterOptions -> Maybe Id -> (HistoryItem model msg) -> Maybe (String, Html Msg)
 msgView filterOptions selectedMsg { id, msg, causedBy } =
   let
     selected =
@@ -224,7 +313,7 @@ filterMapUntilLimitHelp result limit f list =
             filterMapUntilLimitHelp result limit f t
 
 
-detailView : Model model msg data -> Html Msg
+detailView : Model model msg -> Html Msg
 detailView model =
   if not model.sync then
     let
@@ -291,5 +380,5 @@ detailView model =
 
 
 detailTab : List (String, String) -> msg -> String -> Html msg
-detailTab style' msg name =
-  hover S.detailTabHover div [ style style', onClick msg ] [ text name ]
+detailTab styles msg name =
+  hover S.detailTabHover div [ style styles, onClick msg ] [ text name ]

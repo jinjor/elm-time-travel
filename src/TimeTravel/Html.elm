@@ -1,4 +1,4 @@
-module TimeTravel.Html.App exposing
+module TimeTravel.Html exposing
   ( beginnerProgram
   , program
   -- , programWithOptions
@@ -9,7 +9,7 @@ module TimeTravel.Html.App exposing
   )
 
 
-{-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App)
+{-| Each functions in this module has the same interface as [Html.App](http://package.elm-lang.org/packages/elm-lang/html/latest/Html)
 
 # Start your Program
 @docs beginnerProgram, program, programWithFlags
@@ -23,9 +23,6 @@ import TimeTravel.Internal.View as View
 import TimeTravel.Internal.Util.Nel as Nel
 
 import Html exposing (Html, div, text)
-import Html.App as App
-
-import String
 
 
 type Msg msg
@@ -45,24 +42,35 @@ type alias OutgoingMsg = Model.OutgoingMsg
 type alias IncomingMsg = Model.IncomingMsg
 
 
-{-| See [Html.App.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#beginnerProgram)
+{-| See [Html.beginnerProgram](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#beginnerProgram)
 -}
 beginnerProgram :
   { model : model
   , view : model -> Html msg
   , update : msg -> model -> model
   }
-  -> Program Never
+  -> Program Never (Model model msg) (Msg msg)
 beginnerProgram { model, view, update } =
-  programWithFlags
-    { init = always (model, Cmd.none)
-    , view = view
-    , update = \msg model -> (update msg model, Cmd.none)
-    , subscriptions = always Sub.none
-    }
+  let
+    options =
+      wrap
+        { outgoingMsg = always Cmd.none
+        , incomingMsg = always Sub.none
+        }
+        { init = always (model, Cmd.none)
+        , view = view
+        , update = \msg model -> (update msg model, Cmd.none)
+        , subscriptions = always Sub.none
+        }
+  in
+    Html.beginnerProgram
+      { model = Tuple.first (options.init ())
+      , view = options.view
+      , update = \msg model -> Tuple.first (options.update msg model)
+      }
 
 
-{-| See [Html.App.program](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#program)
+{-| See [Html.program](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#program)
 -}
 program :
   { init : (model, Cmd msg)
@@ -70,14 +78,26 @@ program :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never
+  -> Program Never (Model model msg) (Msg msg)
 program { init, view, update, subscriptions } =
-  programWithFlags
-    { init = always init
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+  let
+    options =
+      wrap
+        { outgoingMsg = always Cmd.none
+        , incomingMsg = always Sub.none
+        }
+        { init = always init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+  in
+    Html.program
+      { init = options.init ()
+      , view = options.view
+      , update = options.update
+      , subscriptions = options.subscriptions
+      }
 
 
 programWithOptions :
@@ -90,7 +110,7 @@ programWithOptions :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program Never
+  -> Program Never (Model model msg) (Msg msg)
 programWithOptions options { init, view, update, subscriptions } =
   programWithFlagsWithOptions options
     { init = always init
@@ -100,7 +120,7 @@ programWithOptions options { init, view, update, subscriptions } =
     }
 
 
-{-| See [Html.App.programWithFlags](http://package.elm-lang.org/packages/elm-lang/html/1.0.0/Html-App#programWithFlags)
+{-| See [Html.programWithFlags](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#programWithFlags)
 -}
 programWithFlags :
   { init : flags -> (model, Cmd msg)
@@ -108,9 +128,13 @@ programWithFlags :
   , update : msg -> model -> (model, Cmd msg)
   , subscriptions : model -> Sub msg
   }
-  -> Program flags
+  -> Program flags (Model model msg) (Msg msg)
 programWithFlags stuff =
-  programWithFlagsWithOptions { outgoingMsg = always Cmd.none, incomingMsg = always Sub.none } stuff
+  programWithFlagsWithOptions
+    { outgoingMsg = always Cmd.none
+    , incomingMsg = always Sub.none
+    }
+    stuff
 
 
 programWithFlagsWithOptions :
@@ -123,9 +147,9 @@ programWithFlagsWithOptions :
     , update : msg -> model -> (model, Cmd msg)
     , subscriptions : model -> Sub msg
     }
-  -> Program flags
+  -> Program flags (Model model msg) (Msg msg)
 programWithFlagsWithOptions options stuff =
-    App.programWithFlags (wrap options stuff)
+    Html.programWithFlags (wrap options stuff)
 
 
 wrap :
@@ -133,33 +157,38 @@ wrap :
   , incomingMsg : (IncomingMsg -> (Msg msg)) -> Sub (Msg msg)
   }
   -> OptionsWithFlags flags model msg
-  -> OptionsWithFlags flags (Model model msg data) (Msg msg)
+  -> OptionsWithFlags flags (Model model msg) (Msg msg)
 wrap { outgoingMsg, incomingMsg } { init, view, update, subscriptions } =
   let
-    init' flags =
+    init_ flags =
       let
         (model, cmd) = init flags
       in
         Model.init model ! [ Cmd.map (\msg -> UserMsg (Just 0, msg)) cmd ]
-    update' msg model =
+
+    update_ msg model =
       case msg of
         UserMsg msgWithId ->
           let
             (m, c1) =
               updateOnIncomingUserMsg (\(id, msg) -> UserMsg (Just id, msg)) update msgWithId model
-            (m', c2) =
+
+            (m_, c2) =
               Update.updateAfterUserMsg outgoingMsg m
           in
-            m' ! [ c1, Cmd.map DebuggerMsg c2 ]
+            m_ ! [ c1, Cmd.map DebuggerMsg c2 ]
+
         DebuggerMsg msg ->
           let
             (m, c) =
               Update.update outgoingMsg msg model
           in
             m ! [ Cmd.map DebuggerMsg c ]
-    view' model =
+
+    view_ model =
       View.view (\c -> UserMsg (Nothing, c)) DebuggerMsg view model
-    subscriptions' model =
+
+    subscriptions_ model =
       let
         item = Nel.head model.history
       in
@@ -169,8 +198,8 @@ wrap { outgoingMsg, incomingMsg } { init, view, update, subscriptions } =
           ]
 
   in
-    { init = init'
-    , update = update'
-    , view = view'
-    , subscriptions = subscriptions'
+    { init = init_
+    , update = update_
+    , view = view_
+    , subscriptions = subscriptions_
     }
