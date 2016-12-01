@@ -41,12 +41,22 @@ program :
      }
   -> Program Never (Model model msg) (Msg msg)
 program parser { init, view, update, subscriptions } =
-  programWithFlags parser
-    { init = \flags location -> init location
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+  let
+    options =
+      wrap
+        { init = \flags location -> init location
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+  in
+    Navigation.program
+      (\location -> UserMsg (Nothing, parser location))
+      { init = options.init ()
+      , view = options.view
+      , update = options.update
+      , subscriptions = options.subscriptions
+      }
 
 
 {-| See [Navigation.programWithFlags](http://package.elm-lang.org/packages/elm-lang/navigation/latest/Navigation#programWithFlags)

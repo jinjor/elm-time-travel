@@ -51,12 +51,23 @@ beginnerProgram :
   }
   -> Program Never (Model model msg) (Msg msg)
 beginnerProgram { model, view, update } =
-  programWithFlags
-    { init = always (model, Cmd.none)
-    , view = view
-    , update = \msg model -> (update msg model, Cmd.none)
-    , subscriptions = always Sub.none
-    }
+  let
+    options =
+      wrap
+        { outgoingMsg = always Cmd.none
+        , incomingMsg = always Sub.none
+        }
+        { init = always (model, Cmd.none)
+        , view = view
+        , update = \msg model -> (update msg model, Cmd.none)
+        , subscriptions = always Sub.none
+        }
+  in
+    Html.beginnerProgram
+      { model = Tuple.first (options.init ())
+      , view = options.view
+      , update = \msg model -> Tuple.first (options.update msg model)
+      }
 
 
 {-| See [Html.program](http://package.elm-lang.org/packages/elm-lang/html/latest/Html#program)
@@ -69,12 +80,24 @@ program :
   }
   -> Program Never (Model model msg) (Msg msg)
 program { init, view, update, subscriptions } =
-  programWithFlags
-    { init = always init
-    , view = view
-    , update = update
-    , subscriptions = subscriptions
-    }
+  let
+    options =
+      wrap
+        { outgoingMsg = always Cmd.none
+        , incomingMsg = always Sub.none
+        }
+        { init = always init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+  in
+    Html.program
+      { init = options.init ()
+      , view = options.view
+      , update = options.update
+      , subscriptions = options.subscriptions
+      }
 
 
 programWithOptions :
